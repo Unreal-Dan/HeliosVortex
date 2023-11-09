@@ -17,12 +17,9 @@ CFLAGS=-O2 -g -Wall
 # compiler defines
 DEFINES=\
 	-D CLI_MODE \
-	-D VORTEX_LIB
 
 # compiler include paths
 INCLUDES=\
-	-I ./fake_libraries \
-	-I ./src \
 
 # only set them if they're not empty to prevent unnecessary whitespace
 ifneq ($(DEFINES),)

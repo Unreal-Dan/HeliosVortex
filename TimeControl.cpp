@@ -77,7 +77,6 @@ void Time::tickClock()
 
   // the rest of this only runs inside vortexlib because on the duo the tick runs in the
   // tcb timer callback instead of in a busy loop constantly checking microseconds()
-#ifdef VORTEX_LIB
   // perform timestep
   uint32_t elapsed_us;
   uint32_t us;
@@ -94,25 +93,12 @@ void Time::tickClock()
     // if building anywhere except visual studio then we can run alternate sleep code
     // because in visual studio + windows it's better to just spin and check the high
     // resolution clock instead of trying to sleep for microseconds.
-#if !defined(_WIN32) && defined(VORTEX_LIB)
-    uint32_t required = (1000000 / TICKRATE);
-    uint32_t sleepTime = 0;
-    if (required > elapsed_us) {
-      // in vortex lib on linux we can just sleep instead of spinning
-      // but on embedded we must spin and on windows it actually ends
-      // up being more accurate to poll QPF + QPC via microseconds()
-      sleepTime = required - elapsed_us;
-    }
-    Time::delayMicroseconds(sleepTime);
-    break;
-#endif
     // 1000us per ms, divided by tickrate gives
     // the number of microseconds per tick
   } while (elapsed_us < (1000000 / TICKRATE));
 
   // store current time
   m_prevTime = microseconds();
-#endif
 }
 
 // the real current time, bypass simulations, used by timers
@@ -146,25 +132,10 @@ uint32_t Time::millisecondsToTicks(uint32_t ms)
 
 uint32_t Time::microseconds()
 {
-#ifndef VORTEX_LIB // Embedded avr devices
-  uint32_t ticks;
-  // divide by 10
-  ticks = (m_curTick * TICKRATE) + (TCB0.CNT / 1000);
-  return ticks;
-#elif defined(_WIN32) // windows
-  LARGE_INTEGER now;
-  QueryPerformanceCounter(&now);
-  if (!tps.QuadPart) {
-    return 0;
-  }
-  // yes, this will overflow, that's how arduino microseconds() works *shrug*
-  return (unsigned long)((now.QuadPart - start.QuadPart) * 1000000 / tps.QuadPart);
-#else // linux/wasm/etc
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
   uint64_t us = SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
   return (unsigned long)us;
-#endif
 }
 
 #ifdef VORTEX_EMBEDDED
