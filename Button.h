@@ -1,0 +1,77 @@
+#include <stdint.h>
+
+class Button
+{
+public:
+  Button() {}
+  ~Button() {}
+
+  // initialize a new button object with a pin number
+  bool init();
+  // directly poll the pin for whether it's pressed right now
+  bool check();
+  // poll the button pin and update the state of the button object
+  void update();
+
+  // whether the button was pressed this tick
+  bool onPress() const { return m_newPress; }
+  // whether the button was released this tick
+  bool onRelease() const { return m_newRelease; }
+  // whether the button is currently pressed
+  bool isPressed() const { return m_isPressed; }
+
+  // whether the button was shortclicked this tick
+  bool onShortClick() const { return m_shortClick; }
+  // whether the button was long clicked this tick
+  bool onLongClick() const { return m_longClick; }
+  // fired when a certain number of presses is reached, the consecutive press
+  // counter is automatically reset when that happens
+  bool onConsecutivePresses(uint8_t numPresses);
+
+  // when the button was last pressed
+  uint32_t pressTime() const { return m_pressTime; }
+  // when the button was last released
+  uint32_t releaseTime() const { return m_releaseTime; }
+
+  // how long the button is currently or was last held down (in ticks)
+  uint32_t holdDuration() const { return m_holdDuration; }
+  // how long the button is currently or was last released for (in ticks)
+  uint32_t releaseDuration() const { return m_releaseDuration; }
+
+  // the number of releases
+  uint8_t releaseCount() const { return m_releaseCount; }
+
+private:
+  // ========================================
+  // state data that is populated each check
+
+  // the timestamp of when the button was pressed
+  uint32_t m_pressTime;
+  // the timestamp of when the button was released
+  uint32_t m_releaseTime;
+
+  // the last hold duration
+  uint32_t m_holdDuration;
+  // the last release duration
+  uint32_t m_releaseDuration;
+
+  // the number of times released, will overflow at 255
+  uint8_t m_releaseCount;
+
+  // the active state of the button
+  bool m_buttonState;
+
+  // whether pressed this tick
+  bool m_newPress;
+  // whether released this tick
+  bool m_newRelease;
+  // whether currently pressed
+  bool m_isPressed;
+  // whether a short click occurred
+  bool m_shortClick;
+  // whether a long click occurred
+  bool m_longClick;
+};
+
+// global button
+extern Button button;
