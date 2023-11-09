@@ -33,10 +33,10 @@ void setup()
   // init the button
   button.init();
 
-	PatternArgs args(6, 10);
-	pat = new BasicPattern(args);
-	Colorset set(RGB_RED, RGB_GREEN, RGB_BLUE);
-	pat->setColorset(set);
+  PatternArgs args(6, 10);
+  pat = new BasicPattern(args);
+  Colorset set(RGB_RED, RGB_GREEN, RGB_BLUE);
+  pat->setColorset(set);
 
   // if loading the storage fails (corrupted, empty, etc) then load
   // the default values and let them save back to storage naturally later
@@ -68,9 +68,9 @@ void loop()
 
 void handle_state()
 {
-	if (pat) {
-		pat->play();
-	}
+  if (pat) {
+    pat->play();
+  }
 }
 
 //void next_mode()
