@@ -33,10 +33,11 @@ void setup()
   // init the button
   button.init();
 
-  PatternArgs args(6, 10);
-  pat = new BasicPattern(args);
-  Colorset set(RGB_RED, RGB_GREEN, RGB_BLUE);
+  PatternArgs tempargs(6, 10);
+  pat = new BasicPattern(tempargs);
+  Colorset set = Colorset(RGB_RED, RGB_GREEN, RGB_BLUE);
   pat->setColorset(set);
+  pat->init();
 
   // if loading the storage fails (corrupted, empty, etc) then load
   // the default values and let them save back to storage naturally later
@@ -66,56 +67,79 @@ void loop()
   Time::tickClock();
 }
 
+enum helios_state {
+  STATE_MODES
+
+
+};
+
+helios_state cur_state = STATE_MODES;
+void handle_state_modes();
+
 void handle_state()
 {
+  switch (cur_state) {
+    case STATE_MODES:
+      handle_state_modes();
+      break;
+
+  }
+}
+
+void next_mode()
+{
+  if (pat) {
+    // destruct global pattern instance
+    delete pat;
+  }
+  // read mode from storage at cur mode index
+  // instantiate new pattern
+  //pat = Storage::load_pattern(cur_mode++);
+}
+
+void handle_hold()
+{
+  RGBColor cols[3] = { RGB_CYAN, RGB_YELLOW, RGB_MAGNETA };
+  Led::set(cols[magnitude]);
+}
+
+void handle_release()
+{
+  switch (holdDur / 100) {
+    case 0:  // 0
+    case 1:  // 100
+             // cyan
+             // switch to this menu state
+    case 2:  // 200
+             // magenta
+             // switch to this menu state
+    case 3:  // 300
+             // yellow
+             // switch to this menu state
+      break;
+  }
+}
+
+void handle_state_modes()
+{
+  if (button.onShortClick()) {
+    next_mode();
+    return;
+  }
+  uint32_t holdDur = button.holdDuration();
+  // show a color based on the hold duration past 200
+  // the magnitude will be some value from 0-3 corresponding
+  // to the holdDurations of 200 to 500
+  uint16_t magnitude = (holdDur / 100) - 2;
+  // if the button is held for at least 1 second
+  if (button.isPressed()) {
+    handle_hold();
+  }
+  if (button.onRelease()) {
+    handle_release();
+  }
+  // just play the current mode
   if (pat) {
     pat->play();
   }
 }
-
-//void next_mode()
-//{
-//  // destruct global mode instant
-//  // iterate cur mode index
-//  // read mode from storage at cur mode index
-//}
-
-//void handle_state_modes()
-//{
-//  if (button.onShortClick()) {
-//    next_mode();
-//    return;
-//  }
-//  // if the button is held for at least 1 second
-//  if (button.isPressed()) {
-//    uint32_t holdDur = button.holdDuration();
-//    switch (holdDur / 100) {
-//      case 0: // 0
-//      case 1: // 100
-//        // cyan
-//      case 2: // 200
-//        // magenta
-//      case 3: // 300
-//        // yellow
-//        break;
-//    }
-//    if (button.onRelease()) {
-//      switch (holdDur / 100) {
-//        case 0:  // 0
-//        case 1:  // 100
-//                 // cyan
-//                 // switch to this menu state
-//        case 2:  // 200
-//                 // magenta
-//                 // switch to this menu state
-//        case 3:  // 300
-//                 // yellow
-//                 // switch to this menu state
-//          break;
-//      }
-//    }
-//    return;
-//  }
-//  // just play the current mode
-//  //mode.play();
-//}

@@ -24,9 +24,6 @@ public:
   bool onShortClick() const { return m_shortClick; }
   // whether the button was long clicked this tick
   bool onLongClick() const { return m_longClick; }
-  // fired when a certain number of presses is reached, the consecutive press
-  // counter is automatically reset when that happens
-  bool onConsecutivePresses(uint8_t numPresses);
 
   // when the button was last pressed
   uint32_t pressTime() const { return m_pressTime; }

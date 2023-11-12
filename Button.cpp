@@ -1,6 +1,8 @@
 #include "Button.h"
 #include "TimeControl.h"
 
+#define BUTTON_PIN
+
 // initialize a new button object with a pin number
 bool Button::init()
 {
@@ -23,7 +25,7 @@ bool Button::init()
 // directly poll the pin for whether it's pressed right now
 bool Button::check()
 {
-  return false; //digitalRead(1) == HIGH;
+  return false; //digitalRead(BUTTON_PIN) == HIGH;
 }
 
 // poll the button pin and update the state of the button object
