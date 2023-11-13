@@ -132,27 +132,27 @@ void Helios::enterSleep(bool save)
 void Helios::handle_state()
 {
   switch (cur_state) {
-	case STATE_MODES:
-		handle_state_modes();
-		break;
-	case STATE_COLOR_SELECT_HUE:
-	case STATE_COLOR_SELECT_SAT:
-	case STATE_COLOR_SELECT_VAL:
-		handle_state_col_select();
-		break;
-	case STATE_PATTERN_SELECT:
-		handle_state_pat_select();
-		break;
-	case STATE_FACTORY_RESET:
-		handle_state_fac_reset();
-		break;
+  case STATE_MODES:
+    handle_state_modes();
+    break;
+  case STATE_COLOR_SELECT_HUE:
+  case STATE_COLOR_SELECT_SAT:
+  case STATE_COLOR_SELECT_VAL:
+    handle_state_col_select();
+    break;
+  case STATE_PATTERN_SELECT:
+    handle_state_pat_select();
+    break;
+  case STATE_FACTORY_RESET:
+    handle_state_fac_reset();
+    break;
   }
 }
 
 void Helios::next_mode()
 {
-	cur_mode++;
-	switch (cur_mode) {
+  cur_mode++;
+  switch (cur_mode) {
   case 0:
     break;
   case 1:
