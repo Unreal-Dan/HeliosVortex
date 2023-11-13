@@ -164,9 +164,9 @@ void Helios::next_mode()
 {
   cur_mode = (cur_mode + 1) % 6;
   pat = Pattern(default_args[cur_mode]);
-Colorset set;
-static Random ctx;
-set.randomize(ctx);
+  Colorset set;
+  static Random ctx;
+  set.randomize(ctx);
   pat.setColorset(set);
   pat.init();
   // read mode from storage at cur mode index

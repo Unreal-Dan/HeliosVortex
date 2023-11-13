@@ -10,7 +10,7 @@
 // Max Color Slots
 //
 // The number of slots in a colorset
-#define MAX_COLOR_SLOTS 8
+#define MAX_COLOR_SLOTS 6
 
 // Default Brightness
 //
