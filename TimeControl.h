@@ -39,8 +39,6 @@ public:
   static void delayMilliseconds(uint32_t ms);
 
 private:
-  static void initMCUTime();
-
   // global tick counter
   static uint32_t m_curTick;
   // the last frame timestamp

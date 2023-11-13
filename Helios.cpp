@@ -23,6 +23,7 @@ bool Helios::sleeping = false;
 
 void Helios::init()
 {
+  // initialize the time control and led control
   if (!Time::init()) {
     return;
   }
@@ -66,8 +67,8 @@ void Helios::init()
 }
 
 #ifdef HELIOS_EMBEDDED
+// ISR to call tick 1000 times a second
 ISR(TIM1_COMPA_vect) {
-  // Your ISR code for the 1000 Hz interrupt goes here
   Helios::tick();
 }
 #endif
