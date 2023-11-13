@@ -84,7 +84,6 @@ void Button::update()
 }
 
 #ifdef HELIOS_CLI
-#include <stdio.h>
 void Button::processInput()
 {
   // process input queue from the command line

@@ -67,7 +67,7 @@ void Helios::init()
 #ifdef HELIOS_EMBEDDED
 ISR(TIM1_COMPA_vect) {
   // Your ISR code for the 1000 Hz interrupt goes here
-  loop();
+  Helios::tick();
 }
 #endif
 
@@ -182,8 +182,8 @@ void Helios::handle_state_modes()
   uint16_t mag = (magnitude >= 2) ? (magnitude % 3) : 0;
   // if the button is held for at least 1 second
   if (button.isPressed()) {
-    RGBColor cols[3] = { RGB_CYAN, RGB_YELLOW, RGB_MAGENTA };
-    Led::set(cols[mag]);
+    RGBColor menu_cols[3] = { RGB_CYAN, RGB_YELLOW, RGB_MAGENTA };
+    Led::set(menu_cols[mag]);
   }
   // when released, switch to different state based on hold duration
   if (button.onRelease()) {

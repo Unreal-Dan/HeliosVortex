@@ -1,6 +1,6 @@
 #include "Helios.h"
 
-#ifdef VORTEX_EMBEDDED
+#ifdef HELIOS_EMBEDDED
 int main(int argc, char *argv[])
 {
   Helios::init();
