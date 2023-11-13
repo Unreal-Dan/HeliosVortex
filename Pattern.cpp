@@ -150,7 +150,7 @@ replay:
     break;
   }
 
-  if (m_blinkTimer.alarm() == -1) {
+  if (!m_blinkTimer.alarm()) {
     // no alarm triggered just stay in current state, return and don't transition states
     PRINT_STATE(m_state);
     return;
@@ -206,7 +206,7 @@ void Pattern::beginDash()
 
 void Pattern::nextState(uint8_t timing)
 {
-  m_blinkTimer.init(TIMER_1_ALARM | TIMER_START, timing);
+  m_blinkTimer.init(timing);
   m_state = (PatternState)(m_state + 1);
 }
 
