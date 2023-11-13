@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-class Pattern;
+#include "Pattern.h"
 
 class Helios
 {
@@ -31,7 +31,8 @@ private:
 
   static State cur_state;
   static uint8_t menu_selection;
-  static Pattern *pat;
+  static uint8_t cur_mode;
+  static Pattern pat;
   static bool keepgoing;
   static bool sleeping;
 };

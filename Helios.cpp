@@ -3,8 +3,8 @@
 #include "Helios.h"
 
 #include "ColorConstants.h"
-#include "BasicPattern.h"
 #include "TimeControl.h"
+#include "Pattern.h"
 #include "Button.h"
 #include "Led.h"
 
@@ -15,7 +15,8 @@
 
 Helios::State Helios::cur_state = STATE_MODES;
 uint8_t Helios::menu_selection = 0;
-Pattern *Helios::pat = nullptr;
+uint8_t Helios::cur_mode = 0;
+Pattern Helios::pat;
 bool Helios::keepgoing = true;
 bool Helios::sleeping = false;
 
@@ -31,11 +32,9 @@ void Helios::init()
   // init the button
   button.init();
 
-  PatternArgs tempargs(6, 10);
-  pat = new BasicPattern(tempargs);
   Colorset set = Colorset(RGB_RED, RGB_GREEN, RGB_BLUE);
-  pat->setColorset(set);
-  pat->init();
+  pat.setColorset(set);
+  pat.init();
 
   // if loading the storage fails (corrupted, empty, etc) then load
   // the default values and let them save back to storage naturally later
@@ -133,29 +132,39 @@ void Helios::enterSleep(bool save)
 void Helios::handle_state()
 {
   switch (cur_state) {
-    case STATE_MODES:
-      handle_state_modes();
-      break;
-    case STATE_COLOR_SELECT_HUE:
-    case STATE_COLOR_SELECT_SAT:
-    case STATE_COLOR_SELECT_VAL:
-      handle_state_col_select();
-      break;
-    case STATE_PATTERN_SELECT:
-      handle_state_pat_select();
-      break;
-    case STATE_FACTORY_RESET:
-      handle_state_fac_reset();
-      break;
+	case STATE_MODES:
+		handle_state_modes();
+		break;
+	case STATE_COLOR_SELECT_HUE:
+	case STATE_COLOR_SELECT_SAT:
+	case STATE_COLOR_SELECT_VAL:
+		handle_state_col_select();
+		break;
+	case STATE_PATTERN_SELECT:
+		handle_state_pat_select();
+		break;
+	case STATE_FACTORY_RESET:
+		handle_state_fac_reset();
+		break;
   }
 }
 
 void Helios::next_mode()
 {
-  if (pat) {
-    // destruct global pattern instance
-    delete pat;
-    pat = nullptr;
+	cur_mode++;
+	switch (cur_mode) {
+  case 0:
+    break;
+  case 1:
+    break;
+  case 2:
+    break;
+  case 3:
+    break;
+  case 4:
+    break;
+  case 5:
+    break;
   }
   // read mode from storage at cur mode index
   // instantiate new pattern
@@ -169,11 +178,8 @@ void Helios::handle_state_modes()
     return;
   }
   // just play the current mode
-  if (pat) {
-    pat->play();
-  } else {
-    Led::clear();
-  }
+  pat.play();
+  // check how long the button is held
   uint32_t holdDur = button.holdDuration();
   // show a color based on the hold duration past 200
   // the magnitude will be some value from 0-3 corresponding
