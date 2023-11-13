@@ -17,7 +17,7 @@ void handle_state();
 bool sleeping = false;
 Pattern *pat;
 
-#ifndef CLI_MODE
+#ifndef HELIOS_CLI
 void setup();
 void loop();
 
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
 void setup()
 {
-  if (Time::init()) {
+  if (!Time::init()) {
     return;
   }
   if (!Led::init()) {

@@ -16,7 +16,7 @@ CFLAGS=-O0 -g -Wall -std=c++11
 
 # compiler defines
 DEFINES=\
-	-D CLI_MODE \
+	-D HELIOS_CLI \
 
 # compiler include paths
 INCLUDES=\

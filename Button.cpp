@@ -22,7 +22,7 @@ bool Button::init()
   m_buttonState = check();
   m_releaseCount = !check();
   m_isPressed = m_buttonState;
-#ifndef HELIOS_CLI
+#ifdef HELIOS_EMBEDDED
   // Set pin3 (Port B4) as input
   DDRB &= ~(1 << PB4);
 
