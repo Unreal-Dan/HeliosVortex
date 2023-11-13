@@ -6,7 +6,7 @@
 
 #include "Led.h"
 
-#ifdef VORTEX_EMBEDDED
+#ifdef HELIOS_EMBEDDED
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
 #endif
@@ -41,6 +41,7 @@ void Time::tickClock()
   // tick clock forward
   m_curTick++;
 
+#ifdef HELIOS_CLI
   // the rest of this only runs inside vortexlib because on the duo the tick runs in the
   // tcb timer callback instead of in a busy loop constantly checking microseconds()
   // perform timestep
@@ -65,6 +66,7 @@ void Time::tickClock()
 
   // store current time
   m_prevTime = microseconds();
+#endif
 }
 
 uint32_t Time::microseconds()
@@ -75,17 +77,17 @@ uint32_t Time::microseconds()
   uint64_t us = SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
   return (unsigned long)us;
 #else
-  // TODO: microseconds on attiny85
+  // TODO: microseconds on attiny85 is unnecessary because using 1000mhz ISR
   return 0;
 #endif
 }
 
-#ifdef VORTEX_EMBEDDED
+#ifdef HELIOS_EMBEDDED
 __attribute__ ((noinline))
 #endif
 void Time::delayMicroseconds(uint32_t us)
 {
-#ifdef VORTEX_EMBEDDED
+#ifdef HELIOS_EMBEDDED
 #if F_CPU >= 20000000L
   // for a one-microsecond delay, burn 4 clocks and then return
   __asm__ __volatile__ (

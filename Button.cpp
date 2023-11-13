@@ -1,7 +1,10 @@
 #include "Button.h"
 #include "TimeControl.h"
 
-#define BUTTON_PIN
+#ifdef HELIOS_EMBEDDED
+#include <avr/io.h>
+#define BUTTON_PIN 3
+#endif
 
 // initialize a new button object with a pin number
 bool Button::init()
@@ -19,13 +22,26 @@ bool Button::init()
   m_buttonState = check();
   m_releaseCount = !check();
   m_isPressed = m_buttonState;
+#ifndef HELIOS_CLI
+  DDRB &= ~(1 << PB4);
+
+  // Enable Pin Change Interrupt on the BUTTON pin
+  //GIMSK |= _BV(PCIE);
+  //PCMSK |= _BV(PIN_BUTTON);
+  //sei();  // Enable interrupts
+#endif
   return true;
 }
 
 // directly poll the pin for whether it's pressed right now
 bool Button::check()
 {
-  return false; //digitalRead(BUTTON_PIN) == HIGH;
+#ifdef HELIOS_EMBEDDED
+  return ((PINB & (1 << PB4)) != 0);
+#elif defined(HELIOS_CLI)
+  // TODO: button input in command line mode
+  return false;
+#endif
 }
 
 // poll the button pin and update the state of the button object

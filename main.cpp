@@ -6,10 +6,15 @@
 #include "Button.h"
 #include "Led.h"
 
-void handle_button();
-void handle_state();
-void tick_clock();
+#ifdef HELIOS_EMBEDDED
+#include <avr/sleep.h>
+#include <avr/interrupt.h>
+#endif
 
+void enterSleep(bool save);
+void handle_state();
+
+bool sleeping = false;
 Pattern *pat;
 
 #ifndef CLI_MODE
@@ -31,22 +36,12 @@ int main(int argc, char *argv[])
 
 void setup()
 {
-#ifndef CLI_MODE
-  //// init all the hardware
-  //pinMode(PIN_R, OUTPUT);
-  //pinMode(PIN_G, OUTPUT);
-  //pinMode(PIN_B, OUTPUT);
-  //pinMode(PIN_BUTTON, INPUT);
-
-  //// Enable Pin Change Interrupt on the BUTTON pin
-  //GIMSK |= _BV(PCIE);
-  //PCMSK |= _BV(PIN_BUTTON);
-  //sei();  // Enable interrupts
-
-  //// Set CPU Frequency to 8 MHz
-  //CLKPR = 0x80;  // Enable change
-  //CLKPR = 0x00;  // Change clock division factor to 1 (8 MHz / 1 = 8 MHz)
-#endif
+  if (Time::init()) {
+    return;
+  }
+  if (!Led::init()) {
+    return;
+  }
 
   // init the button
   button.init();
@@ -63,7 +58,33 @@ void setup()
   //if (!load_modes()) {
   //  load_defaults();
   //}
+
+#ifdef HELIOS_EMBEDDED
+  // Set CTC (Clear Timer on Compare Match) mode
+  TCCR1 = (1 << CTC1);
+  // Set prescaler to 8 (CS12 = 1, CS11 = 0, CS10 = 0)
+  TCCR1 |= (1 << CS11);
+  // Set compare match value for 1000 Hz
+  OCR1C = 124;
+  // Enable Timer/Counter 1 Output Compare A Match interrupt
+  TIMSK |= (1 << OCIE1A);
+  // Setup sleep mode for standby
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  // Enable interrupts
+  sei();
+  // Standby indefinitely while the ISR runs ticks
+  while (!sleeping) {
+    sleep_mode();
+  }
+#endif
 }
+
+#ifdef HELIOS_EMBEDDED
+ISR(TIM1_COMPA_vect) {
+  // Your ISR code for the 1000 Hz interrupt goes here
+  loop();
+}
+#endif
 
 void loop()
 {
@@ -83,6 +104,40 @@ void loop()
   // finally tick the clock forward and then sleep till the entire
   // tick duration has been consumed
   Time::tickClock();
+}
+
+void enterSleep(bool save)
+{
+  //if (save) {
+  //  // update the startup mode when going to sleep
+  //  Modes::setStartupMode(Modes::curModeIndex());
+  //  // save anything that hasn't been saved
+  //  Modes::saveStorage();
+  //}
+  // clear all the leds
+  Led::clear();
+  Led::update();
+#ifdef HELIOS_EMBEDDED
+  // init the output pins to prevent any floating pins
+  //clearOutputPins();
+  // delay for a bit to let the mosfet close and leds turn off
+  Time::delayMicroseconds(250);
+  // this is an ISR that runs in the timecontrol system to handle
+  // micros, it will wake the device up periodically
+  TIMSK &= ~(1 << OCIE1A);
+  // Enable wake on interrupt for the button
+  //g_pButton->enableWake();
+  // Set sleep mode to POWER DOWN mode
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  // enable the sleep boo lright before we enter sleep, this will allow
+  // the main loop to break and return
+  sleeping = true;
+  // enter sleep
+  sleep_mode();
+#else
+  // enable the sleep bool
+  sleeping = true;
+#endif
 }
 
 enum helios_state {

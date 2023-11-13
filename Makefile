@@ -66,7 +66,8 @@ CFLAGS = -g \
 	 -D__AVR_ATtiny85__ \
 	 -mmcu=$(AVRDUDE_CHIP) \
 	 -DF_CPU=$(CPU_SPEED) \
-	 -B $(DEVICE_DIR)
+	 -B $(DEVICE_DIR) \
+	 -D HELIOS_EMBEDDED
 
 LDFLAGS = -g \
 	  -Wall \
