@@ -215,20 +215,22 @@ bool Pattern::equals(const Pattern *other)
   if (!other) {
     return false;
   }
-  // compare pattern id
-  if (m_patternID != other->m_patternID) {
-    return false;
-  }
-  // then colorset
+  // compare the colorset
   if (!m_colorset.equals(&other->m_colorset)) {
     return false;
   }
-  // TODO: compare each arg
-  //for (uint8_t i = 0; i < 7; ++i) {
-  //  if (getArg(i) != other->getArg(i)) {
-  //    return false;
-  //  }
-  //}
+  // then compare each arg
+  if (m_onDuration != other->m_onDuration ||
+      m_offDuration != other->m_offDuration ||
+      m_gapDuration != other->m_gapDuration ||
+      m_dashDuration != other->m_dashDuration ||
+      m_groupSize != other->m_groupSize ||
+      m_blendSpeed != other->m_blendSpeed ||
+      m_numFlips != other->m_numFlips) {
+    return false;
+  }
+  // if those match then it's effectively the same
+  // pattern even if anything else is different
   return true;
 }
 
