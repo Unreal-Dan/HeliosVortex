@@ -1,5 +1,6 @@
 #include <stdint.h>
 
+#include "ColorConstants.h"
 #include "BasicPattern.h"
 #include "TimeControl.h"
 #include "Button.h"
@@ -11,23 +12,40 @@ void tick_clock();
 
 Pattern *pat;
 
+#ifndef CLI_MODE
+void setup();
+void loop();
+
+// continue running
+bool keepgoing = true;
+
+int main(int argc, char *argv[])
+{
+  setup();
+  while (keepgoing) {
+    loop();
+  }
+  return 0;
+}
+#endif
+
 void setup()
 {
 #ifndef CLI_MODE
-  // init all the hardware
-  pinMode(PIN_R, OUTPUT);
-  pinMode(PIN_G, OUTPUT);
-  pinMode(PIN_B, OUTPUT);
-  pinMode(PIN_BUTTON, INPUT);
+  //// init all the hardware
+  //pinMode(PIN_R, OUTPUT);
+  //pinMode(PIN_G, OUTPUT);
+  //pinMode(PIN_B, OUTPUT);
+  //pinMode(PIN_BUTTON, INPUT);
 
-  // Enable Pin Change Interrupt on the BUTTON pin
-  GIMSK |= _BV(PCIE);
-  PCMSK |= _BV(PIN_BUTTON);
-  sei();  // Enable interrupts
+  //// Enable Pin Change Interrupt on the BUTTON pin
+  //GIMSK |= _BV(PCIE);
+  //PCMSK |= _BV(PIN_BUTTON);
+  //sei();  // Enable interrupts
 
-  // Set CPU Frequency to 8 MHz
-  CLKPR = 0x80;  // Enable change
-  CLKPR = 0x00;  // Change clock division factor to 1 (8 MHz / 1 = 8 MHz)
+  //// Set CPU Frequency to 8 MHz
+  //CLKPR = 0x80;  // Enable change
+  //CLKPR = 0x00;  // Change clock division factor to 1 (8 MHz / 1 = 8 MHz)
 #endif
 
   // init the button
@@ -97,15 +115,15 @@ void next_mode()
   //pat = Storage::load_pattern(cur_mode++);
 }
 
-void handle_hold()
+void handle_hold(uint32_t magnitude)
 {
-  RGBColor cols[3] = { RGB_CYAN, RGB_YELLOW, RGB_MAGNETA };
+  RGBColor cols[3] = { RGB_CYAN, RGB_YELLOW, RGB_MAGENTA };
   Led::set(cols[magnitude]);
 }
 
-void handle_release()
+void handle_release(uint32_t magnitude)
 {
-  switch (holdDur / 100) {
+  switch (magnitude) {
     case 0:  // 0
     case 1:  // 100
              // cyan
@@ -133,10 +151,10 @@ void handle_state_modes()
   uint16_t magnitude = (holdDur / 100) - 2;
   // if the button is held for at least 1 second
   if (button.isPressed()) {
-    handle_hold();
+    handle_hold(magnitude);
   }
   if (button.onRelease()) {
-    handle_release();
+    handle_release(magnitude);
   }
   // just play the current mode
   if (pat) {

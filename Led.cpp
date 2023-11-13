@@ -76,7 +76,7 @@ void Led::hold(RGBColor col)
 {
   set(col);
   update();
-  //Time::delayMilliseconds(250);
+  Time::delayMilliseconds(250);
 }
 
 void Led::update()

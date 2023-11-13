@@ -11,17 +11,13 @@
 #include <avr/interrupt.h>
 #endif
 
-#if !defined(_WIN32) || defined(WASM)
+#ifdef HELIOS_CLI
 #include <unistd.h>
 #include <time.h>
 uint64_t start = 0;
 // convert seconds and nanoseconds to microseconds
 #define SEC_TO_US(sec) ((sec)*1000000)
 #define NS_TO_US(ns) ((ns)/1000)
-#else
-#include <Windows.h>
-static LARGE_INTEGER tps;
-static LARGE_INTEGER start;
 #endif
 
 // static members
@@ -31,32 +27,8 @@ uint32_t Time::m_prevTime = 0;
 
 bool Time::init()
 {
-#ifdef VORTEX_EMBEDDED
-  // initialize main clock
-#if (F_CPU == 20000000)
-  // No division on clock
-  _PROTECTED_WRITE(CLKCTRL_MCLKCTRLB, 0x00);
-#elif (F_CPU == 10000000)
-  // 20MHz prescaled by 2, Clock DIV2
-  _PROTECTED_WRITE(CLKCTRL_MCLKCTRLB, (CLKCTRL_PEN_bm | CLKCTRL_PDIV_2X_gc));
-#else
-  #error "F_CPU not supported"
-#endif
-  // IVSEL = 1 means Interrupt vectors are placed at the start of the boot section of the Flash
-  // as opposed to the application section of Flash. See 13.5.1
-  _PROTECTED_WRITE(CPUINT_CTRLA, CPUINT_IVSEL_bm);
-#endif
   m_prevTime = microseconds();
   m_curTick = 0;
-#if VARIABLE_TICKRATE == 1
-  m_tickrate = TICKRATE;
-#endif
-#if !defined(_WIN32) || defined(WASM)
-  start = microseconds();
-#else
-  QueryPerformanceFrequency(&tps);
-  QueryPerformanceCounter(&start);
-#endif
   return true;
 }
 
@@ -68,12 +40,6 @@ void Time::tickClock()
 {
   // tick clock forward
   m_curTick++;
-
-#if DEBUG_ALLOCATIONS == 1
-  if ((m_curTick % MS_TO_TICKS(1000)) == 0) {
-    DEBUG_LOGF("Cur Memory: %u (%u)", cur_memory_usage(), cur_memory_usage_background());
-  }
-#endif
 
   // the rest of this only runs inside vortexlib because on the duo the tick runs in the
   // tcb timer callback instead of in a busy loop constantly checking microseconds()
@@ -101,41 +67,17 @@ void Time::tickClock()
   m_prevTime = microseconds();
 }
 
-// the real current time, bypass simulations, used by timers
-uint32_t Time::getRealCurtime()
-{
-  return m_curTick;
-}
-
-uint32_t Time::getTickrate()
-{
-  return TICKRATE;
-}
-
-#if VARIABLE_TICKRATE == 1
-uint32_t Time::millisecondsToTicks(uint32_t ms)
-{
-  // 0ms = 0 ticks
-  if (!ms) {
-    return 0;
-  }
-  // but anything > 0 ms must be no less than 1 tick
-  // otherwise short durations will disappear at low
-  // tickrates
-  uint32_t ticks = (ms * TICKRATE) / 1000;
-  if (!ticks) {
-    return 1;
-  }
-  return ticks;
-}
-#endif
-
 uint32_t Time::microseconds()
 {
+#ifdef HELIOS_CLI
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
   uint64_t us = SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
   return (unsigned long)us;
+#else
+  // TODO: microseconds on attiny85
+  return 0;
+#endif
 }
 
 #ifdef VORTEX_EMBEDDED
@@ -173,26 +115,22 @@ void Time::delayMicroseconds(uint32_t us)
     "brne 1b" : "=w" (us) : "0" (us)  // 2 cycles
   );
   // return = 4 cycles
-#elif defined(_WIN32)
+#else
   uint32_t newtime = microseconds() + us;
   while (microseconds() < newtime) {
     // busy loop
   }
-#else
-  usleep(us);
 #endif
 }
 
 void Time::delayMilliseconds(uint32_t ms)
 {
-#ifdef VORTEX_EMBEDDED
+#ifdef HELIOS_CLI
+  usleep(ms * 1000);
+#else
   // not very accurate
   for (uint16_t i = 0; i < ms; ++i) {
     delayMicroseconds(1000);
   }
-#elif defined(_WIN32)
-  Sleep(ms);
-#else
-  usleep(ms * 1000);
 #endif
 }

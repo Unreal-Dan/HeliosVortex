@@ -29,24 +29,6 @@ public:
   // and exposing in the header probably allows the compiler to optimize away repititive calls
   static uint32_t getCurtime() { return m_curTick; }
 
-  // this ignore simulation time, it's used by timers to make simulations work
-  static uint32_t getRealCurtime();
-
-  // Set tickrate in Ticks Per Second (TPS)
-  // The valid range for this is 1 <= x <= 1000000
-  //
-  // Setting a value of 0 will restore the default
-  //
-  // NOTE: Patterns will not change when this changes, you
-  //       must re-create the pattern for the change to take
-  //       effect. This is done by design to allow the test
-  //       framework to control the speed of patterns.
-  //       See PatternBuilder.cpp for more info.
-  static void setTickrate(uint32_t tickrate = 0);
-
-  // The current tickrate
-  static uint32_t getTickrate();
-
   // Current microseconds since startup, only use this for things like measuring rapid data transfer timings.
   // If you just need to perform regular time checks for a pattern or some logic then use getCurtime() and measure 
   // time in ticks, use the SEC_TO_TICKS() or MS_TO_TICKS() macros to convert timings to measures of ticks for
