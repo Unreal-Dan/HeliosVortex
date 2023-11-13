@@ -5,8 +5,7 @@
 
 #include "HeliosConfig.h"
 
-#define TICKRATE 1000
-
+// macros to convert milliseconds and seconds to measures of ticks
 #define MS_TO_TICKS(ms) (uint32_t)(((uint32_t)(ms) * TICKRATE) / 1000)
 #define SEC_TO_TICKS(s) (uint32_t)((uint32_t)(s) * TICKRATE)
 
@@ -30,7 +29,7 @@ public:
   static uint32_t getCurtime() { return m_curTick; }
 
   // Current microseconds since startup, only use this for things like measuring rapid data transfer timings.
-  // If you just need to perform regular time checks for a pattern or some logic then use getCurtime() and measure 
+  // If you just need to perform regular time checks for a pattern or some logic then use getCurtime() and measure
   // time in ticks, use the SEC_TO_TICKS() or MS_TO_TICKS() macros to convert timings to measures of ticks for
   // purpose of comparing against getCurtime()
   static uint32_t microseconds();

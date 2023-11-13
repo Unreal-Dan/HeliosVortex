@@ -32,8 +32,9 @@ void Helios::init()
   // init the button
   button.init();
 
-  Colorset set = Colorset(RGB_RED, RGB_GREEN, RGB_BLUE);
-  pat.setColorset(set);
+  // initialize pattern as 10on 10off
+  pat = Pattern(10, 10);
+  pat.setColorset(Colorset(RGB_RED, RGB_GREEN, RGB_BLUE));
   pat.init();
 
   // if loading the storage fails (corrupted, empty, etc) then load
@@ -87,7 +88,7 @@ void Helios::tick()
   handle_state();
 
   // render the current led color by sending the data to the leds, this
-  // function is basically just set_color() 
+  // function is basically just set_color()
   Led::update();
 
   // finally tick the clock forward and then sleep till the entire
@@ -151,21 +152,34 @@ void Helios::handle_state()
 
 void Helios::next_mode()
 {
-  cur_mode++;
+  cur_mode = (cur_mode + 1) % 6;
   switch (cur_mode) {
   case 0:
+    pat = Pattern(1);
+    pat.setColorset(Colorset(RGB_RED, RGB_GREEN, RGB_BLUE));
     break;
   case 1:
+    pat = Pattern(3, 4);
+    pat.setColorset(Colorset(RGB_RED, RGB_GREEN));
     break;
   case 2:
+    pat = Pattern(15, 5, 4);
+    pat.setColorset(Colorset(RGB_GREEN, RGB_BLUE));
     break;
   case 3:
+    pat = Pattern(15, 5, 4, 3);
+    pat.setColorset(Colorset(RGB_RED, RGB_BLUE));
     break;
   case 4:
+    pat = Pattern(15, 5, 4, 3, 2);
+    pat.setColorset(Colorset(RGB_BLUE, RGB_YELLOW));
     break;
   case 5:
+    pat = Pattern(15, 5, 4, 3, 2, 1);
+    pat.setColorset(Colorset(RGB_RED, RGB_GREEN, RGB_BLUE));
     break;
   }
+  pat.init();
   // read mode from storage at cur mode index
   // instantiate new pattern
   //pat = Storage::load_pattern(cur_mode++);

@@ -35,14 +35,15 @@ static void printState(PatternState state)
 #define PRINT_STATE(state) // do nothing
 #endif
 
-Pattern::Pattern() :
-  m_onDuration(0),
-  m_offDuration(0),
-  m_gapDuration(0),
-  m_dashDuration(0),
-  m_groupSize(0),
-  m_blendSpeed(0),
-  m_numFlips(0),
+Pattern::Pattern(uint8_t onDur, uint8_t offDur, uint8_t gap,
+          uint8_t dash, uint8_t group, uint8_t blend, uint8_t flips) :
+  m_onDuration(onDur),
+  m_offDuration(offDur),
+  m_gapDuration(gap),
+  m_dashDuration(dash),
+  m_groupSize(group),
+  m_blendSpeed(blend),
+  m_numFlips(flips),
   m_patternID(PATTERN_FIRST),
   m_patternFlags(0),
   m_colorset(),
@@ -54,11 +55,6 @@ Pattern::Pattern() :
   m_flip(0)
 {
 }
-
-//Pattern::Pattern(const PatternArgs &args) :
-//  Pattern()
-//{
-//}
 
 Pattern::~Pattern()
 {
@@ -208,30 +204,6 @@ void Pattern::nextState(uint8_t timing)
   m_state = (PatternState)(m_state + 1);
 }
 
-void Pattern::setArg(uint8_t index, uint8_t value)
-{
-  if (index >= 7) {
-    return;
-  }
-  args[index] = value;
-}
-
-uint8_t Pattern::getArg(uint8_t index) const
-{
-  if (index >= 7) {
-    return 0;
-  }
-  return args[index];
-}
-
-uint8_t &Pattern::argRef(uint8_t index)
-{
-  if (index >= 7) {
-    index = 0;
-  }
-  return args[index];
-}
-
 bool Pattern::equals(const Pattern *other)
 {
   if (!other) {
@@ -245,12 +217,12 @@ bool Pattern::equals(const Pattern *other)
   if (!m_colorset.equals(&other->m_colorset)) {
     return false;
   }
-  // compare each arg
-  for (uint8_t i = 0; i < 7; ++i) {
-    if (getArg(i) != other->getArg(i)) {
-      return false;
-    }
-  }
+  // TODO: compare each arg
+  //for (uint8_t i = 0; i < 7; ++i) {
+  //  if (getArg(i) != other->getArg(i)) {
+  //    return false;
+  //  }
+  //}
   return true;
 }
 

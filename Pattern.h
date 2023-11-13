@@ -5,26 +5,14 @@
 
 #include "Timer.h"
 #include "Patterns.h"
-#include "PatternArgs.h"
-
-#define MAX_PATTERN_ARGS 8
-
-#define PATTERN_FLAGS_NONE  0
-
-// the pattern is a multi-pattern
-#define PATTERN_FLAG_MULTI  (1<<0)
-
-// macro to register args of a pattern
-#define REGISTER_ARG(arg) registerArg((uint8_t)(((uintptr_t)&arg - (uintptr_t)this)));
-
-class ByteStream;
 
 class Pattern
 {
 public:
-  // Pattern is an abstract class
-  Pattern();
-  //Pattern(const PatternArgs &args);
+  // try to not set on duration to 0
+  Pattern(uint8_t onDur = 1, uint8_t offDur = 0, uint8_t gap = 0,
+          uint8_t dash = 0, uint8_t group = 0, uint8_t blend = 0,
+          uint8_t flips = 0);
 
   ~Pattern();
 
@@ -33,11 +21,6 @@ public:
 
   // pure virtual must override the play function
   void play();
-
-  // get or set a single arg
-  void setArg(uint8_t index, uint8_t value);
-  uint8_t getArg(uint8_t index) const;
-  uint8_t &argRef(uint8_t index);
 
   // comparison to other pattern
   // NOTE: That may cause problems because the parameter is still a Pattern *
@@ -62,19 +45,18 @@ public:
   bool isBlend() const { return m_patternID > 5; }
 
 protected:
-  // the parameters of the pattern in order
-  union {
-    uint8_t args[7];
-    struct {
-      uint8_t m_onDuration;
-      uint8_t m_offDuration;
-      uint8_t m_gapDuration;
-      uint8_t m_dashDuration;
-      uint8_t m_groupSize;
-      uint8_t m_blendSpeed;
-      uint8_t m_numFlips;
-    };
-  };
+  // ==================================
+  //  Pattern Parameters
+  uint8_t m_onDuration;
+  uint8_t m_offDuration;
+  uint8_t m_gapDuration;
+  uint8_t m_dashDuration;
+  uint8_t m_groupSize;
+  uint8_t m_blendSpeed;
+  uint8_t m_numFlips;
+
+  // ==================================
+  //  Pattern Members
 
   // the ID of this pattern (set by pattern builder)
   PatternID m_patternID;
