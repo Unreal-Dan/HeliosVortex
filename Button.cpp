@@ -90,7 +90,6 @@ void Button::processInput()
   // process input queue from the command line
   if (m_inputQueue.size() > 0) {
     char command = m_inputQueue.front();
-    printf("Handling %c\n", command);
     m_inputQueue.pop();
     switch (command) {
     case 'c': // click button
