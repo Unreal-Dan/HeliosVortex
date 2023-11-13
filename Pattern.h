@@ -13,7 +13,7 @@ public:
   Pattern(uint8_t onDur = 1, uint8_t offDur = 0, uint8_t gap = 0,
           uint8_t dash = 0, uint8_t group = 0, uint8_t blend = 0,
           uint8_t flips = 0);
-
+  Pattern(const uint8_t *args);
   ~Pattern();
 
   // init the pattern to initial state

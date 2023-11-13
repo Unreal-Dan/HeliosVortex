@@ -5,6 +5,7 @@
 #include "ColorConstants.h"
 #include "TimeControl.h"
 #include "Pattern.h"
+#include "Random.h"
 #include "Button.h"
 #include "Led.h"
 
@@ -150,35 +151,23 @@ void Helios::handle_state()
   }
 }
 
+static const uint8_t default_args[6][7] = {
+  {1, 0, 0, 0, 0, 0, 0},
+  {3, 4, 0, 0, 0, 0, 0},
+  {15, 5, 4, 0, 0, 0, 0},
+  {15, 5, 4, 3, 0, 0, 0},
+  {15, 5, 4, 3, 2, 0, 0},
+  {15, 5, 4, 3, 2, 1, 0}
+};
+
 void Helios::next_mode()
 {
   cur_mode = (cur_mode + 1) % 6;
-  switch (cur_mode) {
-  case 0:
-    pat = Pattern(1);
-    pat.setColorset(Colorset(RGB_RED, RGB_GREEN, RGB_BLUE));
-    break;
-  case 1:
-    pat = Pattern(3, 4);
-    pat.setColorset(Colorset(RGB_RED, RGB_GREEN));
-    break;
-  case 2:
-    pat = Pattern(15, 5, 4);
-    pat.setColorset(Colorset(RGB_GREEN, RGB_BLUE));
-    break;
-  case 3:
-    pat = Pattern(15, 5, 4, 3);
-    pat.setColorset(Colorset(RGB_RED, RGB_BLUE));
-    break;
-  case 4:
-    pat = Pattern(15, 5, 4, 3, 2);
-    pat.setColorset(Colorset(RGB_BLUE, RGB_YELLOW));
-    break;
-  case 5:
-    pat = Pattern(15, 5, 4, 3, 2, 1);
-    pat.setColorset(Colorset(RGB_RED, RGB_GREEN, RGB_BLUE));
-    break;
-  }
+  pat = Pattern(default_args[cur_mode]);
+Colorset set;
+static Random ctx;
+set.randomize(ctx);
+  pat.setColorset(set);
   pat.init();
   // read mode from storage at cur mode index
   // instantiate new pattern
