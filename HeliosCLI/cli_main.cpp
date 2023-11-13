@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "Button.h"
 #include "Led.h"
 
 using namespace std;
@@ -122,26 +123,29 @@ static void parse_options(int argc, char *argv[])
 // read the input from stdin to control the tool
 static bool read_inputs()
 {
-  // check for any inputs on stdin
-  uint32_t numInputs = 0;
-  ioctl(STDIN_FILENO, FIONREAD, &numInputs);
-  // if lockstep mode and there's no new input, don't run a tick
+  // keep track of the number of inputs and only process
+  // one input per tick
+  static uint32_t numInputs = 0;
+  // check for any inputs on stdin if theres no inputs left
   if (!numInputs) {
-    // just wait for input
-    return false;
-  }
-  // otherwise process the next input
-  if (numInputs > 0) {
-    switch (getchar()) {
-      case 'c': // press button
-        //g_pressed = !g_pressed;
-        break;
-      case 'q': // quit
-        keepgoing = false;
-        break;
-      case 'w': // wait
-        break;
+    // this will capture the number of characters on stdin
+    ioctl(STDIN_FILENO, FIONREAD, &numInputs);
+    // if lockstep mode and there's no new input, don't run a tick
+    if (!numInputs) {
+      // just wait for input
+      return false;
     }
+  }
+  // otherwise process the next input if there is one
+  if (numInputs > 0) {
+    numInputs--;
+    char command = getchar();
+    if (command == 'q') {
+      keepgoing = false;
+      return true;
+    }
+    // otherwise just queue up the command
+    button.queueInput(command);
   }
   return true;
 }
@@ -228,6 +232,7 @@ static void print_usage(const char* program_name)
   // the usage for the input strings
   const char *input_usage[] = {
     "\n   c         standard short click",
+    "\n   l         standard long click",
     "\n   w         wait 1 tick",
     "\n   q         quit",
   };

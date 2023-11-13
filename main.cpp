@@ -141,13 +141,19 @@ void enterSleep(bool save)
 }
 
 enum helios_state {
-  STATE_MODES
-
-
+  STATE_MODES,
+  STATE_COLOR_SELECT_HUE,
+  STATE_COLOR_SELECT_SAT,
+  STATE_COLOR_SELECT_VAL,
+  STATE_PATTERN_SELECT,
+  STATE_FACTORY_RESET
 };
 
 helios_state cur_state = STATE_MODES;
 void handle_state_modes();
+void handle_state_col_select();
+void handle_state_pat_select();
+void handle_state_fac_reset();
 
 void handle_state()
 {
@@ -155,7 +161,17 @@ void handle_state()
     case STATE_MODES:
       handle_state_modes();
       break;
-
+    case STATE_COLOR_SELECT_HUE:
+    case STATE_COLOR_SELECT_SAT:
+    case STATE_COLOR_SELECT_VAL:
+      handle_state_col_select();
+      break;
+    case STATE_PATTERN_SELECT:
+      handle_state_pat_select();
+      break;
+    case STATE_FACTORY_RESET:
+      handle_state_fac_reset();
+      break;
   }
 }
 
@@ -164,33 +180,11 @@ void next_mode()
   if (pat) {
     // destruct global pattern instance
     delete pat;
+    pat = nullptr;
   }
   // read mode from storage at cur mode index
   // instantiate new pattern
   //pat = Storage::load_pattern(cur_mode++);
-}
-
-void handle_hold(uint32_t magnitude)
-{
-  RGBColor cols[3] = { RGB_CYAN, RGB_YELLOW, RGB_MAGENTA };
-  Led::set(cols[magnitude]);
-}
-
-void handle_release(uint32_t magnitude)
-{
-  switch (magnitude) {
-    case 0:  // 0
-    case 1:  // 100
-             // cyan
-             // switch to this menu state
-    case 2:  // 200
-             // magenta
-             // switch to this menu state
-    case 3:  // 300
-             // yellow
-             // switch to this menu state
-      break;
-  }
 }
 
 void handle_state_modes()
@@ -199,6 +193,12 @@ void handle_state_modes()
     next_mode();
     return;
   }
+  // just play the current mode
+  if (pat) {
+    pat->play();
+  } else {
+    Led::clear();
+  }
   uint32_t holdDur = button.holdDuration();
   // show a color based on the hold duration past 200
   // the magnitude will be some value from 0-3 corresponding
@@ -206,13 +206,62 @@ void handle_state_modes()
   uint16_t magnitude = (holdDur / 100) - 2;
   // if the button is held for at least 1 second
   if (button.isPressed()) {
-    handle_hold(magnitude);
+    RGBColor cols[3] = { RGB_CYAN, RGB_YELLOW, RGB_MAGENTA };
+    Led::set(cols[magnitude]);
   }
+  // when released, switch to different state based on hold duration
   if (button.onRelease()) {
-    handle_release(magnitude);
+    switch (magnitude) {
+    case 0:  // color select
+      cur_state = STATE_COLOR_SELECT_HUE;
+      break;
+    case 1:  // pat select
+      cur_state = STATE_PATTERN_SELECT;
+      break;
+    case 2:  // fac reset
+      cur_state = STATE_FACTORY_RESET;
+      break;
+    }
   }
-  // just play the current mode
-  if (pat) {
-    pat->play();
+}
+
+RGBColor sat_options[6] = {
+  RGB_WHITE,
+  RGB_WHITE6,
+  RGB_WHITE3,
+  RGB_WHITE1,
+};
+
+uint8_t menu_selection = 0;
+
+void handle_state_col_select()
+{
+  switch (cur_state) {
+  default:
+  case STATE_COLOR_SELECT_HUE:
+    // target hue for changes
+    break;
+  case STATE_COLOR_SELECT_SAT:
+    // target sat for changes
+    break;
+  case STATE_COLOR_SELECT_VAL:
+    // target val for changes
+    break;
   }
+  if (button.onShortClick()) {
+    // next hue/sat/val selection
+    menu_selection++;
+  }
+  if (button.onLongClick()) {
+    // select hue/sat/val
+  }
+  // render current selection
+}
+
+void handle_state_pat_select()
+{
+}
+
+void handle_state_fac_reset()
+{
 }

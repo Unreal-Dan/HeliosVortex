@@ -1,5 +1,9 @@
 #include <stdint.h>
 
+#ifdef HELIOS_CLI
+#include <queue>
+#endif
+
 class Button
 {
 public:
@@ -38,6 +42,26 @@ public:
   // the number of releases
   uint8_t releaseCount() const { return m_releaseCount; }
 
+#ifdef HELIOS_CLI
+  // these will 'inject' a short/long click without actually touching the
+  // button state, it's important that code uses 'onShortClick' or
+  // 'onLongClick' to capture this injected input event. Code that uses
+  // for example: 'button.holdDuration() >= threshold && button.onRelease()'
+  // will never trigger because the injected input event doesn't actually
+  // press the button or change the button state it just sets the 'shortClick'
+  // or 'longClick' values accordingly
+  void doShortClick() { m_shortClick = true; }
+  void doLongClick() { m_longClick = true; }
+
+  // this will actually press down the button, it's your responsibility to wait
+  // for the appropriate number of ticks and then release the button
+  void doPress() { m_buttonState = true; }
+  void doRelease() { m_buttonState = false; }
+
+  // queue up an input event for the button
+  void queueInput(char input) { m_inputQueue.push(input); }
+#endif
+
 private:
   // ========================================
   // state data that is populated each check
@@ -68,6 +92,12 @@ private:
   bool m_shortClick;
   // whether a long click occurred
   bool m_longClick;
+
+#ifdef HELIOS_CLI
+  // an input queue for the button, each tick one even is processed
+  // out of this queue and used to produce input
+  std::queue<char> m_inputQueue;
+#endif
 };
 
 // global button

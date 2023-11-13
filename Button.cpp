@@ -6,6 +6,11 @@
 #define BUTTON_PIN 3
 #endif
 
+#ifdef HELIOS_CLI
+// simulated pin value controlled by CLI
+bool g_pressed = false;
+#endif
+
 // initialize a new button object with a pin number
 bool Button::init()
 {
@@ -40,8 +45,10 @@ bool Button::check()
 #ifdef HELIOS_EMBEDDED
   return ((PINB & (1 << PB4)) != 0);
 #elif defined(HELIOS_CLI)
-  // TODO: button input in command line mode
-  return false;
+  // in CLI mode we directly manipulate the button state
+  // so this api is kinda pointless, because it's used in
+  // update() to do newState = check()
+  return m_buttonState;
 #endif
 }
 
@@ -72,6 +79,25 @@ void Button::update()
   }
   m_shortClick = (m_newRelease && (m_holdDuration <= SHORT_CLICK_THRESHOLD));
   m_longClick = (m_newRelease && (m_holdDuration > SHORT_CLICK_THRESHOLD));
+
+#ifdef HELIOS_CLI
+  // process input queue from the command line
+  if (m_inputQueue.size() > 0) {
+    char command = m_inputQueue.front();
+    m_inputQueue.pop();
+    switch (command) {
+    case 'c': // click button
+      button.doShortClick();
+      break;
+    case 'l': // long click button
+      button.doLongClick();
+      break;
+    case 'w': // wait
+    default:
+      break;
+    }
+  }
+#endif
 }
 
 // global button
