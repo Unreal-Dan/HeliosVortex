@@ -23,6 +23,7 @@ bool Button::init()
   m_releaseCount = !check();
   m_isPressed = m_buttonState;
 #ifndef HELIOS_CLI
+  // Set pin3 (Port B4) as input
   DDRB &= ~(1 << PB4);
 
   // Enable Pin Change Interrupt on the BUTTON pin

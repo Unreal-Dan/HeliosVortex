@@ -9,7 +9,6 @@
 #ifdef VORTEX_EMBEDDED
 #include <avr/sleep.h>
 #include <avr/io.h>
-#include <string.h>
 #endif
 
 #define LED_DATA_PIN  7
