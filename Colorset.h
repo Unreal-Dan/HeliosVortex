@@ -19,12 +19,8 @@ public:
   Colorset(uint8_t numCols, const uint32_t *cols);
   ~Colorset();
 
-  // move constructor
-  Colorset(Colorset &&other) noexcept;
-
   // copy and assignment operators
   Colorset(const Colorset &other);
-  void operator=(const Colorset &other);
 
   // equality operators
   bool operator==(const Colorset &other) const;
@@ -141,11 +137,8 @@ public:
   bool onStart() const;
   bool onEnd() const;
 private:
-  // pre-allocate the palette
-  void initPalette(uint8_t numColors);
-
   // palette of colors
-  RGBColor *m_palette;
+  RGBColor m_palette[MAX_COLOR_SLOTS];
   // the current index, starts at UINT8_MAX so that
   // the very first call to getNext will iterate to 0
   uint8_t m_curIndex;

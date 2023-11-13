@@ -65,11 +65,6 @@ private:
   static uint8_t m_brightness;
   // led color
   static RGBColor m_ledColor;
-
-  // Output PORT register
-  static volatile uint8_t *m_port;
-  // Output PORT bitmask
-  static uint8_t m_pinMask;
 };
 
 #endif
