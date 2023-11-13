@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "Helios.h"
 #include "Button.h"
 #include "Led.h"
 
@@ -26,15 +27,8 @@ bool in_place = false;
 bool lockstep = false;
 bool storage = false;
 
-// continue running
-bool keepgoing = true;
-
 // used to switch terminal to non-blocking and back
 static struct termios orig_term_attr = {0};
-
-// from the other main.cpp
-void setup();
-void loop();
 
 // internal functions
 static void parse_options(int argc, char *argv[]);
@@ -51,20 +45,22 @@ int main(int argc, char *argv[])
   // set the terminal to instantly receive key presses
   set_terminal_nonblocking();
   // run the arduino setup routine
-  setup();
+  Helios::init();
   // loop forever and run the tick routine and other main logic
   uint32_t tick = 0;
-  while (keepgoing) {
+  while (Helios::keepGoing()) {
     // check for any inputs and read the next one
     if (!read_inputs()) {
-      // if no inputs were read, then if lockstep is enabled
-      if (lockstep) {
-        // just keep waiting for an input
-        continue;
-      }
+      // nothing
+    }
+    // if lockstep is enabled, only run logic if the
+    // input queue isn't actually empty
+    if (lockstep && !button.inputQueueSize()) {
+      // just keep waiting for an input
+      continue;
     }
     // run the main loop
-    loop();
+    Helios::tick();
     // render the output of the main loop
     show();
     // iterate tickcount
@@ -140,12 +136,27 @@ static bool read_inputs()
   if (numInputs > 0) {
     numInputs--;
     char command = getchar();
-    if (command == 'q') {
-      keepgoing = false;
-      return true;
+    uint32_t repeatAmount = 1;
+    if (isdigit(command)) {
+      repeatAmount = command - '0';
+      char newc = 0;
+      // read the digits into the repeatAmount
+      while (1) {
+        numInputs--;
+        newc = getchar();
+        if (!isdigit(newc)) {
+          // stop once we reach a non digit
+          break;
+        }
+        // accumulate the digits into the repeat amount
+        repeatAmount = (repeatAmount * 10) + (newc - '0');
+      }
+      command = newc;
     }
-    // otherwise just queue up the command
-    button.queueInput(command);
+    for (uint32_t i = 0; i < repeatAmount; ++i) {
+      // otherwise just queue up the command
+      button.queueInput(command);
+    }
   }
   return true;
 }
@@ -233,6 +244,9 @@ static void print_usage(const char* program_name)
   const char *input_usage[] = {
     "\n   c         standard short click",
     "\n   l         standard long click",
+    "\n   p         press the button and hold",
+    "\n   r         release the button from hold",
+    "\n   t         toggle button press state",
     "\n   w         wait 1 tick",
     "\n   q         quit",
   };

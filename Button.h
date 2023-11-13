@@ -43,6 +43,8 @@ public:
   uint8_t releaseCount() const { return m_releaseCount; }
 
 #ifdef HELIOS_CLI
+  void processInput();
+
   // these will 'inject' a short/long click without actually touching the
   // button state, it's important that code uses 'onShortClick' or
   // 'onLongClick' to capture this injected input event. Code that uses
@@ -50,16 +52,18 @@ public:
   // will never trigger because the injected input event doesn't actually
   // press the button or change the button state it just sets the 'shortClick'
   // or 'longClick' values accordingly
-  void doShortClick() { m_shortClick = true; }
-  void doLongClick() { m_longClick = true; }
+  void doShortClick();
+  void doLongClick();
 
   // this will actually press down the button, it's your responsibility to wait
   // for the appropriate number of ticks and then release the button
-  void doPress() { m_buttonState = true; }
-  void doRelease() { m_buttonState = false; }
+  void doPress();
+  void doRelease();
+  void doToggle();
 
   // queue up an input event for the button
-  void queueInput(char input) { m_inputQueue.push(input); }
+  void queueInput(char input);
+  uint32_t inputQueueSize() const;
 #endif
 
 private:
@@ -97,6 +101,8 @@ private:
   // an input queue for the button, each tick one even is processed
   // out of this queue and used to produce input
   std::queue<char> m_inputQueue;
+  // the virtual pin state
+  bool m_pinState;
 #endif
 };
 
