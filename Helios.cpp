@@ -203,7 +203,7 @@ void Helios::handle_state_modes()
   // if the button is held for at least 1 second
   if (Button::isPressed()) {
     const RGBColor menu_cols[4] = { RGB_OFF, RGB_CYAN, RGB_YELLOW, RGB_MAGENTA };
-    Led::set(menu_cols[]);
+    Led::set(menu_cols[magnitude]);
   }
   //State next_state = STATE_MODES;
   // when released, switch to different state based on hold duration
