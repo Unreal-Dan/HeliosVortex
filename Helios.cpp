@@ -163,12 +163,14 @@ static const uint8_t default_args[6][7] = {
 
 void Helios::next_mode()
 {
-  cur_mode = (cur_mode + 1) % 6;
-  pat = Pattern(default_args[cur_mode]);
-  Colorset set;
-  static Random ctx;
-  set.randomize(ctx);
-  pat.setColorset(set);
+  //cur_mode = (cur_mode + 1) % 6;
+  //pat = Pattern(default_args[cur_mode]);
+  //Colorset set;
+  //static Random ctx;
+  //set.randomize(ctx);
+  static int i = 1;
+  pat = Pattern(i++, 1);
+  pat.setColorset(Colorset(RGB_RED, RGB_GREEN, RGB_BLUE));
   pat.init();
   // read mode from storage at cur mode index
   // instantiate new pattern
@@ -189,15 +191,18 @@ void Helios::handle_state_modes()
   // the magnitude will be some value from 0-3 corresponding
   // to the holdDurations of 200 to 500
   uint16_t magnitude = (holdDur / 100);
-  uint16_t mag = (magnitude >= 2) ? (magnitude % 3) : 0;
   // if the button is held for at least 1 second
   if (button.isPressed()) {
-    RGBColor menu_cols[3] = { RGB_CYAN, RGB_YELLOW, RGB_MAGENTA };
-    Led::set(menu_cols[mag]);
+    const RGBColor menu_cols[4] = { RGB_OFF, RGB_CYAN, RGB_YELLOW, RGB_MAGENTA };
+    if (magnitude > 3) {
+      magnitude = 0;
+    }
+    Led::set(menu_cols[magnitude]);
   }
+  //State next_state = STATE_MODES;
   // when released, switch to different state based on hold duration
   if (button.onRelease()) {
-    switch (mag) {
+    switch (magnitude) {
     case 0:  // color select
       cur_state = STATE_COLOR_SELECT_HUE;
       break;
@@ -206,6 +211,11 @@ void Helios::handle_state_modes()
       break;
     case 2:  // fac reset
       cur_state = STATE_FACTORY_RESET;
+      break;
+    case 3:  // conjure mode
+      cur_state = STATE_FACTORY_RESET;
+      break;
+    default: // hold past
       break;
     }
   }
