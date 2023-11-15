@@ -196,11 +196,14 @@ void Helios::handle_state_modes()
   // show a color based on the hold duration past 200
   // the magnitude will be some value from 0-3 corresponding
   // to the holdDurations of 200 to 500
-  uint16_t magnitude = (holdDur / 100);
+  uint16_t magnitude = (holdDur / 1000);
+  if (magnitude >= 4) {
+    magnitude = 0;
+  }
   // if the button is held for at least 1 second
   if (Button::isPressed()) {
     const RGBColor menu_cols[4] = { RGB_OFF, RGB_CYAN, RGB_YELLOW, RGB_MAGENTA };
-    Led::set(menu_cols[magnitude % 4]);
+    Led::set(menu_cols[]);
   }
   //State next_state = STATE_MODES;
   // when released, switch to different state based on hold duration

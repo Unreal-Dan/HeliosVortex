@@ -20,6 +20,6 @@
 // Tickrate
 //
 // The number of engine ticks per second
-#define TICKRATE 10
+#define TICKRATE 1000
 
 #endif

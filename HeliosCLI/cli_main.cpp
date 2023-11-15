@@ -162,8 +162,8 @@ static void show()
 {
   string out;
   if (in_place) {
-    // this resets the cursor back to the beginning of the line and moves it up 1 line
-    out += "\33[2K\033[1A\r";
+    // this resets the cursor back to the beginning of the line
+    out += "\r";
   }
   if (output_type == OUTPUT_TYPE_COLOR) {
     out += "\x1B[0m["; // opening |
