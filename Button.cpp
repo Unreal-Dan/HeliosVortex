@@ -10,6 +10,28 @@
 #include "Helios.h"
 #endif
 
+// static members of Button
+uint32_t Button::m_pressTime = 0;
+uint32_t Button::m_releaseTime = 0;
+uint32_t Button::m_holdDuration = 0;
+uint32_t Button::m_releaseDuration = 0;
+uint8_t Button::m_releaseCount = 0;
+bool Button::m_buttonState = false;
+bool Button::m_newPress = false;
+bool Button::m_newRelease = false;
+bool Button::m_isPressed = false;
+bool Button::m_shortClick = false;
+bool Button::m_longClick = false;
+
+#ifdef HELIOS_CLI
+// an input queue for the button, each tick one even is processed
+// out of this queue and used to produce input
+std::queue<char> Button::m_inputQueue;
+// the virtual pin state
+bool Button::m_pinState = false;
+#endif
+
+
 // initialize a new button object with a pin number
 bool Button::init()
 {
@@ -47,9 +69,8 @@ bool Button::check()
 #ifdef HELIOS_EMBEDDED
   return ((PINB & (1 << PB4)) != 0);
 #elif defined(HELIOS_CLI)
-  // in CLI mode we directly manipulate the button state
-  // so this api is kinda pointless, because it's used in
-  // update() to do newState = check()
+  // then just return the pin state as-is, the input event may have
+  // adjusted this value
   return m_pinState;
 #endif
 }
@@ -57,9 +78,14 @@ bool Button::check()
 // poll the button pin and update the state of the button object
 void Button::update()
 {
+#ifdef HELIOS_CLI
+  // process any pre-input events in the queue
+  bool processed_pre = processPreInput();
+#endif
+
+  bool newButtonState = check();
   m_newPress = false;
   m_newRelease = false;
-  bool newButtonState = check();
   if (newButtonState != m_buttonState) {
     m_buttonState = newButtonState;
     m_isPressed = m_buttonState;
@@ -81,39 +107,70 @@ void Button::update()
   }
   m_shortClick = (m_newRelease && (m_holdDuration <= SHORT_CLICK_THRESHOLD));
   m_longClick = (m_newRelease && (m_holdDuration > SHORT_CLICK_THRESHOLD));
+
+#ifdef HELIOS_CLI
+  // if there was no pre-input event this tick, process a post input event
+  // to ensure there is only one event per tick processed
+  if (!processed_pre) {
+    processPostInput();
+  }
+#endif
 }
 
 #ifdef HELIOS_CLI
-void Button::processInput()
+bool Button::processPreInput()
 {
-  // process input queue from the command line
-  if (m_inputQueue.size() > 0) {
-    char command = m_inputQueue.front();
-    m_inputQueue.pop();
-    switch (command) {
-    case 'c': // click button
-      button.doShortClick();
-      break;
-    case 'l': // long click button
-      button.doLongClick();
-      break;
-    case 'p': // press
-      button.doPress();
-      break;
-    case 'r': // release
-      button.doRelease();
-      break;
-    case 't': // toggle
-      button.doToggle();
-      break;
-    case 'q': // quit
-      Helios::terminate();
-      break;
-    case 'w': // wait
-    default:
-      break;
-    }
+  if (!m_inputQueue.size()) {
+    return false;
   }
+  char command = m_inputQueue.front();
+  switch (command) {
+  case 'p': // press
+    Button::doPress();
+    break;
+  case 'r': // release
+    Button::doRelease();
+    break;
+  case 't': // toggle
+    Button::doToggle();
+    break;
+  case 'q': // quit
+    Helios::terminate();
+    break;
+  case 'w': // wait
+    // wait is pre input I guess
+    break;
+  default:
+    // return here! do not pop the queue
+    // do not process post input events
+    return false;
+  }
+  // now pop whatever pre-input command was processed
+  m_inputQueue.pop();
+  return true;
+}
+
+bool Button::processPostInput()
+{
+  if (!m_inputQueue.size()) {
+    // probably processed the pre-input event already
+    return false;
+  }
+  // process input queue from the command line
+  char command = m_inputQueue.front();
+  switch (command) {
+  case 'c': // click button
+    Button::doShortClick();
+    break;
+  case 'l': // long click button
+    Button::doLongClick();
+    break;
+  default:
+    // should never happen
+    return false;
+  }
+  m_inputQueue.pop();
+  return true;
 }
 
 void Button::doShortClick()
@@ -131,19 +188,16 @@ void Button::doLongClick()
 void Button::doPress()
 {
   m_pinState = true;
-  update();
 }
 
 void Button::doRelease()
 {
   m_pinState = false;
-  update();
 }
 
 void Button::doToggle()
 {
   m_pinState = !m_pinState;
-  update();
 }
 
 // queue up an input event for the button
@@ -152,7 +206,7 @@ void Button::queueInput(char input)
   m_inputQueue.push(input);
 }
 
-uint32_t Button::inputQueueSize() const
+uint32_t Button::inputQueueSize()
 {
   return m_inputQueue.size();
 }

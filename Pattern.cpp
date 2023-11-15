@@ -44,7 +44,6 @@ Pattern::Pattern(uint8_t onDur, uint8_t offDur, uint8_t gap,
   m_groupSize(group),
   m_blendSpeed(blend),
   m_numFlips(flips),
-  m_patternID(PATTERN_FIRST),
   m_patternFlags(0),
   m_colorset(),
   m_groupCounter(0),
@@ -56,9 +55,9 @@ Pattern::Pattern(uint8_t onDur, uint8_t offDur, uint8_t gap,
 {
 }
 
-Pattern::Pattern(const uint8_t *args) :
-  Pattern(args[0], args[1], args[2],
-      args[3], args[4], args[5], args[6])
+Pattern::Pattern(const PatternArgs &args) :
+  Pattern(args.on_dur, args.off_dur, args.gap_dur,
+      args.dash_dur, args.group_size, args.blend_speed, args.num_flips)
 {
 }
 

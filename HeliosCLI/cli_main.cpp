@@ -50,12 +50,10 @@ int main(int argc, char *argv[])
   uint32_t tick = 0;
   while (Helios::keepGoing()) {
     // check for any inputs and read the next one
-    if (!read_inputs()) {
-      // nothing
-    }
+    read_inputs();
     // if lockstep is enabled, only run logic if the
     // input queue isn't actually empty
-    if (lockstep && !button.inputQueueSize()) {
+    if (lockstep && !Button::inputQueueSize()) {
       // just keep waiting for an input
       continue;
     }
@@ -126,9 +124,7 @@ static bool read_inputs()
   if (!numInputs) {
     // this will capture the number of characters on stdin
     ioctl(STDIN_FILENO, FIONREAD, &numInputs);
-    // if lockstep mode and there's no new input, don't run a tick
     if (!numInputs) {
-      // just wait for input
       return false;
     }
   }
@@ -155,7 +151,7 @@ static bool read_inputs()
     }
     for (uint32_t i = 0; i < repeatAmount; ++i) {
       // otherwise just queue up the command
-      button.queueInput(command);
+      Button::queueInput(command);
     }
   }
   return true;

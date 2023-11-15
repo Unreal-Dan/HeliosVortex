@@ -4,6 +4,7 @@
 
 #include "ColorConstants.h"
 #include "TimeControl.h"
+#include "Storage.h"
 #include "Pattern.h"
 #include "Random.h"
 #include "Button.h"
@@ -16,35 +17,47 @@
 
 Helios::State Helios::cur_state = STATE_MODES;
 uint8_t Helios::menu_selection = 0;
-uint8_t Helios::cur_mode = 0;
+uint8_t Helios::cur_mode = 0xFF;
+PatternArgs Helios::default_args[6] = {
+  {1, 0, 0, 0, 0, 0, 0},
+  {3, 4, 0, 0, 0, 0, 0},
+  {15, 5, 4, 0, 0, 0, 0},
+  {15, 5, 4, 3, 0, 0, 0},
+  {15, 5, 4, 3, 2, 0, 0},
+  {15, 5, 4, 3, 2, 1, 0},
+};
+Colorset Helios::default_colorsets[6] = {
+  { RGB_RED, RGB_GREEN, RGB_BLUE },
+  { RGB_RED, RGB_BLUE },
+  { RGB_RED, RGB_BLUE },
+  { RGB_RED, RGB_BLUE },
+  { RGB_RED, RGB_BLUE },
+  { RGB_RED, RGB_BLUE },
+};
 Pattern Helios::pat;
 bool Helios::keepgoing = true;
 bool Helios::sleeping = false;
 
-void Helios::init()
+bool Helios::init()
 {
   // initialize the time control and led control
   if (!Time::init()) {
-    return;
+    return false;
   }
   if (!Led::init()) {
-    return;
+    return false;
+  }
+  if (!Storage::init()) {
+    return false;
   }
 
   // init the button
-  button.init();
+  if (!Button::init()) {
+    return false;
+  }
 
   // initialize pattern as 10on 10off
-  pat = Pattern(10, 10);
-  pat.setColorset(Colorset(RGB_RED, RGB_GREEN, RGB_BLUE));
-  pat.init();
-
-  // if loading the storage fails (corrupted, empty, etc) then load
-  // the default values and let them save back to storage naturally later
-  // you don't need to wipe the storage at init for any reason really
-  //if (!load_modes()) {
-  //  load_defaults();
-  //}
+  next_mode();
 
 #ifdef HELIOS_EMBEDDED
   // Set CTC (Clear Timer on Compare Match) mode
@@ -64,6 +77,7 @@ void Helios::init()
     sleep_mode();
   }
 #endif
+  return true;
 }
 
 #ifdef HELIOS_EMBEDDED
@@ -77,12 +91,7 @@ void Helios::tick()
 {
   // sample the button and re-calculate all button globals
   // the button globals should not change anywhere else
-  button.update();
-
-  // in CLI mode process any input events after polling the button
-#ifdef HELIOS_CLI
-  button.processInput();
-#endif
+  Button::update();
 
   // handle the current state of the system, ie whatever state
   // we're in we check for the appropriate input events for that
@@ -146,76 +155,71 @@ void Helios::handle_state()
   case STATE_PATTERN_SELECT:
     handle_state_pat_select();
     break;
-  case STATE_FACTORY_RESET:
-    handle_state_fac_reset();
+  case STATE_CONJURE_MODE:
+    handle_state_conjure_mode();
+    break;
+  case STATE_SLEEP:
     break;
   }
 }
 
-static const uint8_t default_args[6][7] = {
-  {1, 0, 0, 0, 0, 0, 0},
-  {3, 4, 0, 0, 0, 0, 0},
-  {15, 5, 4, 0, 0, 0, 0},
-  {15, 5, 4, 3, 0, 0, 0},
-  {15, 5, 4, 3, 2, 0, 0},
-  {15, 5, 4, 3, 2, 1, 0}
-};
-
 void Helios::next_mode()
 {
-  //cur_mode = (cur_mode + 1) % 6;
-  //pat = Pattern(default_args[cur_mode]);
-  //Colorset set;
-  //static Random ctx;
-  //set.randomize(ctx);
-  static int i = 1;
-  pat = Pattern(i++, 1);
-  pat.setColorset(Colorset(RGB_RED, RGB_GREEN, RGB_BLUE));
+  // increment current mode and wrap around
+  cur_mode = (uint8_t)(cur_mode + 1) % 6;
+  // read pattern from storage at cur mode index
+  if (!Storage::read(cur_mode, pat)) {
+    // and just initialize default if it cannot be read
+    set_default(cur_mode);
+  }
+  // then re-initialize the pattern
   pat.init();
-  // read mode from storage at cur mode index
-  // instantiate new pattern
-  //pat = Storage::load_pattern(cur_mode++);
+}
+
+void Helios::set_default(uint8_t default_num)
+{
+  pat = Pattern(default_args[default_num]);
+  pat.setColorset(default_colorsets[default_num]);
+  // don't forget to init the pattern!
 }
 
 void Helios::handle_state_modes()
 {
-  if (button.onShortClick()) {
+  if (Button::onShortClick()) {
     next_mode();
     return;
   }
   // just play the current mode
   pat.play();
   // check how long the button is held
-  uint32_t holdDur = button.holdDuration();
+  uint32_t holdDur = Button::holdDuration();
   // show a color based on the hold duration past 200
   // the magnitude will be some value from 0-3 corresponding
   // to the holdDurations of 200 to 500
   uint16_t magnitude = (holdDur / 100);
   // if the button is held for at least 1 second
-  if (button.isPressed()) {
+  if (Button::isPressed()) {
     const RGBColor menu_cols[4] = { RGB_OFF, RGB_CYAN, RGB_YELLOW, RGB_MAGENTA };
-    if (magnitude > 3) {
-      magnitude = 0;
-    }
-    Led::set(menu_cols[magnitude]);
+    Led::set(menu_cols[magnitude % 4]);
   }
   //State next_state = STATE_MODES;
   // when released, switch to different state based on hold duration
-  if (button.onRelease()) {
+  if (Button::onRelease()) {
     switch (magnitude) {
-    case 0:  // color select
+    case 0:  // off 0-100 ms
+      cur_state = STATE_SLEEP;
+      break;
+    case 1:  // color select 100-200 ms
       cur_state = STATE_COLOR_SELECT_HUE;
       break;
-    case 1:  // pat select
+    case 2:  // pat select 200-300 ms
       cur_state = STATE_PATTERN_SELECT;
       break;
-    case 2:  // fac reset
-      cur_state = STATE_FACTORY_RESET;
+    case 3:  // conjure mode 300-400 ms
+      cur_state = STATE_CONJURE_MODE;
       break;
-    case 3:  // conjure mode
-      cur_state = STATE_FACTORY_RESET;
-      break;
-    default: // hold past
+    default: // hold past 400+ ms
+      // do nothing
       break;
     }
   }
@@ -241,11 +245,11 @@ void Helios::handle_state_col_select()
       // target val for changes
       break;
   }
-  if (button.onShortClick()) {
+  if (Button::onShortClick()) {
     // next hue/sat/val selection
     menu_selection++;
   }
-  if (button.onLongClick()) {
+  if (Button::onLongClick()) {
     // select hue/sat/val
   }
   // render current selection
@@ -255,6 +259,6 @@ void Helios::handle_state_pat_select()
 {
 }
 
-void Helios::handle_state_fac_reset()
+void Helios::handle_state_conjure_mode()
 {
 }
