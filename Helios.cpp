@@ -56,7 +56,7 @@ bool Helios::init()
     return false;
   }
 
-  // initialize pattern as 10on 10off
+  // iterate to the next mode (or first mode in this case)
   next_mode();
 
 #ifdef HELIOS_EMBEDDED
