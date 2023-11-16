@@ -8,6 +8,7 @@
 
 #ifdef HELIOS_CLI
 #include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #define STORAGE_FILENAME "Helios.storage"
 #endif
@@ -17,10 +18,13 @@
 
 bool Storage::init()
 {
+#ifdef HELIOS_CLI
+  unlink(STORAGE_FILENAME);
+#endif
   return true;
 }
 
-bool Storage::read(uint8_t slot, Pattern &pat)
+bool Storage::read_pattern(uint8_t slot, Pattern &pat)
 {
 #ifdef HELIOS_EMBEDDED
   for (uint8_t i = 0; i < SLOT_SIZE; ++i) {
@@ -41,20 +45,59 @@ bool Storage::read(uint8_t slot, Pattern &pat)
   return true;
 }
 
-bool Storage::write(uint8_t slot, const Pattern &pat)
+bool Storage::write_pattern(uint8_t slot, const Pattern &pat)
 {
 #ifdef HELIOS_EMBEDDED
   for (uint8_t i = 0; i < SLOT_SIZE; ++i) {
     write_byte(slot + i, ((uint8_t *)&pat)[i]);
   }
 #elif defined(HELIOS_CLI)
-  FILE *f = fopen(STORAGE_FILENAME, "w");
+  FILE *f = fopen(STORAGE_FILENAME, "a");
   if (!f) {
     return false;
   }
   long offset = (slot * SLOT_SIZE);
   fseek(f, offset, SEEK_SET);
   if (!fwrite((void *)&pat, sizeof(char), SLOT_SIZE, f)) {
+    return false;
+  }
+  fclose(f);
+#endif
+  return true;
+}
+
+
+bool Storage::read_config(uint8_t index, uint8_t &val)
+{
+#ifdef HELIOS_EMBEDDED
+  val = read_byte(255 - index);
+#elif defined(HELIOS_CLI)
+  FILE *f = fopen(STORAGE_FILENAME, "r");
+  if (!f) {
+    return false;
+  }
+  long offset = 255 - index;
+  fseek(f, offset, SEEK_SET);
+  if (!fread((void *)&val, sizeof(char), 1, f)) {
+    return false;
+  }
+  fclose(f);
+#endif
+  return true;
+}
+
+bool Storage::write_config(uint8_t index, uint8_t val)
+{
+#ifdef HELIOS_EMBEDDED
+  write_byte(255 - index, val);
+#elif defined(HELIOS_CLI)
+  FILE *f = fopen(STORAGE_FILENAME, "a");
+  if (!f) {
+    return false;
+  }
+  long offset = 255 - index;
+  fseek(f, offset, SEEK_SET);
+  if (!fwrite((void *)&val, sizeof(char), 1, f)) {
     return false;
   }
   fclose(f);

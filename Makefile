@@ -100,7 +100,7 @@ OBJS = $(SRCS:.cpp=.o)
 DFILES = $(SRCS:.cpp=.d)
 
 # Target name
-TARGET = vortex
+TARGET = helios
 
 all: $(TARGET).hex
 	$(OBJDUMP) --disassemble --source --line-numbers --demangle --section=.text $(TARGET).elf > $(TARGET).lst

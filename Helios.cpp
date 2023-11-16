@@ -19,28 +19,16 @@
 #include <stdio.h>
 #endif
 
+#include <stdlib.h>
+
 Helios::State Helios::cur_state = STATE_MODES;
+Helios::Flags Helios::global_flags = FLAG_NONE;
 uint8_t Helios::menu_selection = 0;
 uint8_t Helios::cur_mode = 0xFF;
+uint8_t Helios::selected_slot = 0;
 uint8_t Helios::selected_base_hue = 0;
 uint8_t Helios::selected_hue = 0;
 uint8_t Helios::selected_sat = 0;
-PatternArgs Helios::default_args[6] = {
-  {1, 0, 0, 0, 0, 0, 0},
-  {3, 4, 0, 0, 0, 0, 0},
-  {15, 5, 4, 0, 0, 0, 0},
-  {15, 5, 4, 3, 0, 0, 0},
-  {15, 5, 4, 3, 2, 0, 0},
-  {15, 5, 4, 3, 2, 1, 0},
-};
-Colorset Helios::default_colorsets[6] = {
-  { RGB_RED, RGB_GREEN, RGB_BLUE },
-  { RGB_RED, RGB_BLUE },
-  { RGB_RED, RGB_BLUE },
-  { RGB_RED, RGB_BLUE },
-  { RGB_RED, RGB_BLUE },
-  { RGB_RED, RGB_BLUE },
-};
 Pattern Helios::pat;
 bool Helios::keepgoing = true;
 bool Helios::sleeping = false;
@@ -57,10 +45,21 @@ bool Helios::init()
   if (!Storage::init()) {
     return false;
   }
-
-  // init the button
   if (!Button::init()) {
     return false;
+  }
+
+  // read the global flags from index 0 config
+  Storage::read_config(0, (uint8_t &)global_flags);
+  if (has_flag(FLAG_CONJURE)) {
+    // set the current mode to the stored mode, which will actually
+    // be the target mode minus 1 so that next_mode will iterate to
+    // the correct target mode
+    Storage::read_config(1, cur_mode);
+  }
+
+  if (has_flag(FLAG_LOCKED)) {
+    // go back to sleep?
   }
 
   // iterate to the next mode (or first mode in this case)
@@ -114,7 +113,7 @@ void Helios::tick()
   Time::tickClock();
 }
 
-void Helios::enterSleep(bool save)
+void Helios::enter_sleep(bool save)
 {
   //if (save) {
   //  // update the startup mode when going to sleep
@@ -125,6 +124,7 @@ void Helios::enterSleep(bool save)
   // clear all the leds
   Led::clear();
   Led::update();
+  cur_state = STATE_SLEEP;
 #ifdef HELIOS_EMBEDDED
   // init the output pins to prevent any floating pins
   //clearOutputPins();
@@ -154,6 +154,7 @@ void Helios::handle_state()
   case STATE_MODES:
     handle_state_modes();
     break;
+  case STATE_COLOR_SELECT_SLOT:
   case STATE_COLOR_SELECT_QUADRANT:
   case STATE_COLOR_SELECT_HUE:
   case STATE_COLOR_SELECT_SAT:
@@ -167,6 +168,13 @@ void Helios::handle_state()
     handle_state_conjure_mode();
     break;
   case STATE_SLEEP:
+#ifdef HELIOS_CLI
+    // simulate sleep in helios CLI
+    if (Button::onPress()) {
+      // wakeup
+      sleeping = false;
+    }
+#endif
     break;
   }
 }
@@ -176,25 +184,22 @@ void Helios::next_mode()
   // increment current mode and wrap around
   cur_mode = (uint8_t)(cur_mode + 1) % 6;
   // read pattern from storage at cur mode index
-  if (!Storage::read(cur_mode, pat)) {
+  if (!Storage::read_pattern(cur_mode, pat)) {
     // and just initialize default if it cannot be read
-    set_default(cur_mode);
+    Patterns::make_default(cur_mode, pat);
   }
   // then re-initialize the pattern
   pat.init();
 }
 
-void Helios::set_default(uint8_t default_num)
-{
-  pat = Pattern(default_args[default_num]);
-  pat.setColorset(default_colorsets[default_num]);
-  // don't forget to init the pattern!
-}
-
 void Helios::handle_state_modes()
 {
   if (Button::onShortClick()) {
-    next_mode();
+    if (has_flag(FLAG_CONJURE)) {
+      enter_sleep(false);
+    } else {
+      next_mode();
+    }
     return;
   }
   // just play the current mode
@@ -204,38 +209,92 @@ void Helios::handle_state_modes()
   // show a color based on the hold duration past 200
   // the magnitude will be some value from 0-3 corresponding
   // to the holdDurations of 200 to 500
-  uint16_t magnitude = (holdDur / 1000);
+  uint16_t magnitude = (holdDur / MENU_HOLD_TIME);
   if (magnitude >= 4) {
     magnitude = 0;
   }
   // if the button is held for at least 1 second
   if (Button::isPressed()) {
-    const RGBColor menu_cols[4] = { RGB_OFF, RGB_CYAN, RGB_YELLOW, RGB_MAGENTA };
+    const RGBColor menu_cols[4] = { RGB_OFF, RGB_CYAN, RGB_MAGENTA, RGB_YELLOW };
     Led::set(menu_cols[magnitude]);
   }
   //State next_state = STATE_MODES;
   // when released, switch to different state based on hold duration
   if (Button::onRelease()) {
     switch (magnitude) {
-    case 0:  // off 0-100 ms
+    case 0:  // off
       cur_state = STATE_SLEEP;
       break;
-    case 1:  // color select 100-200 ms
-      cur_state = STATE_COLOR_SELECT_QUADRANT;
+    case 1:  // color select
+      cur_state = STATE_COLOR_SELECT_SLOT;
       // use the nice hue to rgb rainbow
       g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
       break;
-    case 2:  // pat select 200-300 ms
+    case 2:  // pat select
       cur_state = STATE_PATTERN_SELECT;
       break;
-    case 3:  // conjure mode 300-400 ms
+    case 3:  // conjure mode
       cur_state = STATE_CONJURE_MODE;
       break;
-    default: // hold past 400+ ms
+    default: // hold past
       // do nothing
       break;
     }
   }
+}
+
+void Helios::handle_state_col_select()
+{
+  if (Button::onShortClick()) {
+    // next hue/sat/val selection
+    uint8_t num_menus = 4;
+    if (cur_state == STATE_COLOR_SELECT_SLOT) {
+      num_menus = pat.colorset().numColors();
+    } else if (cur_state == STATE_COLOR_SELECT_QUADRANT) {
+      num_menus = 6;
+    }
+    menu_selection = (menu_selection + 1) % num_menus;
+  }
+  switch (cur_state) {
+  default:
+  case STATE_COLOR_SELECT_SLOT:
+    // pick the target colorset slot
+    handle_state_col_select_slot();
+    break;
+  case STATE_COLOR_SELECT_QUADRANT:
+    // pick the hue quadrant
+    handle_state_col_select_quadrant();
+    break;
+  case STATE_COLOR_SELECT_HUE:
+    // target hue for changes
+    handle_state_col_select_hue();
+    break;
+  case STATE_COLOR_SELECT_SAT:
+    // target sat for changes
+    handle_state_col_select_sat();
+    break;
+  case STATE_COLOR_SELECT_VAL:
+    // target val for changes
+    handle_state_col_select_val();
+    break;
+  }
+  if (Button::onLongClick()) {
+    if (cur_state == STATE_COLOR_SELECT_VAL) {
+      cur_state = STATE_MODES;
+    } else {
+      cur_state = (State)(cur_state + 1);
+    }
+    menu_selection = 0;
+  }
+}
+
+void Helios::handle_state_col_select_slot()
+{
+  if (Button::onLongClick()) {
+    selected_slot = menu_selection;
+  }
+  // render current selection
+  Led::set(pat.colorset().get(menu_selection));
 }
 
 void Helios::handle_state_col_select_quadrant()
@@ -250,7 +309,6 @@ void Helios::handle_state_col_select_quadrant()
       // return
     } else {
       selected_base_hue = hue;
-      menu_selection = 0;
     }
   }
   // default col1/col2 to off and white for the first two options
@@ -296,51 +354,12 @@ void Helios::handle_state_col_select_val()
   // use the nice hue to rgb rainbow
   if (Button::onLongClick()) {
     // change the current patterns color
-    pat.colorset().set(0, targetCol);
+    pat.colorset().set(selected_slot, targetCol);
     // restore hsv to rgb algorithm type, done color selection
     g_hsv_rgb_alg = HSV_TO_RGB_GENERIC;
   }
   // render current selection
   Led::set(targetCol);
-}
-
-void Helios::handle_state_col_select()
-{
-  if (Button::onShortClick()) {
-    // next hue/sat/val selection
-    uint8_t num_menus = 4;
-    if (cur_state == STATE_COLOR_SELECT_QUADRANT) {
-      num_menus = 6;
-    }
-    menu_selection = (menu_selection + 1) % num_menus;
-  }
-  switch (cur_state) {
-  default:
-  case STATE_COLOR_SELECT_QUADRANT:
-    // pick the hue quadrant
-    handle_state_col_select_quadrant();
-    break;
-  case STATE_COLOR_SELECT_HUE:
-    // target hue for changes
-    handle_state_col_select_hue();
-    break;
-  case STATE_COLOR_SELECT_SAT:
-    // target sat for changes
-    handle_state_col_select_sat();
-    break;
-  case STATE_COLOR_SELECT_VAL:
-    // target val for changes
-    handle_state_col_select_val();
-    break;
-  }
-  if (Button::onLongClick()) {
-    if (cur_state == STATE_COLOR_SELECT_VAL) {
-      cur_state = STATE_MODES;
-    } else {
-      cur_state = (State)(cur_state + 1);
-    }
-    menu_selection = 0;
-  }
 }
 
 void Helios::handle_state_pat_select()
@@ -353,7 +372,7 @@ void Helios::handle_state_pat_select()
   if (Button::onShortClick()) {
     menu_selection = (menu_selection + 1) % PATTERN_COUNT;
     Patterns::make_pattern((PatternID)menu_selection, pat);
-    if (!Storage::write(cur_mode, pat)) {
+    if (!Storage::write_pattern(cur_mode, pat)) {
       // failed to save?
     }
     pat.init();
@@ -363,4 +382,11 @@ void Helios::handle_state_pat_select()
 
 void Helios::handle_state_conjure_mode()
 {
+  // enable conjure mode, store global mode index, switch back to modes state
+  set_flag(FLAG_CONJURE);
+  // write out the new global flags and the current mode
+  Storage::write_config(0, global_flags);
+  Storage::write_config(1, (uint8_t)cur_mode - 1);
+  // switch back to modes
+  cur_state = STATE_MODES;
 }

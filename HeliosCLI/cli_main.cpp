@@ -46,9 +46,7 @@ int main(int argc, char *argv[])
   set_terminal_nonblocking();
   // run the arduino setup routine
   Helios::init();
-  // loop forever and run the tick routine and other main logic
-  uint32_t tick = 0;
-  while (Helios::keepGoing()) {
+  while (Helios::keep_going()) {
     // check for any inputs and read the next one
     read_inputs();
     // if lockstep is enabled, only run logic if the
@@ -59,10 +57,12 @@ int main(int argc, char *argv[])
     }
     // run the main loop
     Helios::tick();
+    // don't render anything if asleep, but technically it's still running...
+    if (Helios::is_asleep()) {
+      continue;
+    }
     // render the output of the main loop
     show();
-    // iterate tickcount
-    tick++;
   }
   return 0;
 }

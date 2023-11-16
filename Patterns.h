@@ -67,6 +67,7 @@ class Patterns
 {
 public:
 
+  static void make_default(uint8_t index, Pattern &pat);
   static void make_pattern(PatternID id, Pattern &pat);
 };
 
