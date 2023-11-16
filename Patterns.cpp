@@ -1,5 +1,6 @@
 #include "Patterns.h"
 
+#include "Storage.h"
 #include "Pattern.h"
 
 void Patterns::make_default(uint8_t index, Pattern &pat)
@@ -7,6 +8,7 @@ void Patterns::make_default(uint8_t index, Pattern &pat)
   if (index > 5) {
     return;
   }
+  //Storage::read_pattern(index + 6, pat);
   const PatternArgs default_args[6] = {
     {1},
     {3, 4},
@@ -15,16 +17,9 @@ void Patterns::make_default(uint8_t index, Pattern &pat)
     {15, 5, 4, 3, 2},
     {15, 5, 4, 3, 2, 1},
   };
-  const Colorset default_colorsets[6] = {
-    { RGB_RED, RGB_GREEN, RGB_BLUE },
-    { RGB_RED, RGB_GREEN, RGB_BLUE },
-    { RGB_RED, RGB_GREEN, RGB_BLUE },
-    { RGB_RED, RGB_GREEN, RGB_BLUE },
-    { RGB_RED, RGB_GREEN, RGB_BLUE },
-    { RGB_RED, RGB_GREEN, RGB_BLUE },
-  };
+  Colorset default_colorset(RGB_RED, RGB_GREEN, RGB_BLUE);
   pat.setArgs(default_args[index]);
-  pat.setColorset(default_colorsets[index]);
+  pat.setColorset(default_colorset);
 }
 
 void Patterns::make_pattern(PatternID id, Pattern &pat)

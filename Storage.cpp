@@ -28,7 +28,7 @@ bool Storage::read_pattern(uint8_t slot, Pattern &pat)
 {
 #ifdef HELIOS_EMBEDDED
   for (uint8_t i = 0; i < SLOT_SIZE; ++i) {
-    ((uint8_t *)&pat)[i] = read_byte(slot + i);
+    ((uint8_t *)&pat)[i] = read_byte((slot * SLOT_SIZE) + i);
   }
 #elif defined(HELIOS_CLI)
   FILE *f = fopen(STORAGE_FILENAME, "r");
@@ -49,7 +49,11 @@ bool Storage::write_pattern(uint8_t slot, const Pattern &pat)
 {
 #ifdef HELIOS_EMBEDDED
   for (uint8_t i = 0; i < SLOT_SIZE; ++i) {
-    write_byte(slot + i, ((uint8_t *)&pat)[i]);
+    uint8_t val = ((uint8_t *)&pat)[i];
+    uint8_t target = (slot * SLOT_SIZE) + i;
+    if (val != read_byte(target)) {
+      write_byte(target, val);
+    }
   }
 #elif defined(HELIOS_CLI)
   FILE *f = fopen(STORAGE_FILENAME, "a");

@@ -21,11 +21,11 @@ private:
   static void handle_state();
   static void handle_state_modes();
   static void handle_state_col_select();
-  static void handle_state_col_select_slot();
-  static void handle_state_col_select_quadrant();
-  static void handle_state_col_select_hue();
-  static void handle_state_col_select_sat();
-  static void handle_state_col_select_val();
+  static bool handle_state_col_select_slot();
+  static bool handle_state_col_select_quadrant();
+  static bool handle_state_col_select_hue();
+  static bool handle_state_col_select_sat();
+  static bool handle_state_col_select_val();
   static void handle_state_pat_select();
   static void handle_state_conjure_mode();
   static void next_mode();

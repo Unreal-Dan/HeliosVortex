@@ -172,6 +172,7 @@ void Helios::handle_state()
     // simulate sleep in helios CLI
     if (Button::onPress()) {
       // wakeup
+      printf("Wakeup\n");
       sleeping = false;
     }
 #endif
@@ -229,6 +230,8 @@ void Helios::handle_state_modes()
       cur_state = STATE_COLOR_SELECT_SLOT;
       // use the nice hue to rgb rainbow
       g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
+      // reset the menu selection
+      menu_selection = 0;
       break;
     case 2:  // pat select
       cur_state = STATE_PATTERN_SELECT;
@@ -249,7 +252,14 @@ void Helios::handle_state_col_select()
     // next hue/sat/val selection
     uint8_t num_menus = 4;
     if (cur_state == STATE_COLOR_SELECT_SLOT) {
-      num_menus = pat.colorset().numColors();
+      uint8_t num_cols = pat.colorset().numColors();
+      // menus = all colors + exit
+      num_menus = num_cols + 1;
+      // but if the num cols is less than total color slots
+      if (num_cols < MAX_COLOR_SLOTS) {
+        // then we have another menu: add color
+        num_menus++;
+      }
     } else if (cur_state == STATE_COLOR_SELECT_QUADRANT) {
       num_menus = 6;
     }
@@ -259,23 +269,33 @@ void Helios::handle_state_col_select()
   default:
   case STATE_COLOR_SELECT_SLOT:
     // pick the target colorset slot
-    handle_state_col_select_slot();
+    if (!handle_state_col_select_slot()) {
+      return;
+    }
     break;
   case STATE_COLOR_SELECT_QUADRANT:
     // pick the hue quadrant
-    handle_state_col_select_quadrant();
+    if (!handle_state_col_select_quadrant()) {
+      return;
+    }
     break;
   case STATE_COLOR_SELECT_HUE:
     // target hue for changes
-    handle_state_col_select_hue();
+    if (!handle_state_col_select_hue()) {
+      return;
+    }
     break;
   case STATE_COLOR_SELECT_SAT:
     // target sat for changes
-    handle_state_col_select_sat();
+    if (!handle_state_col_select_sat()) {
+      return;
+    }
     break;
   case STATE_COLOR_SELECT_VAL:
     // target val for changes
-    handle_state_col_select_val();
+    if (!handle_state_col_select_val()) {
+      return;
+    }
     break;
   }
   if (Button::onLongClick()) {
@@ -288,43 +308,84 @@ void Helios::handle_state_col_select()
   }
 }
 
-void Helios::handle_state_col_select_slot()
+bool Helios::handle_state_col_select_slot()
 {
+  Colorset &set = pat.colorset();
+  uint8_t num_cols = set.numColors();
   if (Button::onLongClick()) {
+    if (menu_selection == (num_cols + 1)) {
+      // exit
+      cur_state = STATE_MODES;
+      return false;
+    }
     selected_slot = menu_selection;
   }
-  // render current selection
-  Led::set(pat.colorset().get(menu_selection));
+  if (menu_selection == num_cols) {
+    // add color
+    Led::strobe(100, 100, RGB_WHITE4, RGB_OFF);
+  } else if (menu_selection == num_cols + 1) {
+    // exit
+    Led::strobe(60, 40, RGB_RED3, RGB_OFF);
+  } else {
+    // render current selection
+    Led::set(set.get(menu_selection));
+  }
+  return true;
 }
 
-void Helios::handle_state_col_select_quadrant()
+bool Helios::handle_state_col_select_quadrant()
 {
   uint8_t hue_quad = (menu_selection - 2);
   uint8_t hue = hue_quad * (255 / 4);
   HSVColor hcol(hue, 255, 255);
   if (Button::onLongClick()) {
     // select hue/sat/val
-    if (menu_selection == 0 || menu_selection == 1) {
-      // selected 0 or 1
-      // return
-    } else {
+    switch (menu_selection) {
+    case 0: // exit
+      cur_state = STATE_MODES;
+      return false;
+    case 1: // selected blank
+      // add blank to set
+      pat.colorset().set(selected_slot, RGB_OFF);
+      // go to slot selection - 1 because we will increment outside here
+      cur_state = STATE_COLOR_SELECT_SLOT;
+      return false;
+    case 2: // selected white
+      // adds white, skip hue/sat to brightness
+      selected_hue = 0;
+      selected_sat = 0;
+      cur_state = STATE_COLOR_SELECT_VAL;
+      return false;
+    default: // 3-6
       selected_base_hue = hue;
+      break;
     }
   }
   // default col1/col2 to off and white for the first two options
   RGBColor col1 = RGB_OFF;
-  RGBColor col2 = (menu_selection == 0) ? RGB_WHITE1 : RGB_WHITE;
-  // if it's more than the first or second option then generate hues
-  if (menu_selection > 1) {
+  RGBColor col2;
+  switch (menu_selection) {
+  case 0: // exit
+    col2 = RGB_RED8;
+    break;
+  case 1: // blank
+    col2 = RGB_WHITE1;
+    break;
+  case 2: // white
+    col2 = RGB_WHITE;
+    break;
+  default: // colors
     col1 = hcol;
     hcol.hue += 32;
     col2 = hcol;
+    break;
   }
   // render current selection
   Led::strobe(6, 10, col1, col2);
+  return true;
 }
 
-void Helios::handle_state_col_select_hue()
+bool Helios::handle_state_col_select_hue()
 {
   uint8_t hue = selected_base_hue + (menu_selection * 16);
   if (Button::onLongClick()) {
@@ -333,9 +394,10 @@ void Helios::handle_state_col_select_hue()
   }
   // render current selection
   Led::set(HSVColor(hue, 255, 255));
+  return true;
 }
 
-void Helios::handle_state_col_select_sat()
+bool Helios::handle_state_col_select_sat()
 {
   uint8_t sat = 255 - (menu_selection * 60);
   // use the nice hue to rgb rainbow
@@ -345,9 +407,10 @@ void Helios::handle_state_col_select_sat()
   }
   // render current selection
   Led::set(HSVColor(selected_hue, sat, 255));
+  return true;
 }
 
-void Helios::handle_state_col_select_val()
+bool Helios::handle_state_col_select_val()
 {
   uint8_t val = 255 - (menu_selection * 50);
   RGBColor targetCol = HSVColor(selected_hue, selected_sat, val);
@@ -360,6 +423,7 @@ void Helios::handle_state_col_select_val()
   }
   // render current selection
   Led::set(targetCol);
+  return true;
 }
 
 void Helios::handle_state_pat_select()
