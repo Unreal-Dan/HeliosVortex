@@ -22,7 +22,7 @@ bool Storage::init()
 
 bool Storage::read(uint8_t slot, Pattern &pat)
 {
-#ifdef HELIO_EMBEDDED
+#ifdef HELIOS_EMBEDDED
   for (uint8_t i = 0; i < SLOT_SIZE; ++i) {
     ((uint8_t *)&pat)[i] = read_byte(slot + i);
   }
@@ -62,7 +62,7 @@ bool Storage::write(uint8_t slot, const Pattern &pat)
   return true;
 }
 
-#ifdef HELIO_EMBEDDED
+#ifdef HELIOS_EMBEDDED
 void Storage::write_byte(uint8_t address, uint8_t data)
 {
   /* Wait for completion of previous write */

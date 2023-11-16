@@ -15,9 +15,16 @@
 #include <avr/interrupt.h>
 #endif
 
+#ifdef HELIOS_CLI
+#include <stdio.h>
+#endif
+
 Helios::State Helios::cur_state = STATE_MODES;
 uint8_t Helios::menu_selection = 0;
 uint8_t Helios::cur_mode = 0xFF;
+uint8_t Helios::selected_base_hue = 0;
+uint8_t Helios::selected_hue = 0;
+uint8_t Helios::selected_sat = 0;
 PatternArgs Helios::default_args[6] = {
   {1, 0, 0, 0, 0, 0, 0},
   {3, 4, 0, 0, 0, 0, 0},
@@ -147,6 +154,7 @@ void Helios::handle_state()
   case STATE_MODES:
     handle_state_modes();
     break;
+  case STATE_COLOR_SELECT_QUADRANT:
   case STATE_COLOR_SELECT_HUE:
   case STATE_COLOR_SELECT_SAT:
   case STATE_COLOR_SELECT_VAL:
@@ -213,7 +221,9 @@ void Helios::handle_state_modes()
       cur_state = STATE_SLEEP;
       break;
     case 1:  // color select 100-200 ms
-      cur_state = STATE_COLOR_SELECT_HUE;
+      cur_state = STATE_COLOR_SELECT_QUADRANT;
+      // use the nice hue to rgb rainbow
+      g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
       break;
     case 2:  // pat select 200-300 ms
       cur_state = STATE_PATTERN_SELECT;
@@ -228,38 +238,127 @@ void Helios::handle_state_modes()
   }
 }
 
-void Helios::handle_state_col_select()
+void Helios::handle_state_col_select_quadrant()
 {
-  //static RGBColor sat_options[] = {
-  //  RGB_WHITE,
-  //  RGB_WHITE6,
-  //  RGB_WHITE3,
-  //  RGB_WHITE1,
-  //};
-  switch (cur_state) {
-    default:
-    case STATE_COLOR_SELECT_HUE:
-      // target hue for changes
-      break;
-    case STATE_COLOR_SELECT_SAT:
-      // target sat for changes
-      break;
-    case STATE_COLOR_SELECT_VAL:
-      // target val for changes
-      break;
-  }
-  if (Button::onShortClick()) {
-    // next hue/sat/val selection
-    menu_selection++;
-  }
+  uint8_t hue_quad = (menu_selection - 2);
+  uint8_t hue = hue_quad * (255 / 4);
+  HSVColor hcol(hue, 255, 255);
   if (Button::onLongClick()) {
     // select hue/sat/val
+    if (menu_selection == 0 || menu_selection == 1) {
+      // selected 0 or 1
+      // return
+    } else {
+      selected_base_hue = hue;
+      menu_selection = 0;
+    }
+  }
+  // default col1/col2 to off and white for the first two options
+  RGBColor col1 = RGB_OFF;
+  RGBColor col2 = (menu_selection == 0) ? RGB_WHITE1 : RGB_WHITE;
+  // if it's more than the first or second option then generate hues
+  if (menu_selection > 1) {
+    col1 = hcol;
+    hcol.hue += 32;
+    col2 = hcol;
   }
   // render current selection
+  Led::strobe(6, 10, col1, col2);
+}
+
+void Helios::handle_state_col_select_hue()
+{
+  uint8_t hue = selected_base_hue + (menu_selection * 16);
+  if (Button::onLongClick()) {
+    // select hue/sat/val
+    selected_hue = hue;
+  }
+  // render current selection
+  Led::set(HSVColor(hue, 255, 255));
+}
+
+void Helios::handle_state_col_select_sat()
+{
+  uint8_t sat = 255 - (menu_selection * 60);
+  // use the nice hue to rgb rainbow
+  if (Button::onLongClick()) {
+    // select hue/sat/val
+    selected_sat = sat;
+  }
+  // render current selection
+  Led::set(HSVColor(selected_hue, sat, 255));
+}
+
+void Helios::handle_state_col_select_val()
+{
+  uint8_t val = 255 - (menu_selection * 50);
+  RGBColor targetCol = HSVColor(selected_hue, selected_sat, val);
+  // use the nice hue to rgb rainbow
+  if (Button::onLongClick()) {
+    // change the current patterns color
+    pat.colorset().set(0, targetCol);
+    // restore hsv to rgb algorithm type, done color selection
+    g_hsv_rgb_alg = HSV_TO_RGB_GENERIC;
+  }
+  // render current selection
+  Led::set(targetCol);
+}
+
+void Helios::handle_state_col_select()
+{
+  if (Button::onShortClick()) {
+    // next hue/sat/val selection
+    uint8_t num_menus = 4;
+    if (cur_state == STATE_COLOR_SELECT_QUADRANT) {
+      num_menus = 6;
+    }
+    menu_selection = (menu_selection + 1) % num_menus;
+  }
+  switch (cur_state) {
+  default:
+  case STATE_COLOR_SELECT_QUADRANT:
+    // pick the hue quadrant
+    handle_state_col_select_quadrant();
+    break;
+  case STATE_COLOR_SELECT_HUE:
+    // target hue for changes
+    handle_state_col_select_hue();
+    break;
+  case STATE_COLOR_SELECT_SAT:
+    // target sat for changes
+    handle_state_col_select_sat();
+    break;
+  case STATE_COLOR_SELECT_VAL:
+    // target val for changes
+    handle_state_col_select_val();
+    break;
+  }
+  if (Button::onLongClick()) {
+    if (cur_state == STATE_COLOR_SELECT_VAL) {
+      cur_state = STATE_MODES;
+    } else {
+      cur_state = (State)(cur_state + 1);
+    }
+    menu_selection = 0;
+  }
 }
 
 void Helios::handle_state_pat_select()
 {
+  if (Button::onLongClick()) {
+    cur_state = STATE_MODES;
+    // save
+    return;
+  }
+  if (Button::onShortClick()) {
+    menu_selection = (menu_selection + 1) % PATTERN_COUNT;
+    Patterns::make_pattern((PatternID)menu_selection, pat);
+    if (!Storage::write(cur_mode, pat)) {
+      // failed to save?
+    }
+    pat.init();
+  }
+  pat.play();
 }
 
 void Helios::handle_state_conjure_mode()

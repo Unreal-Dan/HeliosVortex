@@ -17,6 +17,10 @@ public:
 private:
   static void handle_state();
   static void handle_state_modes();
+  static void handle_state_col_select_quadrant();
+  static void handle_state_col_select_hue();
+  static void handle_state_col_select_sat();
+  static void handle_state_col_select_val();
   static void handle_state_col_select();
   static void handle_state_pat_select();
   static void handle_state_conjure_mode();
@@ -26,6 +30,7 @@ private:
 
   enum State {
     STATE_MODES,
+    STATE_COLOR_SELECT_QUADRANT,
     STATE_COLOR_SELECT_HUE,
     STATE_COLOR_SELECT_SAT,
     STATE_COLOR_SELECT_VAL,
@@ -37,6 +42,10 @@ private:
   static State cur_state;
   static uint8_t menu_selection;
   static uint8_t cur_mode;
+  // the quadrant that was selected in color select
+  static uint8_t selected_base_hue;
+  static uint8_t selected_hue;
+  static uint8_t selected_sat;
   static PatternArgs default_args[6];
   static Colorset default_colorsets[6];
   static Pattern pat;

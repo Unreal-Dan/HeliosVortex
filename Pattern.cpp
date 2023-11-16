@@ -7,6 +7,8 @@
 #include "HeliosConfig.h"
 #include "Led.h"
 
+#include <string.h> // for memcpy
+
 // uncomment me to print debug labels on the pattern states, this is useful if you
 // are debugging a pattern strip from the command line and want to see what state
 // the pattern is in each tick of the pattern
@@ -173,6 +175,12 @@ replay:
   }
   // poor-mans recurse with the new state change (this transitions to a new state within the same tick)
   goto replay;
+}
+
+// set args
+void Pattern::setArgs(const PatternArgs &args)
+{
+  memcpy(&m_onDuration, &(args.on_dur), 7);
 }
 
 void Pattern::onBlinkOn()
