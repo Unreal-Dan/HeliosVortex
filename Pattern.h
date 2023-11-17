@@ -6,6 +6,17 @@
 #include "Timer.h"
 #include "Patterns.h"
 
+// for specifying things like default args
+struct PatternArgs {
+  uint8_t on_dur;
+  uint8_t off_dur;
+  uint8_t gap_dur;
+  uint8_t dash_dur;
+  uint8_t group_size;
+  uint8_t blend_speed;
+  uint8_t num_flips;
+};
+
 class Pattern
 {
 public:
@@ -13,7 +24,7 @@ public:
   Pattern(uint8_t onDur = 1, uint8_t offDur = 0, uint8_t gap = 0,
           uint8_t dash = 0, uint8_t group = 0, uint8_t blend = 0,
           uint8_t flips = 0);
-  Pattern(const uint8_t *args);
+  Pattern(const PatternArgs &args);
   ~Pattern();
 
   // init the pattern to initial state
@@ -21,6 +32,9 @@ public:
 
   // pure virtual must override the play function
   void play();
+
+  // set args
+  void setArgs(const PatternArgs &args);
 
   // comparison to other pattern
   // NOTE: That may cause problems because the parameter is still a Pattern *
@@ -31,18 +45,16 @@ public:
   // change the colorset
   const Colorset getColorset() const { return m_colorset; }
   Colorset getColorset() { return m_colorset; }
+  Colorset &colorset() { return m_colorset; }
   void setColorset(const Colorset &set);
   void clearColorset();
-
-  // get/set the ID of the pattern (set by mode builder)
-  PatternID getPatternID() const { return m_patternID; }
 
   // get the pattern flags
   uint32_t getFlags() const { return m_patternFlags; }
   bool hasFlags(uint32_t flags) const { return (m_patternFlags & flags) != 0; }
 
-  // TODO: sort out pattern ids
-  bool isBlend() const { return m_patternID > 5; }
+  // whether blend speed is non 0
+  bool isBlend() const { return m_blendSpeed > 0; }
 
 protected:
   // ==================================
@@ -58,8 +70,6 @@ protected:
   // ==================================
   //  Pattern Members
 
-  // the ID of this pattern (set by pattern builder)
-  PatternID m_patternID;
   // any flags the pattern has
   uint8_t m_patternFlags;
   // a copy of the colorset that this pattern is initialized with

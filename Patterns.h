@@ -61,6 +61,16 @@ enum PatternID : int8_t
   PATTERN_COUNT = (PATTERN_LAST - PATTERN_FIRST) + 1, // total number of patterns
 };
 
+class Pattern;
+
+class Patterns
+{
+public:
+
+  static void make_default(uint8_t index, Pattern &pat);
+  static void make_pattern(PatternID id, Pattern &pat);
+};
+
 // PatternID operators
 inline PatternID &operator++(PatternID &c)
 {

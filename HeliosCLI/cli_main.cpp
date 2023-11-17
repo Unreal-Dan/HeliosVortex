@@ -46,25 +46,23 @@ int main(int argc, char *argv[])
   set_terminal_nonblocking();
   // run the arduino setup routine
   Helios::init();
-  // loop forever and run the tick routine and other main logic
-  uint32_t tick = 0;
-  while (Helios::keepGoing()) {
+  while (Helios::keep_going()) {
     // check for any inputs and read the next one
-    if (!read_inputs()) {
-      // nothing
-    }
+    read_inputs();
     // if lockstep is enabled, only run logic if the
     // input queue isn't actually empty
-    if (lockstep && !button.inputQueueSize()) {
+    if (lockstep && !Button::inputQueueSize()) {
       // just keep waiting for an input
       continue;
     }
     // run the main loop
     Helios::tick();
+    // don't render anything if asleep, but technically it's still running...
+    if (Helios::is_asleep()) {
+      continue;
+    }
     // render the output of the main loop
     show();
-    // iterate tickcount
-    tick++;
   }
   return 0;
 }
@@ -126,9 +124,7 @@ static bool read_inputs()
   if (!numInputs) {
     // this will capture the number of characters on stdin
     ioctl(STDIN_FILENO, FIONREAD, &numInputs);
-    // if lockstep mode and there's no new input, don't run a tick
     if (!numInputs) {
-      // just wait for input
       return false;
     }
   }
@@ -155,7 +151,7 @@ static bool read_inputs()
     }
     for (uint32_t i = 0; i < repeatAmount; ++i) {
       // otherwise just queue up the command
-      button.queueInput(command);
+      Button::queueInput(command);
     }
   }
   return true;
@@ -166,8 +162,8 @@ static void show()
 {
   string out;
   if (in_place) {
-    // this resets the cursor back to the beginning of the line and moves it up 1 line
-    out += "\33[2K\033[1A\r";
+    // this resets the cursor back to the beginning of the line
+    out += "\r";
   }
   if (output_type == OUTPUT_TYPE_COLOR) {
     out += "\x1B[0m["; // opening |

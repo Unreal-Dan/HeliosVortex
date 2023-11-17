@@ -20,6 +20,13 @@
 // Tickrate
 //
 // The number of engine ticks per second
-#define TICKRATE 128
+#define TICKRATE 1000
+
+// Menu Hold Time
+//
+// How long the button must be held for the menus to open and cycle
+// note this is a measure of ticks, but if the tickrate is 1000 then
+// it is a measure of milliseconds
+#define MENU_HOLD_TIME 1000
 
 #endif

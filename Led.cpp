@@ -49,6 +49,11 @@ void Led::adjustBrightness(uint8_t fadeBy)
   m_ledColor.adjustBrightness(fadeBy);
 }
 
+void Led::strobe(uint8_t on_time, uint8_t off_time, RGBColor off_col, RGBColor on_col)
+{
+  set(((Time::getCurtime() % (on_time + off_time)) > on_time) ? off_col : on_col);
+}
+
 void Led::blinkOffset(uint32_t time, uint16_t offMs, uint16_t onMs, RGBColor col)
 {
   if ((time % MS_TO_TICKS(offMs + onMs)) < MS_TO_TICKS(onMs)) {

@@ -25,6 +25,9 @@ public:
   // Dim individual LEDs, these are appropriate to use in internal pattern logic
   static void adjustBrightness(uint8_t fadeBy);
 
+  // strobe between two colors with a simple on/off timing
+  static void strobe(uint8_t on_time, uint8_t off_time, RGBColor col1, RGBColor col2);
+
   // Blink an led to blank or a color
   //
   // These APIs work by checking if the current time is within the
