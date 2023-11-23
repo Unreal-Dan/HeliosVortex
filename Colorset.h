@@ -88,12 +88,12 @@ public:
   void randomizeColors2(Random &ctx, ColorMode2 mode);
 
   // wrappers for various spacings
-  void randomizeSolid(Random &ctx) { randomizeColors(ctx, 1, Colorset::ColorMode::EVENLY_SPACED); }
-  void randomizeComplimentary(Random &ctx) { randomizeColors(ctx, 2, Colorset::ColorMode::EVENLY_SPACED); }
-  void randomizeTriadic(Random &ctx) { randomizeColors(ctx, 3, Colorset::ColorMode::EVENLY_SPACED); }
-  void randomizeSquare(Random &ctx) { randomizeColors(ctx, 4, Colorset::ColorMode::EVENLY_SPACED); }
-  void randomizePentadic(Random &ctx) { randomizeColors(ctx, 5, Colorset::ColorMode::EVENLY_SPACED); }
-  void randomizeRainbow(Random &ctx) { randomizeColors(ctx, 8, Colorset::ColorMode::EVENLY_SPACED); }
+  void randomizeSolid(Random &ctx) { randomizeColors(ctx, 1, EVENLY_SPACED); }
+  void randomizeComplimentary(Random &ctx) { randomizeColors(ctx, 2, EVENLY_SPACED); }
+  void randomizeTriadic(Random &ctx) { randomizeColors(ctx, 3, EVENLY_SPACED); }
+  void randomizeSquare(Random &ctx) { randomizeColors(ctx, 4, EVENLY_SPACED); }
+  void randomizePentadic(Random &ctx) { randomizeColors(ctx, 5, EVENLY_SPACED); }
+  void randomizeRainbow(Random &ctx) { randomizeColors(ctx, 8, EVENLY_SPACED); }
 
   // fade all of the colors in the set
   void adjustBrightness(uint8_t fadeby);

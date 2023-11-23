@@ -7,7 +7,7 @@
 // when no color is selected in the colorset the index is this
 // then when you call getNext() for the first time it returns
 // the 0th color in the colorset and after the index will be 0
-#define INDEX_NONE UINT8_MAX
+#define INDEX_NONE 255
 
 Colorset::Colorset() :
   m_palette(),
