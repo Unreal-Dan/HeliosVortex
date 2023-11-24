@@ -6,7 +6,7 @@
 
 #include "HeliosConfig.h"
 
-#ifdef VORTEX_EMBEDDED
+#ifdef HELIOS_EMBEDDED
 #include <avr/sleep.h>
 #include <avr/io.h>
 #endif
@@ -21,8 +21,8 @@ uint8_t Led::m_brightness = DEFAULT_BRIGHTNESS;
 bool Led::init()
 {
 #ifdef HELIOS_EMBEDDED
-  //// Set pins as outputs
-  //DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
+  // Set pins as outputs
+  DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
 
   //// Configure Timer/Counter 0 for PB0 (pin 0) and PB1 (pin 1)
   //TCCR0A |= (1 << COM0A1) | (1 << COM0B1) | (1 << WGM01) | (1 << WGM00);
@@ -94,8 +94,8 @@ void Led::update()
 {
 #ifdef HELIOS_EMBEDDED
   //// write out the rgb values to analog pins
-  //OCR0A = m_ledColor.red;
-  //OCROB = m_ledColor.green;
-  //OCR1A = m_ledColor.blue;
+  OCR0A = m_ledColor.red;
+  OCR0B = m_ledColor.green;
+  OCR1A = m_ledColor.blue;
 #endif
 }
