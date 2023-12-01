@@ -102,7 +102,8 @@ void Helios::tick()
   // handle the current state of the system, ie whatever state
   // we're in we check for the appropriate input events for that
   // state by checking button globals, then run the appropriate logic
-  handle_state();
+  //handle_state();
+  Led::set(RGBColor(Button::isPressed() ? RGB_GREEN : RGB_RED));
   
   // render the current led color by sending the data to the leds, this
   // function is basically just set_color()
