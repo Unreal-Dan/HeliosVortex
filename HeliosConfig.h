@@ -20,7 +20,7 @@
 // Tickrate
 //
 // The number of engine ticks per second
-#define TICKRATE 1000
+#define TICKRATE 100
 
 // Menu Hold Time
 //
@@ -28,5 +28,7 @@
 // note this is a measure of ticks, but if the tickrate is 1000 then
 // it is a measure of milliseconds
 #define MENU_HOLD_TIME 1000
+
+#define HELIOS_EMBEDDED 1
 
 #endif

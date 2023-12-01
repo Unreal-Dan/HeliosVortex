@@ -3,6 +3,7 @@
 
 #ifdef HELIOS_EMBEDDED
 #include <avr/io.h>
+#include <arduino.h>
 #define BUTTON_PIN 3
 #endif
 
@@ -52,8 +53,9 @@ bool Button::init()
   m_pinState = false;
 #endif
 #ifdef HELIOS_EMBEDDED
-  // Set pin3 (Port B4) as input
-  DDRB &= ~(1 << PB4);
+  // Set pin3 (Port A3) as input
+  //DDRB &= ~(1 << PA3);
+  pinMode(3, INPUT);
 
   // Enable Pin Change Interrupt on the BUTTON pin
   //GIMSK |= _BV(PCIE);
@@ -67,7 +69,7 @@ bool Button::init()
 bool Button::check()
 {
 #ifdef HELIOS_EMBEDDED
-  return ((PINB & (1 << PB4)) != 0);
+  return false;//digitalRead(3) == HIGH;
 #elif defined(HELIOS_CLI)
   // then just return the pin state as-is, the input event may have
   // adjusted this value

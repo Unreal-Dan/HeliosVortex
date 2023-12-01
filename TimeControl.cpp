@@ -9,6 +9,7 @@
 #ifdef HELIOS_EMBEDDED
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
+#include <arduino.h>
 #endif
 
 #ifdef HELIOS_CLI
@@ -41,7 +42,7 @@ void Time::tickClock()
   // tick clock forward
   m_curTick++;
 
-#ifdef HELIOS_CLI
+//#ifdef HELIOS_CLI
   // the rest of this only runs inside vortexlib because on the duo the tick runs in the
   // tcb timer callback instead of in a busy loop constantly checking microseconds()
   // perform timestep
@@ -66,7 +67,7 @@ void Time::tickClock()
 
   // store current time
   m_prevTime = microseconds();
-#endif
+//#endif
 }
 
 uint32_t Time::microseconds()
@@ -78,7 +79,7 @@ uint32_t Time::microseconds()
   return (unsigned long)us;
 #else
   // TODO: microseconds on attiny85 is unnecessary because using 1000mhz ISR
-  return 0;
+  return micros();
 #endif
 }
 

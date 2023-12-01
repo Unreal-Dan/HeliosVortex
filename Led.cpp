@@ -9,6 +9,7 @@
 #ifdef HELIOS_EMBEDDED
 #include <avr/sleep.h>
 #include <avr/io.h>
+#include <arduino.h>
 #endif
 
 #define LED_DATA_PIN  7
@@ -22,7 +23,11 @@ bool Led::init()
 {
 #ifdef HELIOS_EMBEDDED
   // Set pins as outputs
-  DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
+  //DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
+  
+  pinMode(0, OUTPUT);
+  pinMode(1, OUTPUT);
+  pinMode(4, OUTPUT);
 
   //// Configure Timer/Counter 0 for PB0 (pin 0) and PB1 (pin 1)
   //TCCR0A |= (1 << COM0A1) | (1 << COM0B1) | (1 << WGM01) | (1 << WGM00);
@@ -93,9 +98,9 @@ void Led::hold(RGBColor col)
 void Led::update()
 {
 #ifdef HELIOS_EMBEDDED
-  //// write out the rgb values to analog pins
-  OCR0A = m_ledColor.red;
-  OCR0B = m_ledColor.green;
-  OCR1A = m_ledColor.blue;
+  // write out the rgb values to analog pins
+  analogWrite(0, m_ledColor.red);
+  analogWrite(1, m_ledColor.green);
+  analogWrite(4, m_ledColor.blue);
 #endif
 }

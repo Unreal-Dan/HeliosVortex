@@ -48,49 +48,49 @@ bool Helios::init()
   if (!Button::init()) {
     return false;
   }
+  
+  //// read the global flags from index 0 config
+  //Storage::read_config(0, (uint8_t &)global_flags);
+  //if (has_flag(FLAG_CONJURE)) {
+    //// set the current mode to the stored mode, which will actually
+    //// be the target mode minus 1 so that next_mode will iterate to
+    //// the correct target mode
+    //Storage::read_config(1, cur_mode);
+  //}
 
-  // read the global flags from index 0 config
-  Storage::read_config(0, (uint8_t &)global_flags);
-  if (has_flag(FLAG_CONJURE)) {
-    // set the current mode to the stored mode, which will actually
-    // be the target mode minus 1 so that next_mode will iterate to
-    // the correct target mode
-    Storage::read_config(1, cur_mode);
-  }
-
-  if (has_flag(FLAG_LOCKED)) {
-    // go back to sleep?
-  }
+  //if (has_flag(FLAG_LOCKED)) {
+    //// go back to sleep?
+  //}
 
   // iterate to the next mode (or first mode in this case)
   next_mode();
 
 #ifdef HELIOS_EMBEDDED
-  // Set CTC (Clear Timer on Compare Match) mode
-  TCCR1 = (1 << CTC1);
-  // Set prescaler to 8 (CS12 = 1, CS11 = 0, CS10 = 0)
-  TCCR1 |= (1 << CS11);
-  // Set compare match value for 1000 Hz
-  OCR1C = 124;
-  // Enable Timer/Counter 1 Output Compare A Match interrupt
-  TIMSK |= (1 << OCIE1A);
-  // Setup sleep mode for standby
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  // Enable interrupts
-  sei();
-  // Standby indefinitely while the ISR runs ticks
-  while (!sleeping) {
-    sleep_mode();
-  }
+  //// Set CTC (Clear Timer on Compare Match) mode
+  //TCCR1 = (1 << CTC1);
+  //// Set prescaler to 8 (CS12 = 1, CS11 = 0, CS10 = 0)
+  //TCCR1 |= (1 << CS11);
+  //// Set compare match value for 1000 Hz
+  //OCR1C = 124;
+  //// Enable Timer/Counter 1 Output Compare A Match interrupt
+  //TIMSK |= (1 << OCIE1A);
+  //// Setup sleep mode for standby
+  //set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  //// Enable interrupts
+  //sei();
+  //// Standby indefinitely while the ISR runs ticks
+  //while (!sleeping) {
+    //sleep_mode();
+  //}
 #endif
   return true;
 }
 
 #ifdef HELIOS_EMBEDDED
 // ISR to call tick 1000 times a second
-ISR(TIM1_COMPA_vect) {
-  Helios::tick();
-}
+//ISR(TIM1_COMPA_vect) {
+  //Helios::tick();
+//}
 #endif
 
 void Helios::tick()
@@ -103,7 +103,7 @@ void Helios::tick()
   // we're in we check for the appropriate input events for that
   // state by checking button globals, then run the appropriate logic
   handle_state();
-
+  
   // render the current led color by sending the data to the leds, this
   // function is basically just set_color()
   Led::update();
@@ -185,26 +185,30 @@ void Helios::next_mode()
   // increment current mode and wrap around
   cur_mode = (uint8_t)(cur_mode + 1) % 6;
   // read pattern from storage at cur mode index
-  if (!Storage::read_pattern(cur_mode, pat)) {
+  //if (!Storage::read_pattern(cur_mode, pat)) {
     // and just initialize default if it cannot be read
     Patterns::make_default(cur_mode, pat);
-  }
+  //}
   // then re-initialize the pattern
   pat.init();
 }
 
 void Helios::handle_state_modes()
 {
-  if (Button::onShortClick()) {
-    if (has_flag(FLAG_CONJURE)) {
-      enter_sleep(false);
-    } else {
-      next_mode();
-    }
-    return;
-  }
+  //if (Button::onShortClick()) {
+    ////if (has_flag(FLAG_CONJURE)) {
+      ////enter_sleep(false);
+    ////} else {
+      //next_mode();
+    ////}
+    //return;
+  //}
   // just play the current mode
   pat.play();
+  
+  return;
+  
+  
   // check how long the button is held
   uint32_t holdDur = Button::holdDuration();
   // show a color based on the hold duration past 200
