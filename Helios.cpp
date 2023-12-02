@@ -63,7 +63,13 @@ bool Helios::init()
   //}
 
   // iterate to the next mode (or first mode in this case)
-  next_mode();
+  //next_mode();
+
+  PatternArgs args = { 10, 10 };
+  Colorset set(RGB_RED, RGB_GREEN, RGB_BLUE);
+  pat.setArgs(args);
+  pat.setColorset(set);
+  pat.init();
 
 #ifdef HELIOS_EMBEDDED
   //// Set CTC (Clear Timer on Compare Match) mode
@@ -102,8 +108,8 @@ void Helios::tick()
   // handle the current state of the system, ie whatever state
   // we're in we check for the appropriate input events for that
   // state by checking button globals, then run the appropriate logic
-  //handle_state();
-  Led::set(RGBColor(Button::isPressed() ? RGB_GREEN : RGB_RED));
+  handle_state();
+  //Led::set(RGBColor(Button::isPressed() ? RGB_GREEN : RGB_RED));
   
   // render the current led color by sending the data to the leds, this
   // function is basically just set_color()

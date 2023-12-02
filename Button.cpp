@@ -69,7 +69,7 @@ bool Button::init()
 bool Button::check()
 {
 #ifdef HELIOS_EMBEDDED
-  return false;//digitalRead(3) == HIGH;
+  return digitalRead(3) == HIGH;
 #elif defined(HELIOS_CLI)
   // then just return the pin state as-is, the input event may have
   // adjusted this value
