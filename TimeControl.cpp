@@ -9,7 +9,9 @@
 #ifdef HELIOS_EMBEDDED
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
+#ifdef HELIOS_ARDUINO
 #include <arduino.h>
+#endif
 #endif
 
 #ifdef HELIOS_CLI
@@ -78,8 +80,12 @@ uint32_t Time::microseconds()
   uint64_t us = SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
   return (unsigned long)us;
 #else
-  // TODO: microseconds on attiny85 is unnecessary because using 1000mhz ISR
+#ifdef HELIOS_ARDUINO
   return micros();
+#else
+  // TODO: microseconds on attiny85
+  return 0;
+#endif
 #endif
 }
 
