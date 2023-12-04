@@ -28,7 +28,6 @@ uint8_t Led::m_brightness = DEFAULT_BRIGHTNESS;
 bool Led::init()
 {
 #ifdef HELIOS_EMBEDDED
-
 #ifdef HELIOS_ARDUINO
   pinMode(0, OUTPUT);
   pinMode(1, OUTPUT);

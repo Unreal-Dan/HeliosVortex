@@ -65,7 +65,7 @@ bool Helios::init()
   // iterate to the next mode (or first mode in this case)
   //next_mode();
 
-  PatternArgs args = { 10, 10 };
+  PatternArgs args = { 10, 10, 0, 0, 0, 0, 0 };
   Colorset set(RGB_RED, RGB_GREEN, RGB_BLUE);
   pat.setArgs(args);
   pat.setColorset(set);
@@ -108,8 +108,8 @@ void Helios::tick()
   // handle the current state of the system, ie whatever state
   // we're in we check for the appropriate input events for that
   // state by checking button globals, then run the appropriate logic
-  //handle_state();
-  Led::set(RGBColor(Button::isPressed() ? RGB_GREEN : RGB_RED));
+  handle_state();
+  //Led::set(RGBColor(Button::isPressed() ? RGB_GREEN : RGB_RED));
   //pat.play();
   
   // render the current led color by sending the data to the leds, this
@@ -203,19 +203,19 @@ void Helios::next_mode()
 
 void Helios::handle_state_modes()
 {
-  //if (Button::onShortClick()) {
+  if (Button::onShortClick()) {
+    //Led::hold(RGB_MAGENTA);
     ////if (has_flag(FLAG_CONJURE)) {
       ////enter_sleep(false);
     ////} else {
-      //next_mode();
+      next_mode();
     ////}
     //return;
-  //}
+  }
   // just play the current mode
   pat.play();
   
-  return;
-  
+
   
   // check how long the button is held
   uint32_t holdDur = Button::holdDuration();
@@ -236,20 +236,20 @@ void Helios::handle_state_modes()
   if (Button::onRelease()) {
     switch (magnitude) {
     case 0:  // off
-      cur_state = STATE_SLEEP;
+      //cur_state = STATE_SLEEP;
       break;
     case 1:  // color select
-      cur_state = STATE_COLOR_SELECT_SLOT;
+      //cur_state = STATE_COLOR_SELECT_SLOT;
       // use the nice hue to rgb rainbow
-      g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
+      //g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
       // reset the menu selection
-      menu_selection = 0;
+      //menu_selection = 0;
       break;
     case 2:  // pat select
-      cur_state = STATE_PATTERN_SELECT;
+      //cur_state = STATE_PATTERN_SELECT;
       break;
     case 3:  // conjure mode
-      cur_state = STATE_CONJURE_MODE;
+      //cur_state = STATE_CONJURE_MODE;
       break;
     default: // hold past
       // do nothing
