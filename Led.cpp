@@ -16,6 +16,10 @@
 
 #define LED_DATA_PIN  7
 
+#define PWM_PIN_R PB0 // Red channel (pin 5)
+#define PWM_PIN_G PB1 // Green channel (pin 6)
+#define PWM_PIN_B PB4 // Blue channel (pin 3)
+
 // array of led color values
 RGBColor Led::m_ledColor = RGB_OFF;
 // global brightness
@@ -24,21 +28,21 @@ uint8_t Led::m_brightness = DEFAULT_BRIGHTNESS;
 bool Led::init()
 {
 #ifdef HELIOS_EMBEDDED
-  // Set pins as outputs
-  //DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
-  
+
 #ifdef HELIOS_ARDUINO
   pinMode(0, OUTPUT);
   pinMode(1, OUTPUT);
   pinMode(4, OUTPUT);
+#else
+  // Set pins as outputs
+  DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
+  // Timer/Counter0 in Fast PWM mode
+  TCCR0A |= (1 << WGM01) | (1 << WGM00);
+  // Clear OC0A and OC0B on compare match, set at BOTTOM (non-inverting mode)
+  TCCR0A |= (1 << COM0A1) | (1 << COM0B1);
+  // Use clk/8 prescaler (adjust as needed)
+  TCCR0B |= (1 << CS01);
 #endif
-
-  //// Configure Timer/Counter 0 for PB0 (pin 0) and PB1 (pin 1)
-  //TCCR0A |= (1 << COM0A1) | (1 << COM0B1) | (1 << WGM01) | (1 << WGM00);
-  //TCCR0B |= (1 << CS00); // No prescaler for timer0
-
-  //// Configure Timer/Counter 1 for PB4 (pin 4)
-  //TCCR1 |= (1 << PWM1A) | (1 << COM1A1) | (1 << WGM10);
 #endif
   return true;
 }
@@ -99,6 +103,49 @@ void Led::hold(RGBColor col)
   Time::delayMilliseconds(250);
 }
 
+#define NOT_ON_TIMER 0
+#define TIMER0A 1
+#define TIMER0B 2
+#define TIMER1A 3
+#define TIMER1B 4
+#define TIMER1C 5
+#define TIMER2  6
+#define TIMER2A 7
+#define TIMER2B 8
+
+#define TIMER3A 9
+
+#define LOW 0
+#define HIGH 1
+#define TIMER3B 10
+#define TIMER3C 11
+#define TIMER4A 12
+#define TIMER4B 13
+#define TIMER4C 14
+#define TIMER4D 15
+#define TIMER5A 16
+#define TIMER5B 17
+#define TIMER5C 18
+
+#ifndef cbi
+#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+#endif
+#ifndef sbi
+#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#endif
+
+//#define LOW 0
+//#define HIGH 1
+//
+//const uint8_t PROGMEM digital_pin_to_timer_PGM[] = {
+//  TIMER0A, /* OC0A */
+//  TIMER0B, /* OC0B */
+//  NOT_ON_TIMER,
+//  NOT_ON_TIMER,
+//  TIMER1B, /*OC1B*/
+//  NOT_ON_TIMER,
+//};
+
 void Led::update()
 {
 #ifdef HELIOS_EMBEDDED
@@ -107,6 +154,26 @@ void Led::update()
   analogWrite(0, m_ledColor.red);
   analogWrite(1, m_ledColor.green);
   analogWrite(4, m_ledColor.blue);
+#else
+  sbi(TCCR0A, COM0A1);    
+  sbi(TCCR0A, COM0B1);    
+  OCR0A = m_ledColor.red; // set pwm duty
+  OCR0B = m_ledColor.green; // set pwm duty
+  //for (int i = 0; i < 255; i++) {
+  //  if (i < m_ledColor.blue) {
+  //    PORTB |= (1 << PWM_PIN_B); // Turn on blue
+  //  } else {
+  //    PORTB &= ~(1 << PWM_PIN_B); // Turn off blue
+  //  }
+  //  asm("nop");
+  //  asm("nop");
+  //  asm("nop");
+  //  asm("nop");
+  //  asm("nop");
+  //  asm("nop");
+  //  asm("nop");
+  //  asm("nop");
+  //}
 #endif
 #endif
 }

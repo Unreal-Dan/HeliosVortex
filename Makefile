@@ -21,9 +21,9 @@ NM = ${BINDIR}/avr-nm
 AVRDUDE = ${AVRDUDEDIR}/avrdude
 
 AVRDUDE_CONF = avrdude.conf
-AVRDUDE_PORT = usb
-AVRDUDE_PROGRAMMER = atmelice_updi
-AVRDUDE_BAUDRATE = 115200
+AVRDUDE_PORT = COM12
+AVRDUDE_PROGRAMMER = stk500v1
+AVRDUDE_BAUDRATE = 19200
 AVRDUDE_CHIP = attiny85
 
 AVRDUDE_FLAGS = -C$(AVRDUDE_CONF) \
@@ -33,7 +33,7 @@ AVRDUDE_FLAGS = -C$(AVRDUDE_CONF) \
 		-b$(AVRDUDE_BAUDRATE) \
 		-v
 
-CPU_SPEED = 10000000L
+CPU_SPEED = 1000000L
 
 # the port for serial upload
 SERIAL_PORT = COM11
@@ -123,11 +123,7 @@ $(TARGET).elf: $(OBJS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 upload: $(TARGET).hex
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -Ufuse0:w:$(FUSE0):m -Ufuse2:w:$(FUSE2):m -Ufuse5:w:$(FUSE5):m -Ufuse6:w:$(FUSE6):m -Ufuse7:w:$(FUSE7):m -Ufuse8:w:$(FUSE8):m -Uflash:w:$(TARGET).hex:i
-
-# upload via SerialUPDI
-serial: $(TARGET).hex
-	$(PYTHON) -u $(PYPROG) -t uart -u $(SERIAL_PORT) -b 921600 -d $(AVRDUDE_CHIP) --fuses 0:$(FUSE0) 2:$(FUSE2) 5:$(FUSE5) 6:$(FUSE6) 7:$(FUSE7) 8:$(FUSE8) -f $< -a write -v
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -Uflash:w:$(TARGET).hex:i
 
 ifneq ($(OS),Windows_NT) # Linux
 build: all

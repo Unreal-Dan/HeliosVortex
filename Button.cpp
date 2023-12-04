@@ -7,6 +7,7 @@
 #include <arduino.h>
 #endif
 #define BUTTON_PIN 3
+#define BUTTON_PORT 2
 #endif
 
 #ifdef HELIOS_CLI
@@ -55,19 +56,24 @@ bool Button::init()
   m_pinState = false;
 #endif
 #ifdef HELIOS_EMBEDDED
-  // Set pin3 (Port A3) as input
-  //DDRB &= ~(1 << PA3);
 #ifdef HELIOS_ARDUINO
   pinMode(3, INPUT);
-#endif
-
+#else
+  // Set pin3 (Port B3) as input
+  DDRB &= ~(1 << 3);
+  PORTB &= ~(1 << 3); // Enable internal pull-up resistor for PB4
   // Enable Pin Change Interrupt on the BUTTON pin
   //GIMSK |= _BV(PCIE);
   //PCMSK |= _BV(PIN_BUTTON);
   //sei();  // Enable interrupts
 #endif
+#endif
   return true;
 }
+
+#ifndef cbi
+#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+#endif
 
 // directly poll the pin for whether it's pressed right now
 bool Button::check()
@@ -76,7 +82,9 @@ bool Button::check()
 #ifdef HELIOS_ARDUINO
   return digitalRead(3) == HIGH;
 #else
-  return false;
+  //cbi(TCCR0A, COM0A1);    
+  //cbi(TCCR0A, COM0B1);    
+  return (PINB & (1 << 3)) != 0;
 #endif
 #elif defined(HELIOS_CLI)
   // then just return the pin state as-is, the input event may have

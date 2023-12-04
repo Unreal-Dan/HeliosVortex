@@ -30,5 +30,6 @@
 #define MENU_HOLD_TIME 1000
 
 #define HELIOS_EMBEDDED 1
+//#define HELIOS_ARDUINO 1
 
 #endif
