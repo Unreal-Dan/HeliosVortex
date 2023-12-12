@@ -38,16 +38,6 @@ CPU_SPEED = 1000000L
 # the port for serial upload
 SERIAL_PORT = COM11
 
-SAVE_EEPROM = 1
-FUSE0 = 0b00000000
-FUSE2 = 0x02
-FUSE5 = 0b1100010$(SAVE_EEPROM)
-FUSE6 = 0x04
-# fuse7 = APPEND
-FUSE7 = 0x00
-# fuse8 = BOOTEND
-FUSE8 = 0x7e
-
 CFLAGS = -g \
 	 -Os \
 	 -MMD \
