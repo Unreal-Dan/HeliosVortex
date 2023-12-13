@@ -44,7 +44,7 @@ void Time::tickClock()
   // tick clock forward
   m_curTick++;
 
-//#ifdef HELIOS_CLI
+#ifdef HELIOS_CLI
   // the rest of this only runs inside vortexlib because on the duo the tick runs in the
   // tcb timer callback instead of in a busy loop constantly checking microseconds()
   // perform timestep
@@ -69,7 +69,7 @@ void Time::tickClock()
 
   // store current time
   m_prevTime = microseconds();
-//#endif
+#endif
 }
 
 uint32_t Time::microseconds()

@@ -33,7 +33,7 @@ AVRDUDE_FLAGS = -C$(AVRDUDE_CONF) \
 		-b$(AVRDUDE_BAUDRATE) \
 		-v
 
-CPU_SPEED = 1000000L
+CPU_SPEED = 8000000L
 
 # the port for serial upload
 SERIAL_PORT = COM11
@@ -114,6 +114,9 @@ $(TARGET).elf: $(OBJS)
 
 upload: $(TARGET).hex
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -Uflash:w:$(TARGET).hex:i
+
+upload_eeprom: $(TARGET).eep
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -Ueeprom:w:$(TARGET).eep:i
 
 ifneq ($(OS),Windows_NT) # Linux
 build: all

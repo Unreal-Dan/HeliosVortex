@@ -26,6 +26,7 @@ OutputType output_type = OUTPUT_TYPE_COLOR;
 bool in_place = false;
 bool lockstep = false;
 bool storage = false;
+bool eeprom = false;
 
 // used to switch terminal to non-blocking and back
 static struct termios orig_term_attr = {0};
@@ -46,6 +47,10 @@ int main(int argc, char *argv[])
   set_terminal_nonblocking();
   // run the arduino setup routine
   Helios::init();
+  // just generate eeprom?
+  if (eeprom) {
+    return 0;
+  }
   while (Helios::keep_going()) {
     // check for any inputs and read the next one
     read_inputs();
@@ -78,6 +83,7 @@ static void parse_options(int argc, char *argv[])
     {"lockstep", no_argument, nullptr, 'l'},
     {"in-place", no_argument, nullptr, 'i'},
     {"storage", optional_argument, nullptr, 's'},
+    {"eeprom", no_argument, nullptr, 'E'},
     {"help", no_argument, nullptr, 'h'},
     {nullptr, 0, nullptr, 0}
   };
@@ -102,6 +108,9 @@ static void parse_options(int argc, char *argv[])
     case 's':
       // TODO: enable persistent storage to file?
       storage = true;
+      break;
+    case 'E':
+      eeprom = true;
       break;
     case 'h':
       // print usage and exit
@@ -233,6 +242,7 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "  -s, --storage [file]     Persistent storage to file (default file: FlashStorage.flash)\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Other Options:\n");
+  fprintf(stderr, "  -E, --eeprom             Generate an eeprom file for flashing\n");
   fprintf(stderr, "  -h, --help               Display this help message\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Input Commands (pass to stdin):");

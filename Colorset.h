@@ -139,11 +139,11 @@ public:
 private:
   // palette of colors
   RGBColor m_palette[MAX_COLOR_SLOTS];
+  // the actual number of colors in the set
+  uint8_t m_numColors;
   // the current index, starts at UINT8_MAX so that
   // the very first call to getNext will iterate to 0
   uint8_t m_curIndex;
-  // the actual number of colors in the set
-  uint8_t m_numColors;
 };
 
 #endif

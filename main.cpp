@@ -1,10 +1,13 @@
 #include "Helios.h"
 
-#ifndef HELIOS_ARDUINO
-int main(int argc, char *argv[]) {
+#if !defined(HELIOS_CLI) && !defined(HELIOS_ARDUINO)
+// this is the main thread for non-arduino embedded builds
+int main(int argc, char *argv[])
+{
   Helios::init();
   while (Helios::keep_going()) {
-    Helios::tick();
+    //Helios::tick();
+    // todo: sleep here
   }
   return 0;
 }
