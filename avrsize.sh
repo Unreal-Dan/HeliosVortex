@@ -6,7 +6,7 @@ AVR_SIZE="/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin/avr-siz
 # Replace this with the path to your .elf file
 ELF_FILE=$1
 
-if [ "$ELF_FILE" == "" ]; then
+if [[ -z "$ELF_FILE" ]]; then
   echo "Please specify a file: $0 <file>"
   exit 1
 fi
