@@ -116,7 +116,8 @@ void Led::update()
   analogWrite(PWM_PIN_B, m_ledColor.blue);
 #else
   // a counter to keep track of milliseconds for the PWM
-  uint8_t counter = Time::getCurtime() % 100;
+  static uint8_t counter = 0;
+  counter++;
   // run the software PWM on each pin
   if (counter <= m_ledColor.red) { 
     PORTB |= (1 << PWM_PIN_R);

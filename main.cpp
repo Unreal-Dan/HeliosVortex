@@ -1,4 +1,5 @@
 #include "Helios.h"
+#include "Led.h"
 
 #if !defined(HELIOS_CLI) && !defined(HELIOS_ARDUINO)
 // this is the main thread for non-arduino embedded builds
@@ -6,6 +7,7 @@ int main(int argc, char *argv[])
 {
   Helios::init();
   while (Helios::keep_going()) {
+    Led::update();
     //Helios::tick();
     // todo: sleep here
   }

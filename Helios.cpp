@@ -107,7 +107,10 @@ void Helios::tick()
   
   // render the current led color by sending the data to the leds, this
   // function is basically just set_color()
-  Led::update();
+  // NOTE: Do not update the LED here anymore, instead we call Led::update()
+  //       in the tight loop inside main() where it can perform software PWM
+  //       on the LED pins at a much higher frequency
+  //Led::update();
 
   // finally tick the clock forward and then sleep till the entire
   // tick duration has been consumed

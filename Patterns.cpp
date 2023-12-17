@@ -14,7 +14,7 @@ void Patterns::make_default(uint8_t index, Pattern &pat)
   switch (index) {
     case 0:
     default:
-      args = { 2, 13, 0, 0, 0, 0, 0};
+      args = { 2, 13, 0, 0, 0, 1, 0};
       break;
     case 1:
       args = { 6, 50, 0, 0, 0, 0, 0};
