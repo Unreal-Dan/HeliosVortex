@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 # need megatinycore installed for this
 
