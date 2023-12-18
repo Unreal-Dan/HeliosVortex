@@ -33,7 +33,7 @@ AVRDUDE_FLAGS = -C$(AVRDUDE_CONF) \
 		-b$(AVRDUDE_BAUDRATE) \
 		-v
 
-CPU_SPEED = 8000000L
+CPU_SPEED = 16000000L
 
 # the port for serial upload
 SERIAL_PORT = COM11

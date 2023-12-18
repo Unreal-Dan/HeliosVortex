@@ -119,17 +119,17 @@ void Led::update()
   static uint8_t counter = 0;
   counter++;
   // run the software PWM on each pin
-  if (counter <= m_ledColor.red) { 
+  if (counter < m_ledColor.red) { 
     PORTB |= (1 << PWM_PIN_R);
   } else {
     PORTB &= ~(1 << PWM_PIN_R);
   }
-  if (counter <= m_ledColor.green) {
+  if (counter < m_ledColor.green) {
     PORTB |= (1 << PWM_PIN_G);
   } else {
     PORTB &= ~(1 << PWM_PIN_G);
   }
-  if (counter <= m_ledColor.blue) {
+  if (counter < m_ledColor.blue) {
     PORTB |= (1 << PWM_PIN_B);
   } else {
     PORTB &= ~(1 << PWM_PIN_B);
