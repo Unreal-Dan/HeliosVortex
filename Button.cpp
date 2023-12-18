@@ -2,6 +2,7 @@
 #include "TimeControl.h"
 
 #ifdef HELIOS_EMBEDDED
+#include <avr/interrupt.h>
 #include <avr/io.h>
 #ifdef HELIOS_ARDUINO
 #include <arduino.h>
@@ -10,9 +11,7 @@
 #define BUTTON_PORT 2
 #endif
 
-#ifdef HELIOS_CLI
 #include "Helios.h"
-#endif
 
 // static members of Button
 uint32_t Button::m_pressTime = 0;
@@ -66,14 +65,37 @@ bool Button::init()
   // Set pin3 (Port B3) as input
   //DDRB &= ~(1 << 3);
   //PORTB &= ~(1 << 3); // Enable internal pull-up resistor for PB4
-  // Enable Pin Change Interrupt on the BUTTON pin
-  //GIMSK |= _BV(PCIE);
-  //PCMSK |= _BV(PIN_BUTTON);
-  //sei();  // Enable interrupts
+
+  // turn off wake
+  GIMSK &= ~_BV(PCIE);
+  PCMSK &= ~_BV(3);
 #endif
 #endif
   return true;
 }
+
+// enable wake on press
+void Button::enableWake()
+{
+  // Enable Pin Change Interrupt on the BUTTON pin
+  GIMSK |= _BV(PCIE);
+  PCMSK |= _BV(3);
+}
+
+#ifdef HELIOS_EMBEDDED
+
+#include <avr/wdt.h> // Include the watchdog timer library
+void software_reset() {
+  wdt_enable(WDTO_15MS); // Enable the watchdog timer for 15 milliseconds
+  while(1) {
+    // Enter an infinite loop. The watchdog timer will reset the microcontroller after 15 milliseconds.
+  }
+}
+ISR(PCINT0_vect) {
+  Helios::wakeup();
+  software_reset();
+}
+#endif
 
 // directly poll the pin for whether it's pressed right now
 bool Button::check()

@@ -11,6 +11,7 @@ public:
   static void tick();
 
   static void enter_sleep(bool save);
+  static void wakeup();
 
   static bool keep_going() { return keepgoing; }
   static void terminate() { keepgoing = false; }

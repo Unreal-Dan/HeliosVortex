@@ -13,6 +13,7 @@
 #ifdef HELIOS_EMBEDDED
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 #endif
 
 #ifdef HELIOS_CLI
@@ -34,7 +35,14 @@ bool Helios::keepgoing = true;
 bool Helios::sleeping = false;
 
 bool Helios::init()
-{
+{    
+#ifdef HELIOS_EMBEDDED
+  // Clear the reset flag on the MCU status register
+  MCUSR &= ~(1 << WDRF);
+  // Disable the Watchdog Timer to prevent unwanted resets
+  wdt_disable();
+#endif
+
   // initialize the time control and led control
   if (!Time::init()) {
     return false;
@@ -129,6 +137,7 @@ void Helios::enter_sleep(bool save)
   Led::clear();
   Led::update();
   cur_state = STATE_SLEEP;
+  Button::enableWake();
 #ifdef HELIOS_EMBEDDED
   // init the output pins to prevent any floating pins
   //clearOutputPins();
@@ -136,7 +145,7 @@ void Helios::enter_sleep(bool save)
   Time::delayMicroseconds(250);
   // this is an ISR that runs in the timecontrol system to handle
   // micros, it will wake the device up periodically
-  TIMSK &= ~(1 << OCIE1A);
+  //TIMSK &= ~(1 << OCIE1A);
   // Enable wake on interrupt for the button
   //g_pButton->enableWake();
   // Set sleep mode to POWER DOWN mode
@@ -150,6 +159,11 @@ void Helios::enter_sleep(bool save)
   // enable the sleep bool
   sleeping = true;
 #endif
+}
+
+void Helios::wakeup()
+{
+  sleeping = false;
 }
 
 void Helios::handle_state()
@@ -230,7 +244,10 @@ void Helios::handle_state_modes()
   if (Button::onRelease()) {
     switch (magnitude) {
     case 0:  // off
-      //cur_state = STATE_SLEEP;
+      // but only if we held for more than a short click
+      if (holdDur > SHORT_CLICK_THRESHOLD) {
+        cur_state = STATE_SLEEP;
+      }
       break;
     case 1:  // color select
       //cur_state = STATE_COLOR_SELECT_SLOT;
