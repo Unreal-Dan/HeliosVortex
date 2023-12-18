@@ -5,13 +5,21 @@
 #include "TimeControl.h"
 
 #include "HeliosConfig.h"
+#include "Helios.h"
 
-#ifdef VORTEX_EMBEDDED
+#ifdef HELIOS_EMBEDDED
+#ifdef HELIOS_ARDUINO
+#include <arduino.h>
+#else
 #include <avr/sleep.h>
 #include <avr/io.h>
+#include <avr/interrupt.h>
+#endif
 #endif
 
-#define LED_DATA_PIN  7
+#define PWM_PIN_R PB0 // Red channel (pin 5)
+#define PWM_PIN_G PB1 // Green channel (pin 6)
+#define PWM_PIN_B PB4 // Blue channel (pin 3)
 
 // array of led color values
 RGBColor Led::m_ledColor = RGB_OFF;
@@ -21,15 +29,23 @@ uint8_t Led::m_brightness = DEFAULT_BRIGHTNESS;
 bool Led::init()
 {
 #ifdef HELIOS_EMBEDDED
-  //// Set pins as outputs
-  //DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
+#ifdef HELIOS_ARDUINO
+  pinMode(0, OUTPUT);
+  pinMode(1, OUTPUT);
+  pinMode(4, OUTPUT);
+#else
+  // Set pins as outputs
+  DDRB |= (1 << 0) | (1 << 1) | (1 << 4);
+  // Timer/Counter0 in Fast PWM mode
+  //TCCR0A |= (1 << WGM01) | (1 << WGM00);
+  // Clear OC0A and OC0B on compare match, set at BOTTOM (non-inverting mode)
+  //TCCR0A |= (1 << COM0A1) | (1 << COM0B1);
+  // Use clk/8 prescaler (adjust as needed)
+  //TCCR0B |= (1 << CS01);
 
-  //// Configure Timer/Counter 0 for PB0 (pin 0) and PB1 (pin 1)
-  //TCCR0A |= (1 << COM0A1) | (1 << COM0B1) | (1 << WGM01) | (1 << WGM00);
-  //TCCR0B |= (1 << CS00); // No prescaler for timer0
-
-  //// Configure Timer/Counter 1 for PB4 (pin 4)
-  //TCCR1 |= (1 << PWM1A) | (1 << COM1A1) | (1 << WGM10);
+  //TCCR1 |= (1 << PWM1A) | (1 << COM1A1) | (1 << PWM1B) | (1 << COM1B1);
+  //GTCCR |= (1 << PWM1B);
+#endif
 #endif
   return true;
 }
@@ -93,9 +109,31 @@ void Led::hold(RGBColor col)
 void Led::update()
 {
 #ifdef HELIOS_EMBEDDED
-  //// write out the rgb values to analog pins
-  //OCR0A = m_ledColor.red;
-  //OCROB = m_ledColor.green;
-  //OCR1A = m_ledColor.blue;
+  // write out the rgb values to analog pins
+#ifdef HELIOS_ARDUINO
+  analogWrite(PWM_PIN_R, m_ledColor.red);
+  analogWrite(PWM_PIN_G, m_ledColor.green);
+  analogWrite(PWM_PIN_B, m_ledColor.blue);
+#else
+  // a counter to keep track of milliseconds for the PWM
+  static uint8_t counter = 0;
+  counter++;
+  // run the software PWM on each pin
+  if (counter <= m_ledColor.red) { 
+    PORTB |= (1 << PWM_PIN_R);
+  } else {
+    PORTB &= ~(1 << PWM_PIN_R);
+  }
+  if (counter <= m_ledColor.green) {
+    PORTB |= (1 << PWM_PIN_G);
+  } else {
+    PORTB &= ~(1 << PWM_PIN_G);
+  }
+  if (counter <= m_ledColor.blue) {
+    PORTB |= (1 << PWM_PIN_B);
+  } else {
+    PORTB &= ~(1 << PWM_PIN_B);
+  }
+#endif
 #endif
 }

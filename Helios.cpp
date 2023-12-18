@@ -48,7 +48,7 @@ bool Helios::init()
   if (!Button::init()) {
     return false;
   }
-
+  
   // read the global flags from index 0 config
   Storage::read_config(0, (uint8_t &)global_flags);
   if (has_flag(FLAG_CONJURE)) {
@@ -66,29 +66,30 @@ bool Helios::init()
   next_mode();
 
 #ifdef HELIOS_EMBEDDED
-  // Set CTC (Clear Timer on Compare Match) mode
-  TCCR1 = (1 << CTC1);
-  // Set prescaler to 8 (CS12 = 1, CS11 = 0, CS10 = 0)
-  TCCR1 |= (1 << CS11);
-  // Set compare match value for 1000 Hz
-  OCR1C = 124;
-  // Enable Timer/Counter 1 Output Compare A Match interrupt
-  TIMSK |= (1 << OCIE1A);
-  // Setup sleep mode for standby
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  // Enable interrupts
+  // Timer0 setup for 1 kHz interrupt
+  TCCR0A |= (1 << WGM01);
+  OCR0A = 124; // 1ms at 8MHz clock with prescaler of 64
+  TIMSK |= (1 << OCIE0A);
   sei();
-  // Standby indefinitely while the ISR runs ticks
-  while (!sleeping) {
-    sleep_mode();
-  }
+  TCCR0B |= (1 << CS01) | (1 << CS00); // Start timer with prescaler of 64
+
+  // TODO: is this necessary? It's from the duo
+  //// Setup sleep mode for standby
+  //set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  //// Enable interrupts
+  //sei();
+  //// Standby indefinitely while the ISR runs ticks
+  //while (!sleeping) {
+  //  sleep_mode();
+  //}
 #endif
   return true;
 }
 
 #ifdef HELIOS_EMBEDDED
-// ISR to call tick 1000 times a second
-ISR(TIM1_COMPA_vect) {
+ISR(TIM0_COMPA_vect)
+{
+  // 1 kHz system tick
   Helios::tick();
 }
 #endif
@@ -103,10 +104,13 @@ void Helios::tick()
   // we're in we check for the appropriate input events for that
   // state by checking button globals, then run the appropriate logic
   handle_state();
-
+  
   // render the current led color by sending the data to the leds, this
   // function is basically just set_color()
-  Led::update();
+  // NOTE: Do not update the LED here anymore, instead we call Led::update()
+  //       in the tight loop inside main() where it can perform software PWM
+  //       on the LED pins at a much higher frequency
+  //Led::update();
 
   // finally tick the clock forward and then sleep till the entire
   // tick duration has been consumed
@@ -196,15 +200,17 @@ void Helios::next_mode()
 void Helios::handle_state_modes()
 {
   if (Button::onShortClick()) {
-    if (has_flag(FLAG_CONJURE)) {
-      enter_sleep(false);
-    } else {
+    //Led::hold(RGB_MAGENTA);
+    ////if (has_flag(FLAG_CONJURE)) {
+      ////enter_sleep(false);
+    ////} else {
       next_mode();
-    }
-    return;
+    ////}
+    //return;
   }
   // just play the current mode
   pat.play();
+  
   // check how long the button is held
   uint32_t holdDur = Button::holdDuration();
   // show a color based on the hold duration past 200
@@ -224,20 +230,20 @@ void Helios::handle_state_modes()
   if (Button::onRelease()) {
     switch (magnitude) {
     case 0:  // off
-      cur_state = STATE_SLEEP;
+      //cur_state = STATE_SLEEP;
       break;
     case 1:  // color select
-      cur_state = STATE_COLOR_SELECT_SLOT;
+      //cur_state = STATE_COLOR_SELECT_SLOT;
       // use the nice hue to rgb rainbow
-      g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
+      //g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
       // reset the menu selection
-      menu_selection = 0;
+      //menu_selection = 0;
       break;
     case 2:  // pat select
-      cur_state = STATE_PATTERN_SELECT;
+      //cur_state = STATE_PATTERN_SELECT;
       break;
     case 3:  // conjure mode
-      cur_state = STATE_CONJURE_MODE;
+      //cur_state = STATE_CONJURE_MODE;
       break;
     default: // hold past
       // do nothing

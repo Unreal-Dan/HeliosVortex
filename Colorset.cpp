@@ -7,12 +7,12 @@
 // when no color is selected in the colorset the index is this
 // then when you call getNext() for the first time it returns
 // the 0th color in the colorset and after the index will be 0
-#define INDEX_NONE UINT8_MAX
+#define INDEX_NONE 255
 
 Colorset::Colorset() :
   m_palette(),
-  m_curIndex(INDEX_NONE),
-  m_numColors(0)
+  m_numColors(0),
+  m_curIndex(INDEX_NONE)
 {
   init();
 }
@@ -256,7 +256,7 @@ void Colorset::adjustBrightness(uint8_t fadeby)
 // get a color from the colorset
 RGBColor Colorset::get(uint8_t index) const
 {
-  if (index >= m_numColors || !m_palette) {
+  if (index >= m_numColors) {
     return RGBColor(0, 0, 0);
   }
   return m_palette[index];
@@ -274,20 +274,13 @@ void Colorset::set(uint8_t index, RGBColor col)
     }
     return;
   }
-  if (!m_palette) {
-    // should be impossible because if the index is less than
-    // the number of colors then there must be non-zero number
-    // of colors which means the palette should be initialized
-    //ERROR_LOGF("Programmer error setting color index %u with no palette", index);
-    return;
-  }
   m_palette[index] = col;
 }
 
 // skip some amount of colors
 void Colorset::skip(int32_t amount)
 {
-  if (!m_numColors || !m_palette) {
+  if (!m_numColors) {
     return;
   }
   // if the colorset hasn't started yet
@@ -310,7 +303,7 @@ void Colorset::skip(int32_t amount)
 
 RGBColor Colorset::cur()
 {
-  if (m_curIndex >= m_numColors || !m_palette) {
+  if (m_curIndex >= m_numColors) {
     return RGBColor(0, 0, 0);
   }
   if (m_curIndex == INDEX_NONE) {
@@ -337,7 +330,7 @@ void Colorset::resetIndex()
 
 RGBColor Colorset::getPrev()
 {
-  if (!m_numColors || !m_palette) {
+  if (!m_numColors) {
     return RGB_OFF;
   }
   // handle wrapping at 0
@@ -352,7 +345,7 @@ RGBColor Colorset::getPrev()
 
 RGBColor Colorset::getNext()
 {
-  if (!m_numColors || !m_palette) {
+  if (!m_numColors) {
     return RGB_OFF;
   }
   // iterate current index, let it wrap at max uint8
@@ -366,7 +359,7 @@ RGBColor Colorset::getNext()
 // peek at the next color but don't iterate
 RGBColor Colorset::peek(int32_t offset) const
 {
-  if (!m_numColors || !m_palette) {
+  if (!m_numColors) {
     return RGB_OFF;
   }
   uint8_t nextIndex = 0;

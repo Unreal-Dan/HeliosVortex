@@ -1,15 +1,5 @@
-ifeq ($(OS),Windows_NT) # Windows
-    BINDIR="C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/"
-    AVRDUDEDIR="$(shell echo "$$LOCALAPPDATA")/Arduino15/packages/DxCore/tools/avrdude/6.3.0-arduino17or18/bin"
-    PYTHON="$(shell echo "$$LOCALAPPDATA")/Arduino15/packages/megaTinyCore/tools/python3/3.7.2-post1/python3"
-    PYPROG="$(shell echo "$$LOCALAPPDATA")/Arduino15/packages/megaTinyCore/hardware/megaavr/2.6.5/tools/prog.py"
-    DEVICE_DIR="C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATtiny_DFP/1.10.348/gcc/dev/attiny85"
-    INCLUDE_DIR="C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATtiny_DFP/1.10.348/include/"
-else # linux
-    BINDIR=~/atmel_setup/avr8-gnu-toolchain-linux_x86_64/bin/
-    DEVICE_DIR=~/atmel_setup/gcc/dev/attiny85
-    INCLUDE_DIR=~/atmel_setup/include/
-endif
+BINDIR=/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin/
+AVRDUDEDIR=/usr/local/bin/
 
 CC = ${BINDIR}/avr-g++
 LD = ${BINDIR}/avr-g++
@@ -21,9 +11,9 @@ NM = ${BINDIR}/avr-nm
 AVRDUDE = ${AVRDUDEDIR}/avrdude
 
 AVRDUDE_CONF = avrdude.conf
-AVRDUDE_PORT = usb
-AVRDUDE_PROGRAMMER = atmelice_updi
-AVRDUDE_BAUDRATE = 115200
+AVRDUDE_PORT = /dev/tty.usbmodem1423201
+AVRDUDE_PROGRAMMER = stk500v1
+AVRDUDE_BAUDRATE = 19200
 AVRDUDE_CHIP = attiny85
 
 AVRDUDE_FLAGS = -C$(AVRDUDE_CONF) \
@@ -33,20 +23,10 @@ AVRDUDE_FLAGS = -C$(AVRDUDE_CONF) \
 		-b$(AVRDUDE_BAUDRATE) \
 		-v
 
-CPU_SPEED = 10000000L
+CPU_SPEED = 8000000L
 
 # the port for serial upload
 SERIAL_PORT = COM11
-
-SAVE_EEPROM = 1
-FUSE0 = 0b00000000
-FUSE2 = 0x02
-FUSE5 = 0b1100010$(SAVE_EEPROM)
-FUSE6 = 0x04
-# fuse7 = APPEND
-FUSE7 = 0x00
-# fuse8 = BOOTEND
-FUSE8 = 0x7e
 
 CFLAGS = -g \
 	 -Os \
@@ -66,7 +46,6 @@ CFLAGS = -g \
 	 -D__AVR_ATtiny85__ \
 	 -mmcu=$(AVRDUDE_CHIP) \
 	 -DF_CPU=$(CPU_SPEED) \
-	 -B $(DEVICE_DIR) \
 	 -D HELIOS_EMBEDDED
 
 LDFLAGS = -g \
@@ -78,7 +57,6 @@ LDFLAGS = -g \
 	  -mrelax \
 	  -lm \
 	  -mmcu=$(AVRDUDE_CHIP) \
-	  -B $(DEVICE_DIR)
 
 INCLUDES=\
 	-I $(INCLUDE_DIR) \
@@ -89,7 +67,7 @@ CFLAGS+=$(INCLUDES)
 # Source files
 ifeq ($(OS),Windows_NT) # Windows
 SRCS = \
-       $(shell find . -maxdepth 1 -type f -name '\*.cpp') 
+       $(shell find . -maxdepth 1 -type f -name '\*.cpp')
 else # linux
 SRCS = \
        $(shell find . -maxdepth 1 -type f -name \*.cpp)
@@ -123,11 +101,10 @@ $(TARGET).elf: $(OBJS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 upload: $(TARGET).hex
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -Ufuse0:w:$(FUSE0):m -Ufuse2:w:$(FUSE2):m -Ufuse5:w:$(FUSE5):m -Ufuse6:w:$(FUSE6):m -Ufuse7:w:$(FUSE7):m -Ufuse8:w:$(FUSE8):m -Uflash:w:$(TARGET).hex:i
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -Uflash:w:$(TARGET).hex:i
 
-# upload via SerialUPDI
-serial: $(TARGET).hex
-	$(PYTHON) -u $(PYPROG) -t uart -u $(SERIAL_PORT) -b 921600 -d $(AVRDUDE_CHIP) --fuses 0:$(FUSE0) 2:$(FUSE2) 5:$(FUSE5) 6:$(FUSE6) 7:$(FUSE7) 8:$(FUSE8) -f $< -a write -v
+upload_eeprom: $(TARGET).eep
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -Ueeprom:w:$(TARGET).eep:i
 
 ifneq ($(OS),Windows_NT) # Linux
 build: all

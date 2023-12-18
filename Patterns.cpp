@@ -9,16 +9,32 @@ void Patterns::make_default(uint8_t index, Pattern &pat)
     return;
   }
   //Storage::read_pattern(index + 6, pat);
-  const PatternArgs default_args[6] = {
-    {1},
-    {3, 4},
-    {15, 5, 4},
-    {15, 5, 4, 3},
-    {15, 5, 4, 3, 2},
-    {15, 5, 4, 3, 2, 1},
-  };
+  PatternArgs args;
   Colorset default_colorset(RGB_RED, RGB_GREEN, RGB_BLUE);
-  pat.setArgs(default_args[index]);
+  switch (index) {
+    case 0:
+    default:
+      args = { 2, 13, 0, 0, 0, 1, 0};
+      break;
+    case 1:
+      args = { 6, 50, 0, 0, 0, 0, 0};
+      break;
+    case 2:
+      args = { 6, 13, 0, 0, 0, 1, 0 };
+      break;
+    case 3:
+      args = { 6, 13, 0, 0, 0, 1, 1 };
+      break;
+    case 4:
+      args = { 5, 5, 200, 0, 4, 0, 0 };
+      default_colorset = Colorset(RGB_PURPLE, RGB_RED4, RGB_YELLOW);
+      break;
+    case 5:
+      args = { 15, 10, 150, 50, 0, 0, 0 };
+      default_colorset = Colorset(RGB_YELLOW, RGB_PURPLE);
+      break;
+  }
+  pat.setArgs(args);
   pat.setColorset(default_colorset);
 }
 
