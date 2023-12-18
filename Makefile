@@ -1,5 +1,15 @@
-BINDIR=/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin/
-AVRDUDEDIR=/usr/local/bin/
+ifeq ($(OS),Windows_NT) # Windows
+    BINDIR="C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/"
+    AVRDUDEDIR="$(shell echo "$$LOCALAPPDATA")/Arduino15/packages/DxCore/tools/avrdude/6.3.0-arduino17or18/bin"
+    PYTHON="$(shell echo "$$LOCALAPPDATA")/Arduino15/packages/megaTinyCore/tools/python3/3.7.2-post1/python3"
+    PYPROG="$(shell echo "$$LOCALAPPDATA")/Arduino15/packages/megaTinyCore/hardware/megaavr/2.6.5/tools/prog.py"
+    DEVICE_DIR="C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATtiny_DFP/1.10.348/gcc/dev/attiny85"
+    INCLUDE_DIR="C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATtiny_DFP/1.10.348/include/"
+else # linux
+    BINDIR=~/atmel_setup/avr8-gnu-toolchain-linux_x86_64/bin/
+    DEVICE_DIR=~/atmel_setup/gcc/dev/attiny85
+    INCLUDE_DIR=~/atmel_setup/include/
+endif
 
 CC = ${BINDIR}/avr-g++
 LD = ${BINDIR}/avr-g++
@@ -11,7 +21,7 @@ NM = ${BINDIR}/avr-nm
 AVRDUDE = ${AVRDUDEDIR}/avrdude
 
 AVRDUDE_CONF = avrdude.conf
-AVRDUDE_PORT = /dev/tty.usbmodem1423201
+AVRDUDE_PORT = COM12
 AVRDUDE_PROGRAMMER = stk500v1
 AVRDUDE_BAUDRATE = 19200
 AVRDUDE_CHIP = attiny85
@@ -46,6 +56,7 @@ CFLAGS = -g \
 	 -D__AVR_ATtiny85__ \
 	 -mmcu=$(AVRDUDE_CHIP) \
 	 -DF_CPU=$(CPU_SPEED) \
+	 -B $(DEVICE_DIR) \
 	 -D HELIOS_EMBEDDED
 
 LDFLAGS = -g \
@@ -57,6 +68,7 @@ LDFLAGS = -g \
 	  -mrelax \
 	  -lm \
 	  -mmcu=$(AVRDUDE_CHIP) \
+	  -B $(DEVICE_DIR)
 
 INCLUDES=\
 	-I $(INCLUDE_DIR) \
@@ -67,7 +79,7 @@ CFLAGS+=$(INCLUDES)
 # Source files
 ifeq ($(OS),Windows_NT) # Windows
 SRCS = \
-       $(shell find . -maxdepth 1 -type f -name '\*.cpp')
+       $(shell find . -maxdepth 1 -type f -name '\*.cpp') 
 else # linux
 SRCS = \
        $(shell find . -maxdepth 1 -type f -name \*.cpp)
