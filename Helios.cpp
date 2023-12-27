@@ -13,6 +13,7 @@
 #ifdef HELIOS_EMBEDDED
 #include <avr/sleep.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 #endif
 
 #ifdef HELIOS_CLI
@@ -34,7 +35,7 @@ bool Helios::keepgoing = true;
 bool Helios::sleeping = false;
 
 bool Helios::init()
-{
+{    
   // initialize the time control and led control
   if (!Time::init()) {
     return false;
@@ -70,18 +71,9 @@ bool Helios::init()
   TCCR0A |= (1 << WGM01);
   OCR0A = 124; // 1ms at 8MHz clock with prescaler of 64
   TIMSK |= (1 << OCIE0A);
-  sei();
   TCCR0B |= (1 << CS01) | (1 << CS00); // Start timer with prescaler of 64
-
-  // TODO: is this necessary? It's from the duo
-  //// Setup sleep mode for standby
-  //set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  //// Enable interrupts
-  //sei();
-  //// Standby indefinitely while the ISR runs ticks
-  //while (!sleeping) {
-  //  sleep_mode();
-  //}
+  // enable interrupts
+  sei();
 #endif
   return true;
 }
@@ -105,12 +97,9 @@ void Helios::tick()
   // state by checking button globals, then run the appropriate logic
   handle_state();
   
-  // render the current led color by sending the data to the leds, this
-  // function is basically just set_color()
   // NOTE: Do not update the LED here anymore, instead we call Led::update()
   //       in the tight loop inside main() where it can perform software PWM
   //       on the LED pins at a much higher frequency
-  //Led::update();
 
   // finally tick the clock forward and then sleep till the entire
   // tick duration has been consumed
@@ -128,17 +117,11 @@ void Helios::enter_sleep(bool save)
   // clear all the leds
   Led::clear();
   Led::update();
-  cur_state = STATE_SLEEP;
 #ifdef HELIOS_EMBEDDED
   // init the output pins to prevent any floating pins
   //clearOutputPins();
-  // delay for a bit to let the mosfet close and leds turn off
-  Time::delayMicroseconds(250);
-  // this is an ISR that runs in the timecontrol system to handle
-  // micros, it will wake the device up periodically
-  TIMSK &= ~(1 << OCIE1A);
   // Enable wake on interrupt for the button
-  //g_pButton->enableWake();
+  Button::enableWake();
   // Set sleep mode to POWER DOWN mode
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   // enable the sleep boo lright before we enter sleep, this will allow
@@ -147,9 +130,16 @@ void Helios::enter_sleep(bool save)
   // enter sleep
   sleep_mode();
 #else
+  cur_state = STATE_SLEEP;
   // enable the sleep bool
   sleeping = true;
 #endif
+}
+
+void Helios::wakeup()
+{
+  // re-initialize helios
+  init();
 }
 
 void Helios::handle_state()
@@ -171,16 +161,16 @@ void Helios::handle_state()
   case STATE_CONJURE_MODE:
     handle_state_conjure_mode();
     break;
-  case STATE_SLEEP:
 #ifdef HELIOS_CLI
+  case STATE_SLEEP:
     // simulate sleep in helios CLI
     if (Button::onPress()) {
       // wakeup
       printf("Wakeup\n");
       sleeping = false;
     }
-#endif
     break;
+#endif
   }
 }
 
@@ -200,13 +190,12 @@ void Helios::next_mode()
 void Helios::handle_state_modes()
 {
   if (Button::onShortClick()) {
-    //Led::hold(RGB_MAGENTA);
-    ////if (has_flag(FLAG_CONJURE)) {
-      ////enter_sleep(false);
-    ////} else {
+    if (has_flag(FLAG_CONJURE)) {
+      enter_sleep(false);
+    } else {
       next_mode();
-    ////}
-    //return;
+    }
+    return;
   }
   // just play the current mode
   pat.play();
@@ -220,8 +209,9 @@ void Helios::handle_state_modes()
   if (magnitude >= 4) {
     magnitude = 0;
   }
+  bool heldPast = (holdDur > SHORT_CLICK_THRESHOLD);
   // if the button is held for at least 1 second
-  if (Button::isPressed()) {
+  if (Button::isPressed() && heldPast) {
     const RGBColor menu_cols[4] = { RGB_OFF, RGB_CYAN, RGB_MAGENTA, RGB_YELLOW };
     Led::set(menu_cols[magnitude]);
   }
@@ -230,7 +220,10 @@ void Helios::handle_state_modes()
   if (Button::onRelease()) {
     switch (magnitude) {
     case 0:  // off
-      //cur_state = STATE_SLEEP;
+      // but only if we held for more than a short click
+      if (heldPast) {
+        enter_sleep(false);
+      }
       break;
     case 1:  // color select
       //cur_state = STATE_COLOR_SELECT_SLOT;
@@ -243,7 +236,7 @@ void Helios::handle_state_modes()
       //cur_state = STATE_PATTERN_SELECT;
       break;
     case 3:  // conjure mode
-      //cur_state = STATE_CONJURE_MODE;
+      cur_state = STATE_CONJURE_MODE;
       break;
     default: // hold past
       // do nothing
@@ -452,8 +445,8 @@ void Helios::handle_state_pat_select()
 
 void Helios::handle_state_conjure_mode()
 {
-  // enable conjure mode, store global mode index, switch back to modes state
-  set_flag(FLAG_CONJURE);
+  // toggle the conjure flag
+  toggle_flag(FLAG_CONJURE);
   // write out the new global flags and the current mode
   Storage::write_config(0, global_flags);
   Storage::write_config(1, (uint8_t)cur_mode - 1);

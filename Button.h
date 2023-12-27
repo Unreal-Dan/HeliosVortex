@@ -39,6 +39,9 @@ public:
   // the number of releases
   static uint8_t releaseCount() { return m_releaseCount; }
 
+  // enable wake on press
+  static void enableWake();
+
 #ifdef HELIOS_CLI
   // these will 'inject' a short/long click without actually touching the
   // button state, it's important that code uses 'onShortClick' or

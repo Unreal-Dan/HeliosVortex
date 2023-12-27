@@ -2,6 +2,7 @@
 #include "TimeControl.h"
 
 #ifdef HELIOS_EMBEDDED
+#include <avr/interrupt.h>
 #include <avr/io.h>
 #ifdef HELIOS_ARDUINO
 #include <arduino.h>
@@ -10,9 +11,7 @@
 #define BUTTON_PORT 2
 #endif
 
-#ifdef HELIOS_CLI
 #include "Helios.h"
-#endif
 
 // static members of Button
 uint32_t Button::m_pressTime = 0;
@@ -59,21 +58,28 @@ bool Button::init()
 #ifdef HELIOS_ARDUINO
   pinMode(3, INPUT);
 #else
-  // Configure button pin as input
-  //DDRB &= ~(1 << 3); // Set as input
-  //PORTB |= (1 << 3); // Enable pull-up resistor
-  //DDRB &= ~(1 << 3);
-  // Set pin3 (Port B3) as input
-  //DDRB &= ~(1 << 3);
-  //PORTB &= ~(1 << 3); // Enable internal pull-up resistor for PB4
-  // Enable Pin Change Interrupt on the BUTTON pin
-  //GIMSK |= _BV(PCIE);
-  //PCMSK |= _BV(PIN_BUTTON);
-  //sei();  // Enable interrupts
+  // turn off wake
+  PCMSK &= ~(1 << PCINT3);
+  GIMSK &= ~(1 << PCIE);
 #endif
 #endif
   return true;
 }
+
+// enable wake on press
+void Button::enableWake()
+{
+  // Configure INT0 to trigger on falling edge
+  PCMSK |= (1 << PCINT3);
+  GIMSK |= (1 << PCIE);
+  sei();
+}
+
+#ifdef HELIOS_EMBEDDED
+ISR(PCINT0_vect) {
+  Helios::wakeup();
+}
+#endif
 
 // directly poll the pin for whether it's pressed right now
 bool Button::check()

@@ -11,6 +11,7 @@ public:
   static void tick();
 
   static void enter_sleep(bool save);
+  static void wakeup();
 
   static bool keep_going() { return keepgoing; }
   static void terminate() { keepgoing = false; }
@@ -41,7 +42,9 @@ private:
     STATE_COLOR_SELECT_VAL,
     STATE_PATTERN_SELECT,
     STATE_CONJURE_MODE,
-    STATE_SLEEP
+#ifdef HELIOS_CLI
+    STATE_SLEEP,
+#endif
   };
 
   enum Flags : uint8_t {
@@ -53,6 +56,8 @@ private:
   // get/set global flags
   static void set_flag(Flags flag) { global_flags = (Flags)(global_flags | flag); }
   static bool has_flag(Flags flag) { return (global_flags & flag) != 0; }
+  static void clear_flag(Flags flag) { global_flags = (Flags)(global_flags & ~flag); }
+  static void toggle_flag(Flags flag) { global_flags = (Flags)(global_flags ^ flag); }
 
   // the current state of the system
   static State cur_state;
