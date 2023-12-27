@@ -56,6 +56,8 @@ private:
   // get/set global flags
   static void set_flag(Flags flag) { global_flags = (Flags)(global_flags | flag); }
   static bool has_flag(Flags flag) { return (global_flags & flag) != 0; }
+  static void clear_flag(Flags flag) { global_flags = (Flags)(global_flags & ~flag); }
+  static void toggle_flag(Flags flag) { global_flags = (Flags)(global_flags ^ flag); }
 
   // the current state of the system
   static State cur_state;

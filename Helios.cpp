@@ -78,18 +78,9 @@ bool Helios::init()
   TCCR0A |= (1 << WGM01);
   OCR0A = 124; // 1ms at 8MHz clock with prescaler of 64
   TIMSK |= (1 << OCIE0A);
-  sei();
   TCCR0B |= (1 << CS01) | (1 << CS00); // Start timer with prescaler of 64
-
-  // TODO: is this necessary? It's from the duo
-  //// Setup sleep mode for standby
-  //set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  //// Enable interrupts
-  //sei();
-  //// Standby indefinitely while the ISR runs ticks
-  //while (!sleeping) {
-  //  sleep_mode();
-  //}
+  // enable interrupts
+  sei();
 #endif
   return true;
 }
@@ -154,13 +145,8 @@ void Helios::enter_sleep(bool save)
 
 void Helios::wakeup()
 {
-  sleeping = false;
-  cur_mode = 0xFF;
   // re-initialize helios
   init();
-#ifndef HELIOS_EMBEDDED
-  cur_state = STATE_MODES;
-#endif
 }
 
 void Helios::handle_state()
@@ -211,13 +197,12 @@ void Helios::next_mode()
 void Helios::handle_state_modes()
 {
   if (Button::onShortClick()) {
-    //Led::hold(RGB_MAGENTA);
-    ////if (has_flag(FLAG_CONJURE)) {
-      ////enter_sleep(false);
-    ////} else {
+    if (has_flag(FLAG_CONJURE)) {
+      enter_sleep(false);
+    } else {
       next_mode();
-    ////}
-    //return;
+    }
+    return;
   }
   // just play the current mode
   pat.play();
@@ -258,7 +243,7 @@ void Helios::handle_state_modes()
       //cur_state = STATE_PATTERN_SELECT;
       break;
     case 3:  // conjure mode
-      //cur_state = STATE_CONJURE_MODE;
+      cur_state = STATE_CONJURE_MODE;
       break;
     default: // hold past
       // do nothing
@@ -467,8 +452,8 @@ void Helios::handle_state_pat_select()
 
 void Helios::handle_state_conjure_mode()
 {
-  // enable conjure mode, store global mode index, switch back to modes state
-  set_flag(FLAG_CONJURE);
+  // toggle the conjure flag
+  toggle_flag(FLAG_CONJURE);
   // write out the new global flags and the current mode
   Storage::write_config(0, global_flags);
   Storage::write_config(1, (uint8_t)cur_mode - 1);
