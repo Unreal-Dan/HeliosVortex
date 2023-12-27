@@ -36,13 +36,6 @@ bool Helios::sleeping = false;
 
 bool Helios::init()
 {    
-#ifdef HELIOS_EMBEDDED
-  // Clear the reset flag on the MCU status register
-  MCUSR &= ~(1 << WDRF);
-  // Disable the Watchdog Timer to prevent unwanted resets
-  wdt_disable();
-#endif
-
   // initialize the time control and led control
   if (!Time::init()) {
     return false;
