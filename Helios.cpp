@@ -113,12 +113,9 @@ void Helios::tick()
   // state by checking button globals, then run the appropriate logic
   handle_state();
   
-  // render the current led color by sending the data to the leds, this
-  // function is basically just set_color()
   // NOTE: Do not update the LED here anymore, instead we call Led::update()
   //       in the tight loop inside main() where it can perform software PWM
   //       on the LED pins at a much higher frequency
-  //Led::update();
 
   // finally tick the clock forward and then sleep till the entire
   // tick duration has been consumed
@@ -136,18 +133,11 @@ void Helios::enter_sleep(bool save)
   // clear all the leds
   Led::clear();
   Led::update();
-  cur_state = STATE_SLEEP;
-  Button::enableWake();
 #ifdef HELIOS_EMBEDDED
   // init the output pins to prevent any floating pins
   //clearOutputPins();
-  // delay for a bit to let the mosfet close and leds turn off
-  Time::delayMicroseconds(250);
-  // this is an ISR that runs in the timecontrol system to handle
-  // micros, it will wake the device up periodically
-  //TIMSK &= ~(1 << OCIE1A);
   // Enable wake on interrupt for the button
-  //g_pButton->enableWake();
+  Button::enableWake();
   // Set sleep mode to POWER DOWN mode
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   // enable the sleep boo lright before we enter sleep, this will allow
@@ -156,6 +146,7 @@ void Helios::enter_sleep(bool save)
   // enter sleep
   sleep_mode();
 #else
+  cur_state = STATE_SLEEP;
   // enable the sleep bool
   sleeping = true;
 #endif
@@ -164,6 +155,12 @@ void Helios::enter_sleep(bool save)
 void Helios::wakeup()
 {
   sleeping = false;
+  cur_mode = 0xFF;
+  // re-initialize helios
+  init();
+#ifndef HELIOS_EMBEDDED
+  cur_state = STATE_MODES;
+#endif
 }
 
 void Helios::handle_state()
@@ -185,16 +182,16 @@ void Helios::handle_state()
   case STATE_CONJURE_MODE:
     handle_state_conjure_mode();
     break;
-  case STATE_SLEEP:
 #ifdef HELIOS_CLI
+  case STATE_SLEEP:
     // simulate sleep in helios CLI
     if (Button::onPress()) {
       // wakeup
       printf("Wakeup\n");
       sleeping = false;
     }
-#endif
     break;
+#endif
   }
 }
 
@@ -234,8 +231,9 @@ void Helios::handle_state_modes()
   if (magnitude >= 4) {
     magnitude = 0;
   }
+  bool heldPast = (holdDur > SHORT_CLICK_THRESHOLD);
   // if the button is held for at least 1 second
-  if (Button::isPressed()) {
+  if (Button::isPressed() && heldPast) {
     const RGBColor menu_cols[4] = { RGB_OFF, RGB_CYAN, RGB_MAGENTA, RGB_YELLOW };
     Led::set(menu_cols[magnitude]);
   }
@@ -245,8 +243,8 @@ void Helios::handle_state_modes()
     switch (magnitude) {
     case 0:  // off
       // but only if we held for more than a short click
-      if (holdDur > SHORT_CLICK_THRESHOLD) {
-        cur_state = STATE_SLEEP;
+      if (heldPast) {
+        enter_sleep(false);
       }
       break;
     case 1:  // color select

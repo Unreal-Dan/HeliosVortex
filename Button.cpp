@@ -58,17 +58,9 @@ bool Button::init()
 #ifdef HELIOS_ARDUINO
   pinMode(3, INPUT);
 #else
-  // Configure button pin as input
-  //DDRB &= ~(1 << 3); // Set as input
-  //PORTB |= (1 << 3); // Enable pull-up resistor
-  //DDRB &= ~(1 << 3);
-  // Set pin3 (Port B3) as input
-  //DDRB &= ~(1 << 3);
-  //PORTB &= ~(1 << 3); // Enable internal pull-up resistor for PB4
-
   // turn off wake
-  GIMSK &= ~_BV(PCIE);
-  PCMSK &= ~_BV(3);
+  PCMSK &= ~(1 << PCINT3);
+  GIMSK &= ~(1 << PCIE);
 #endif
 #endif
   return true;
@@ -77,23 +69,15 @@ bool Button::init()
 // enable wake on press
 void Button::enableWake()
 {
-  // Enable Pin Change Interrupt on the BUTTON pin
-  GIMSK |= _BV(PCIE);
-  PCMSK |= _BV(3);
+  // Configure INT0 to trigger on falling edge
+  PCMSK |= (1 << PCINT3);
+  GIMSK |= (1 << PCIE);
+  sei();
 }
 
 #ifdef HELIOS_EMBEDDED
-
-#include <avr/wdt.h> // Include the watchdog timer library
-void software_reset() {
-  wdt_enable(WDTO_15MS); // Enable the watchdog timer for 15 milliseconds
-  while(1) {
-    // Enter an infinite loop. The watchdog timer will reset the microcontroller after 15 milliseconds.
-  }
-}
 ISR(PCINT0_vect) {
   Helios::wakeup();
-  software_reset();
 }
 #endif
 

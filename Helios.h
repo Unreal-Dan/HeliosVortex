@@ -42,7 +42,9 @@ private:
     STATE_COLOR_SELECT_VAL,
     STATE_PATTERN_SELECT,
     STATE_CONJURE_MODE,
-    STATE_SLEEP
+#ifdef HELIOS_CLI
+    STATE_SLEEP,
+#endif
   };
 
   enum Flags : uint8_t {
