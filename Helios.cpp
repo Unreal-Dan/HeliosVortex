@@ -225,14 +225,16 @@ void Helios::handle_state_modes()
       }
       break;
     case 1:  // color select
-      //cur_state = STATE_COLOR_SELECT_SLOT;
+      cur_state = STATE_COLOR_SELECT_SLOT;
       // use the nice hue to rgb rainbow
-      //g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
+      g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
       // reset the menu selection
-      //menu_selection = 0;
+      menu_selection = 0;
       break;
     case 2:  // pat select
       cur_state = STATE_PATTERN_SELECT;
+      // reset the menu selection
+      menu_selection = 0;
       break;
     case 3:  // conjure mode
       cur_state = STATE_CONJURE_MODE;
