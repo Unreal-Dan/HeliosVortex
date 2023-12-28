@@ -28,7 +28,6 @@
 //    -> 9 slots = 9 * 28 = 252
 //      = 3 bytes left
 
-
 bool Storage::init()
 {
 #ifdef HELIOS_CLI
@@ -55,6 +54,8 @@ bool Storage::write_pattern(uint8_t slot, const Pattern &pat)
   for (uint8_t i = 0; i < PATTERN_SIZE; ++i) {
     uint8_t val = ((uint8_t *)&pat)[i];
     uint8_t target = pos + i;
+    // reads out the byte of the eeprom first to see if it's different
+    // before writing out the byte -- this is faster than always writing
     if (val != read_byte(target)) {
       write_byte(target, val);
     }

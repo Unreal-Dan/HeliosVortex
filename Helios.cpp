@@ -106,20 +106,15 @@ void Helios::tick()
   Time::tickClock();
 }
 
-void Helios::enter_sleep(bool save)
+void Helios::enter_sleep()
 {
-  //if (save) {
-  //  // update the startup mode when going to sleep
-  //  Modes::setStartupMode(Modes::curModeIndex());
-  //  // save anything that hasn't been saved
-  //  Modes::saveStorage();
-  //}
   // clear all the leds
+  // TODO: Are these necessary?
   Led::clear();
   Led::update();
 #ifdef HELIOS_EMBEDDED
   // init the output pins to prevent any floating pins
-  //clearOutputPins();
+  clear_output_pins();
   // Enable wake on interrupt for the button
   Button::enableWake();
   // Set sleep mode to POWER DOWN mode
@@ -134,6 +129,11 @@ void Helios::enter_sleep(bool save)
   // enable the sleep bool
   sleeping = true;
 #endif
+}
+
+void Helios::clear_output_pins()
+{
+  // TODO: turn off any peripherals and stop floating pins
 }
 
 void Helios::wakeup()
@@ -191,7 +191,7 @@ void Helios::handle_state_modes()
 {
   if (Button::onShortClick()) {
     if (has_flag(FLAG_CONJURE)) {
-      enter_sleep(false);
+      enter_sleep();
     } else {
       next_mode();
     }
@@ -215,14 +215,13 @@ void Helios::handle_state_modes()
     const RGBColor menu_cols[4] = { RGB_OFF, RGB_CYAN, RGB_MAGENTA, RGB_YELLOW };
     Led::set(menu_cols[magnitude]);
   }
-  //State next_state = STATE_MODES;
   // when released, switch to different state based on hold duration
   if (Button::onRelease()) {
     switch (magnitude) {
     case 0:  // off
       // but only if we held for more than a short click
       if (heldPast) {
-        enter_sleep(false);
+        enter_sleep();
       }
       break;
     case 1:  // color select
@@ -233,7 +232,7 @@ void Helios::handle_state_modes()
       //menu_selection = 0;
       break;
     case 2:  // pat select
-      //cur_state = STATE_PATTERN_SELECT;
+      cur_state = STATE_PATTERN_SELECT;
       break;
     case 3:  // conjure mode
       cur_state = STATE_CONJURE_MODE;

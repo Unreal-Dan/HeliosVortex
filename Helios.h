@@ -10,7 +10,7 @@ public:
   static bool init();
   static void tick();
 
-  static void enter_sleep(bool save);
+  static void enter_sleep();
   static void wakeup();
 
   static bool keep_going() { return keepgoing; }
@@ -19,6 +19,8 @@ public:
   static bool is_asleep() { return sleeping; }
 
 private:
+  static void clear_output_pins();
+
   static void handle_state();
   static void handle_state_modes();
   static void handle_state_col_select();
