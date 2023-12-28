@@ -40,7 +40,7 @@ void Patterns::make_default(uint8_t index, Pattern &pat)
 
 void Patterns::make_pattern(PatternID id, Pattern &pat)
 {
-  PatternArgs args;
+  PatternArgs args = { 0, 0, 0, 0, 0, 0, 0 };
   switch (id) {
   default:
   case PATTERN_STROBEGAP:
