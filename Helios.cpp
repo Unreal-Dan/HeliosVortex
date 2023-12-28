@@ -429,14 +429,14 @@ void Helios::handle_state_pat_select()
   if (Button::onLongClick()) {
     cur_state = STATE_MODES;
     // save
+    if (!Storage::write_pattern(cur_mode, pat)) {
+      // failed to save?
+    }
     return;
   }
   if (Button::onShortClick()) {
     menu_selection = (menu_selection + 1) % PATTERN_COUNT;
     Patterns::make_pattern((PatternID)menu_selection, pat);
-    if (!Storage::write_pattern(cur_mode, pat)) {
-      // failed to save?
-    }
     pat.init();
   }
   pat.play();
