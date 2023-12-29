@@ -54,12 +54,12 @@ bool Helios::init()
   }
 
   // read the global flags from index 0 config
-  Storage::read_config(0, (uint8_t &)global_flags);
+  global_flags = (Flags)Storage::read_config(0);
   if (has_flag(FLAG_CONJURE)) {
     // set the current mode to the stored mode, which will actually
     // be the target mode minus 1 so that next_mode will iterate to
     // the correct target mode
-    Storage::read_config(1, cur_mode);
+    cur_mode = Storage::read_config(1);
   }
 
   if (has_flag(FLAG_LOCKED)) {

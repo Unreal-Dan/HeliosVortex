@@ -29,6 +29,11 @@
 //    -> 9 slots = 9 * 28 = 252
 //      = 3 bytes left
 
+// the index of the crc of the config bytes
+#define CONFIG_CRC_INDEX 255
+// the index of the last config byte (or first counting down)
+#define CONFIG_START_INDEX 254
+
 bool Storage::init()
 {
 #ifdef HELIOS_CLI
@@ -66,16 +71,26 @@ bool Storage::write_pattern(uint8_t slot, const Pattern &pat)
   return true;
 }
 
-bool Storage::read_config(uint8_t index, uint8_t &val)
+uint8_t Storage::config_checksum()
 {
-  val = read_byte(255 - index);
-  return true;
+  uint8_t byte1 = read_byte(CONFIG_START_INDEX - 0);
+  uint8_t byte2 = read_byte(CONFIG_START_INDEX - 1);
+  // bad checksum
+  return byte1 + byte2 + (byte1 ^ byte2);
 }
 
-bool Storage::write_config(uint8_t index, uint8_t val)
+uint8_t Storage::read_config(uint8_t index)
 {
-  write_byte(255 - index, val);
-  return true;
+  if (config_checksum() != read_byte(CONFIG_CRC_INDEX)) {
+    return 0;
+  }
+  return read_byte(CONFIG_START_INDEX - index);
+}
+
+void Storage::write_config(uint8_t index, uint8_t val)
+{
+  write_byte(CONFIG_START_INDEX - index, val);
+  write_byte(CONFIG_CRC_INDEX, config_checksum());
 }
 
 uint8_t Storage::crc8(uint8_t pos, uint8_t size)

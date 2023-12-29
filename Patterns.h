@@ -66,30 +66,8 @@ class Pattern;
 class Patterns
 {
 public:
-
   static void make_default(uint8_t index, Pattern &pat);
   static void make_pattern(PatternID id, Pattern &pat);
 };
-
-// PatternID operators
-inline PatternID &operator++(PatternID &c)
-{
-  c = PatternID(((uint16_t)c) + 1);
-  return c;
-}
-inline PatternID operator++(PatternID &c, int)
-{
-  PatternID temp = c;
-  ++c;
-  return temp;
-}
-inline PatternID operator+(PatternID &c, int b)
-{
-  return (PatternID)((uint16_t)c + b);
-}
-inline PatternID operator-(PatternID &c, int b)
-{
-  return (PatternID)((uint16_t)c - b);
-}
 
 #endif
