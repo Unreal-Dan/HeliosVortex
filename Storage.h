@@ -21,7 +21,7 @@ public:
 private:
   static uint8_t crc8(uint8_t pos, uint8_t size);
   static uint8_t crc_pos(uint8_t pos);
-  static bool read_crc(uint8_t pos);
+  static uint8_t read_crc(uint8_t pos);
   static bool check_crc(uint8_t pos);
   static void write_crc(uint8_t pos);
   static void write_byte(uint8_t address, uint8_t data);

@@ -35,7 +35,7 @@ bool Helios::keepgoing = true;
 bool Helios::sleeping = false;
 
 bool Helios::init()
-{    
+{
   // initialize the time control and led control
   if (!Time::init()) {
     return false;
@@ -49,7 +49,7 @@ bool Helios::init()
   if (!Button::init()) {
     return false;
   }
-  
+
   // read the global flags from index 0 config
   Storage::read_config(0, (uint8_t &)global_flags);
   if (has_flag(FLAG_CONJURE)) {
@@ -96,7 +96,7 @@ void Helios::tick()
   // we're in we check for the appropriate input events for that
   // state by checking button globals, then run the appropriate logic
   handle_state();
-  
+
   // NOTE: Do not update the LED here anymore, instead we call Led::update()
   //       in the tight loop inside main() where it can perform software PWM
   //       on the LED pins at a much higher frequency
@@ -182,6 +182,8 @@ void Helios::next_mode()
   if (!Storage::read_pattern(cur_mode, pat)) {
     // and just initialize default if it cannot be read
     Patterns::make_default(cur_mode, pat);
+    // try to write it out because storage was corrupt
+    Storage::write_pattern(cur_mode, pat);
   }
   // then re-initialize the pattern
   pat.init();
@@ -199,7 +201,7 @@ void Helios::handle_state_modes()
   }
   // just play the current mode
   pat.play();
-  
+
   // check how long the button is held
   uint32_t holdDur = Button::holdDuration();
   // show a color based on the hold duration past 200

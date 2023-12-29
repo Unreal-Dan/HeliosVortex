@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
 #define STORAGE_FILENAME "Helios.storage"
 #endif
 
@@ -31,7 +32,7 @@
 bool Storage::init()
 {
 #ifdef HELIOS_CLI
-  unlink(STORAGE_FILENAME);
+  //unlink(STORAGE_FILENAME);
 #endif
   return true;
 }
@@ -91,7 +92,7 @@ uint8_t Storage::crc_pos(uint8_t pos)
   return crc8(pos, PATTERN_SIZE);
 }
 
-bool Storage::read_crc(uint8_t pos)
+uint8_t Storage::read_crc(uint8_t pos)
 {
   // read the last byte of the slot
   return read_byte(pos + PATTERN_SIZE);
@@ -100,7 +101,7 @@ bool Storage::read_crc(uint8_t pos)
 bool Storage::check_crc(uint8_t pos)
 {
   // compare the last byte to the calculated crc
-  return read_crc(pos) == crc_pos(pos);
+  return (read_crc(pos) == crc_pos(pos));
 }
 
 void Storage::write_crc(uint8_t pos)
@@ -125,13 +126,28 @@ void Storage::write_byte(uint8_t address, uint8_t data)
   /* Start eeprom write by setting EEPE */
   EECR |= (1<<EEPE);
 #else // HELIOS_CLI
-  FILE *f = fopen(STORAGE_FILENAME, "r+b"); // Open file for reading and writing in binary mode
+  FILE *f = fopen(STORAGE_FILENAME, "r+b");
   if (!f) {
-    perror("Error opening file");
+    if (errno != ENOENT) {
+      perror("Error opening storage file");
+      return;
+    }
+    // The file doesn't exist, so try creating it
+    f = fopen(STORAGE_FILENAME, "w+b");
+    if (!f) {
+      perror("Error creating storage file for write");
+      return;
+    }
+  }
+  // Seek to the specified address
+  if (fseek(f, address, SEEK_SET) != 0) {
+    perror("Error opening storage file for write");
+    fclose(f);
     return;
   }
-  fseek(f, address, SEEK_SET); // Seek to the specified address
-  fwrite(&data, sizeof(uint8_t), 1, f); // Write the byte of data
+  if (!fwrite(&data, sizeof(uint8_t), 1, f)) {
+    return;
+  }
   fclose(f); // Close the file
 #endif
 }
@@ -152,11 +168,21 @@ uint8_t Storage::read_byte(uint8_t address)
   uint8_t val = 0;
   FILE *f = fopen(STORAGE_FILENAME, "rb"); // Open file for reading in binary mode
   if (!f) {
-    perror("Error opening file");
+		// this error is ok, just means no storage
+    //perror("Error opening file for read");
     return val;
   }
-  fseek(f, address, SEEK_SET); // Seek to the specified address
-  fread(&val, sizeof(uint8_t), 1, f); // Read a byte of data
+  // Seek to the specified address
+  if (fseek(f, address, SEEK_SET) != 0) {
+    // error
+    perror("Failed to seek");
+    fclose(f);
+    return val;
+  }
+  // Read a byte of data
+  if (!fread(&val, sizeof(uint8_t), 1, f)) {
+    perror("Failed to read byte");
+  }
   fclose(f); // Close the file
   return val;
 #endif

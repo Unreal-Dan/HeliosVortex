@@ -69,10 +69,12 @@ bool Button::init()
 // enable wake on press
 void Button::enableWake()
 {
+#ifdef HELIOS_EMBEDDED
   // Configure INT0 to trigger on falling edge
   PCMSK |= (1 << PCINT3);
   GIMSK |= (1 << PCIE);
   sei();
+#endif
 }
 
 #ifdef HELIOS_EMBEDDED
