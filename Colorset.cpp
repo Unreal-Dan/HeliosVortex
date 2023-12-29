@@ -27,8 +27,8 @@ Colorset::Colorset(RGBColor c1, RGBColor c2, RGBColor c3, RGBColor c4,
 Colorset::Colorset(uint8_t numCols, const uint32_t *cols) :
   Colorset()
 {
-  if (numCols > MAX_COLOR_SLOTS) {
-    numCols = MAX_COLOR_SLOTS;
+  if (numCols > NUM_COLOR_SLOTS) {
+    numCols = NUM_COLOR_SLOTS;
   }
   for (uint8_t i = 0; i < numCols; ++i) {
     addColor(RGBColor(cols[i]));
@@ -103,7 +103,7 @@ RGBColor Colorset::operator[](int index) const
 // add a single color
 bool Colorset::addColor(RGBColor col)
 {
-  if (m_numColors >= MAX_COLOR_SLOTS) {
+  if (m_numColors >= NUM_COLOR_SLOTS) {
     return false;
   }
   // insert new color and increment number of colors

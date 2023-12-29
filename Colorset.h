@@ -138,7 +138,7 @@ public:
   bool onEnd() const;
 private:
   // palette of colors
-  RGBColor m_palette[MAX_COLOR_SLOTS];
+  RGBColor m_palette[NUM_COLOR_SLOTS];
   // the actual number of colors in the set
   uint8_t m_numColors;
   // the current index, starts at UINT8_MAX so that

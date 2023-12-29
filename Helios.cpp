@@ -32,10 +32,13 @@ uint8_t Helios::selected_hue = 0;
 uint8_t Helios::selected_sat = 0;
 Pattern Helios::pat;
 bool Helios::keepgoing = true;
+
+#ifdef HELIOS_CLI
 bool Helios::sleeping = false;
+#endif
 
 bool Helios::init()
-{    
+{
   // initialize the time control and led control
   if (!Time::init()) {
     return false;
@@ -49,14 +52,14 @@ bool Helios::init()
   if (!Button::init()) {
     return false;
   }
-  
+
   // read the global flags from index 0 config
-  Storage::read_config(0, (uint8_t &)global_flags);
+  global_flags = (Flags)Storage::read_config(0);
   if (has_flag(FLAG_CONJURE)) {
     // set the current mode to the stored mode, which will actually
     // be the target mode minus 1 so that next_mode will iterate to
     // the correct target mode
-    Storage::read_config(1, cur_mode);
+    cur_mode = Storage::read_config(1);
   }
 
   if (has_flag(FLAG_LOCKED)) {
@@ -96,7 +99,7 @@ void Helios::tick()
   // we're in we check for the appropriate input events for that
   // state by checking button globals, then run the appropriate logic
   handle_state();
-  
+
   // NOTE: Do not update the LED here anymore, instead we call Led::update()
   //       in the tight loop inside main() where it can perform software PWM
   //       on the LED pins at a much higher frequency
@@ -106,27 +109,16 @@ void Helios::tick()
   Time::tickClock();
 }
 
-void Helios::enter_sleep(bool save)
+void Helios::enter_sleep()
 {
-  //if (save) {
-  //  // update the startup mode when going to sleep
-  //  Modes::setStartupMode(Modes::curModeIndex());
-  //  // save anything that hasn't been saved
-  //  Modes::saveStorage();
-  //}
   // clear all the leds
-  Led::clear();
-  Led::update();
 #ifdef HELIOS_EMBEDDED
   // init the output pins to prevent any floating pins
-  //clearOutputPins();
+  clear_output_pins();
   // Enable wake on interrupt for the button
   Button::enableWake();
   // Set sleep mode to POWER DOWN mode
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  // enable the sleep boo lright before we enter sleep, this will allow
-  // the main loop to break and return
-  sleeping = true;
   // enter sleep
   sleep_mode();
 #else
@@ -136,10 +128,21 @@ void Helios::enter_sleep(bool save)
 #endif
 }
 
+#ifdef HELIOS_EMBEDDED
+void Helios::clear_output_pins()
+{
+  // TODO: turn off any peripherals and stop floating pins
+}
+#endif
+
 void Helios::wakeup()
 {
   // re-initialize helios
   init();
+#ifndef HELIOS_EMBEDDED
+  cur_state = STATE_MODES;
+  sleeping = false;
+#endif
 }
 
 void Helios::handle_state()
@@ -177,21 +180,32 @@ void Helios::handle_state()
 void Helios::next_mode()
 {
   // increment current mode and wrap around
-  cur_mode = (uint8_t)(cur_mode + 1) % 6;
+  cur_mode = (uint8_t)(cur_mode + 1) % NUM_MODE_SLOTS;
   // read pattern from storage at cur mode index
   if (!Storage::read_pattern(cur_mode, pat)) {
     // and just initialize default if it cannot be read
     Patterns::make_default(cur_mode, pat);
+    // try to write it out because storage was corrupt
+    Storage::write_pattern(cur_mode, pat);
   }
   // then re-initialize the pattern
   pat.init();
+}
+
+void Helios::set_defaults()
+{
+  for (uint8_t i = 0; i < NUM_MODE_SLOTS; ++i) {
+    Pattern temp;
+    Patterns::make_default(i, temp);
+    Storage::write_pattern(i, temp);
+  }
 }
 
 void Helios::handle_state_modes()
 {
   if (Button::onShortClick()) {
     if (has_flag(FLAG_CONJURE)) {
-      enter_sleep(false);
+      enter_sleep();
     } else {
       next_mode();
     }
@@ -199,7 +213,7 @@ void Helios::handle_state_modes()
   }
   // just play the current mode
   pat.play();
-  
+
   // check how long the button is held
   uint32_t holdDur = Button::holdDuration();
   // show a color based on the hold duration past 200
@@ -215,31 +229,34 @@ void Helios::handle_state_modes()
     const RGBColor menu_cols[4] = { RGB_OFF, RGB_CYAN, RGB_MAGENTA, RGB_YELLOW };
     Led::set(menu_cols[magnitude]);
   }
-  //State next_state = STATE_MODES;
   // when released, switch to different state based on hold duration
   if (Button::onRelease()) {
     switch (magnitude) {
     case 0:  // off
       // but only if we held for more than a short click
       if (heldPast) {
-        enter_sleep(false);
+        enter_sleep();
       }
       break;
     case 1:  // color select
-      //cur_state = STATE_COLOR_SELECT_SLOT;
+      cur_state = STATE_COLOR_SELECT_SLOT;
       // use the nice hue to rgb rainbow
-      //g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
+      g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
       // reset the menu selection
-      //menu_selection = 0;
+      menu_selection = 0;
       break;
     case 2:  // pat select
-      //cur_state = STATE_PATTERN_SELECT;
+      cur_state = STATE_PATTERN_SELECT;
+      // reset the menu selection
+      menu_selection = 0;
       break;
     case 3:  // conjure mode
       cur_state = STATE_CONJURE_MODE;
       break;
     default: // hold past
-      // do nothing
+      // TODO: put this somewhere better
+      // reset defaults
+      set_defaults();
       break;
     }
   }
@@ -255,7 +272,7 @@ void Helios::handle_state_col_select()
       // menus = all colors + exit
       num_menus = num_cols + 1;
       // but if the num cols is less than total color slots
-      if (num_cols < MAX_COLOR_SLOTS) {
+      if (num_cols < NUM_COLOR_SLOTS) {
         // then we have another menu: add color
         num_menus++;
       }
@@ -430,14 +447,14 @@ void Helios::handle_state_pat_select()
   if (Button::onLongClick()) {
     cur_state = STATE_MODES;
     // save
+    if (!Storage::write_pattern(cur_mode, pat)) {
+      // failed to save?
+    }
     return;
   }
   if (Button::onShortClick()) {
     menu_selection = (menu_selection + 1) % PATTERN_COUNT;
     Patterns::make_pattern((PatternID)menu_selection, pat);
-    if (!Storage::write_pattern(cur_mode, pat)) {
-      // failed to save?
-    }
     pat.init();
   }
   pat.play();
