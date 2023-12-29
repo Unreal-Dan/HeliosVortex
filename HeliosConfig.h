@@ -10,7 +10,12 @@
 // Max Color Slots
 //
 // The number of slots in a colorset
-#define MAX_COLOR_SLOTS 6
+#define NUM_COLOR_SLOTS 6
+
+// Mode Slots
+//
+// The number of modes on the device
+#define NUM_MODE_SLOTS 9
 
 // Default Brightness
 //

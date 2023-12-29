@@ -16,10 +16,14 @@ public:
   static bool keep_going() { return keepgoing; }
   static void terminate() { keepgoing = false; }
 
+#ifdef HELIOS_CLI
   static bool is_asleep() { return sleeping; }
+#endif
 
 private:
+#ifdef HELIOS_EMBEDDED
   static void clear_output_pins();
+#endif
 
   static void handle_state();
   static void handle_state_modes();
@@ -33,7 +37,7 @@ private:
   static void handle_state_conjure_mode();
   static void next_mode();
 
-  static void set_default(uint8_t default_num);
+  static void set_defaults();
 
   enum State : uint8_t {
     STATE_MODES,
@@ -76,5 +80,8 @@ private:
   static Colorset default_colorsets[6];
   static Pattern pat;
   static bool keepgoing;
+
+#ifdef HELIOS_CLI
   static bool sleeping;
+#endif
 };

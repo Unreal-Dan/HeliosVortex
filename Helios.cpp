@@ -32,7 +32,10 @@ uint8_t Helios::selected_hue = 0;
 uint8_t Helios::selected_sat = 0;
 Pattern Helios::pat;
 bool Helios::keepgoing = true;
+
+#ifdef HELIOS_CLI
 bool Helios::sleeping = false;
+#endif
 
 bool Helios::init()
 {
@@ -109,9 +112,6 @@ void Helios::tick()
 void Helios::enter_sleep()
 {
   // clear all the leds
-  // TODO: Are these necessary?
-  Led::clear();
-  Led::update();
 #ifdef HELIOS_EMBEDDED
   // init the output pins to prevent any floating pins
   clear_output_pins();
@@ -119,9 +119,6 @@ void Helios::enter_sleep()
   Button::enableWake();
   // Set sleep mode to POWER DOWN mode
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  // enable the sleep boo lright before we enter sleep, this will allow
-  // the main loop to break and return
-  sleeping = true;
   // enter sleep
   sleep_mode();
 #else
@@ -131,15 +128,21 @@ void Helios::enter_sleep()
 #endif
 }
 
+#ifdef HELIOS_EMBEDDED
 void Helios::clear_output_pins()
 {
   // TODO: turn off any peripherals and stop floating pins
 }
+#endif
 
 void Helios::wakeup()
 {
   // re-initialize helios
   init();
+#ifndef HELIOS_EMBEDDED
+  cur_state = STATE_MODES;
+  sleeping = false;
+#endif
 }
 
 void Helios::handle_state()
@@ -177,7 +180,7 @@ void Helios::handle_state()
 void Helios::next_mode()
 {
   // increment current mode and wrap around
-  cur_mode = (uint8_t)(cur_mode + 1) % 6;
+  cur_mode = (uint8_t)(cur_mode + 1) % NUM_MODE_SLOTS;
   // read pattern from storage at cur mode index
   if (!Storage::read_pattern(cur_mode, pat)) {
     // and just initialize default if it cannot be read
@@ -187,6 +190,15 @@ void Helios::next_mode()
   }
   // then re-initialize the pattern
   pat.init();
+}
+
+void Helios::set_defaults()
+{
+  for (uint8_t i = 0; i < NUM_MODE_SLOTS; ++i) {
+    Pattern temp;
+    Patterns::make_default(i, temp);
+    Storage::write_pattern(i, temp);
+  }
 }
 
 void Helios::handle_state_modes()
@@ -242,7 +254,9 @@ void Helios::handle_state_modes()
       cur_state = STATE_CONJURE_MODE;
       break;
     default: // hold past
-      // do nothing
+      // TODO: put this somewhere better
+      // reset defaults
+      set_defaults();
       break;
     }
   }
@@ -258,7 +272,7 @@ void Helios::handle_state_col_select()
       // menus = all colors + exit
       num_menus = num_cols + 1;
       // but if the num cols is less than total color slots
-      if (num_cols < MAX_COLOR_SLOTS) {
+      if (num_cols < NUM_COLOR_SLOTS) {
         // then we have another menu: add color
         num_menus++;
       }

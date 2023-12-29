@@ -15,7 +15,7 @@
 #endif
 
 // the colorset is just an array of colors but it also has a num colors val
-#define COLORSET_SIZE ((sizeof(RGBColor) * MAX_COLOR_SLOTS) + 1)
+#define COLORSET_SIZE ((sizeof(RGBColor) * NUM_COLOR_SLOTS) + 1)
 // The actual pattern storage size is the size of the colorset + 7 params + 1 pat flags
 #define PATTERN_SIZE (COLORSET_SIZE + 7 + 1)
 // the slot stores the pattern + 1 byte CRC
@@ -32,6 +32,7 @@
 bool Storage::init()
 {
 #ifdef HELIOS_CLI
+  // may want this for cli tool
   //unlink(STORAGE_FILENAME);
 #endif
   return true;
