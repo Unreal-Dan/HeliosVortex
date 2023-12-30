@@ -21,38 +21,6 @@ public:
 #endif
 
 private:
-#ifdef HELIOS_EMBEDDED
-  static void clear_output_pins();
-#endif
-
-  static void handle_state();
-  static void handle_state_modes();
-  static void handle_state_col_select();
-  static bool handle_state_col_select_slot();
-  static bool handle_state_col_select_quadrant();
-  static bool handle_state_col_select_hue();
-  static bool handle_state_col_select_sat();
-  static bool handle_state_col_select_val();
-  static void handle_state_pat_select();
-  static void handle_state_conjure_mode();
-  static void next_mode();
-
-  static void set_defaults();
-
-  enum State : uint8_t {
-    STATE_MODES,
-    STATE_COLOR_SELECT_SLOT,
-    STATE_COLOR_SELECT_QUADRANT,
-    STATE_COLOR_SELECT_HUE,
-    STATE_COLOR_SELECT_SAT,
-    STATE_COLOR_SELECT_VAL,
-    STATE_PATTERN_SELECT,
-    STATE_CONJURE_MODE,
-#ifdef HELIOS_CLI
-    STATE_SLEEP,
-#endif
-  };
-
   enum Flags : uint8_t {
     FLAG_NONE = 0,
     FLAG_LOCKED = (1 << 0),
@@ -64,6 +32,39 @@ private:
   static bool has_flag(Flags flag) { return (global_flags & flag) != 0; }
   static void clear_flag(Flags flag) { global_flags = (Flags)(global_flags & ~flag); }
   static void toggle_flag(Flags flag) { global_flags = (Flags)(global_flags ^ flag); }
+
+  static void handle_state();
+  static void handle_state_modes();
+  static void handle_state_col_select();
+  static bool handle_state_col_select_slot();
+  static bool handle_state_col_select_quadrant();
+  static bool handle_state_col_select_hue();
+  static bool handle_state_col_select_sat();
+  static bool handle_state_col_select_val();
+  static void handle_state_pat_select();
+  static void handle_state_toggle_flag(Flags flag);
+  static void next_mode();
+
+  static void set_defaults();
+
+#ifdef HELIOS_EMBEDDED
+  static void clear_output_pins();
+#endif
+
+  enum State : uint8_t {
+    STATE_MODES,
+    STATE_COLOR_SELECT_SLOT,
+    STATE_COLOR_SELECT_QUADRANT,
+    STATE_COLOR_SELECT_HUE,
+    STATE_COLOR_SELECT_SAT,
+    STATE_COLOR_SELECT_VAL,
+    STATE_PATTERN_SELECT,
+    STATE_TOGGLE_CONJURE,
+    STATE_TOGGLE_LOCK,
+#ifdef HELIOS_CLI
+    STATE_SLEEP,
+#endif
+  };
 
   // the current state of the system
   static State cur_state;

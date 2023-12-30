@@ -46,10 +46,8 @@ bool Button::init()
   m_newRelease = false;
   m_shortClick = false;
   m_longClick = false;
-  // this is weird, when I did m_releaseCount = !m_buttonState the
-  // compiler generated a huge amount of assembly, but not !check()
   m_buttonState = check();
-  m_releaseCount = !check();
+  m_releaseCount = !m_buttonState;
   m_isPressed = m_buttonState;
 #ifdef HELIOS_CLI
   m_pinState = false;
@@ -79,6 +77,8 @@ void Button::enableWake()
 
 #ifdef HELIOS_EMBEDDED
 ISR(PCINT0_vect) {
+  PCMSK &= ~(1 << PCINT3);
+  GIMSK &= ~(1 << PCIE);
   Helios::wakeup();
 }
 #endif
@@ -117,10 +117,8 @@ void Button::update()
       m_pressTime = Time::getCurtime();
       m_newPress = true;
     } else {
-      if (m_releaseCount > 0) {
-        m_releaseTime = Time::getCurtime();
-        m_newRelease = true;
-      }
+      m_releaseTime = Time::getCurtime();
+      m_newRelease = true;
       m_releaseCount++;
     }
   }

@@ -59,12 +59,9 @@ bool Helios::init()
     // set the current mode to the stored mode, which will actually
     // be the target mode minus 1 so that next_mode will iterate to
     // the correct target mode
-    cur_mode = Storage::read_config(1);
+    //cur_mode = Storage::read_config(1);
   }
-
-  if (has_flag(FLAG_LOCKED)) {
-    // go back to sleep?
-  }
+  cur_mode = 0xFF;
 
   // iterate to the next mode (or first mode in this case)
   next_mode();
@@ -111,7 +108,9 @@ void Helios::tick()
 
 void Helios::enter_sleep()
 {
-  // clear all the leds
+  // clear the led
+  Led::clear();
+  Led::update();
 #ifdef HELIOS_EMBEDDED
   // init the output pins to prevent any floating pins
   clear_output_pins();
@@ -161,8 +160,11 @@ void Helios::handle_state()
   case STATE_PATTERN_SELECT:
     handle_state_pat_select();
     break;
-  case STATE_CONJURE_MODE:
-    handle_state_conjure_mode();
+  case STATE_TOGGLE_CONJURE:
+    handle_state_toggle_flag(FLAG_CONJURE);
+    break;
+  case STATE_TOGGLE_LOCK:
+    handle_state_toggle_flag(FLAG_LOCKED);
     break;
 #ifdef HELIOS_CLI
   case STATE_SLEEP:
@@ -211,8 +213,21 @@ void Helios::handle_state_modes()
     }
     return;
   }
-  // just play the current mode
-  pat.play();
+
+  // whether they have released the button since turning on
+  bool hasReleased = (Button::releaseCount() > 0 || !Button::isPressed());
+  const uint8_t numMenus = hasReleased ? 4 : 2;
+  
+  // check for lock and go back to sleep
+  if (has_flag(FLAG_LOCKED) && hasReleased && !Button::onRelease()) {
+    enter_sleep();
+    return;
+  }
+
+  if (hasReleased) {
+    // just play the current mode
+    pat.play();
+  }
 
   // check how long the button is held
   uint32_t holdDur = Button::holdDuration();
@@ -220,45 +235,67 @@ void Helios::handle_state_modes()
   // the magnitude will be some value from 0-3 corresponding
   // to the holdDurations of 200 to 500
   uint16_t magnitude = (holdDur / MENU_HOLD_TIME);
-  if (magnitude >= 4) {
+  if (magnitude >= numMenus) {
     magnitude = 0;
   }
   bool heldPast = (holdDur > SHORT_CLICK_THRESHOLD);
   // if the button is held for at least 1 second
   if (Button::isPressed() && heldPast) {
-    const RGBColor menu_cols[4] = { RGB_OFF, RGB_CYAN, RGB_MAGENTA, RGB_YELLOW };
-    Led::set(menu_cols[magnitude]);
+    const RGBColor menu_cols[4] = { RGB_OFF, RGB_CYAN5, RGB_PURPLE5, RGB_YELLOW5 };
+    const RGBColor off_menu_cols[2] = { RGB_RED5, RGB_WHITE5 };
+    Led::set(hasReleased ? menu_cols[magnitude] : off_menu_cols[magnitude]);
   }
-  // when released, switch to different state based on hold duration
-  if (Button::onRelease()) {
+  // if this isn't a release tick there's nothing more to do
+  if (!Button::onRelease()) {
+    return;
+  }
+  // if we have not released the button yet we're in the 'off' menu
+  if (Button::releaseCount() == 1) {
     switch (magnitude) {
-    case 0:  // off
-      // but only if we held for more than a short click
-      if (heldPast) {
-        enter_sleep();
-      }
+    case 0:  // lock
+      cur_state = STATE_TOGGLE_LOCK;
       break;
-    case 1:  // color select
-      cur_state = STATE_COLOR_SELECT_SLOT;
-      // use the nice hue to rgb rainbow
-      g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
-      // reset the menu selection
-      menu_selection = 0;
+    case 1:  // off
       break;
-    case 2:  // pat select
-      cur_state = STATE_PATTERN_SELECT;
-      // reset the menu selection
-      menu_selection = 0;
-      break;
-    case 3:  // conjure mode
-      cur_state = STATE_CONJURE_MODE;
-      break;
-    default: // hold past
-      // TODO: put this somewhere better
-      // reset defaults
-      set_defaults();
+    default:
       break;
     }
+    return;
+  }
+  // pressed button in less than 2 ticks = ESD button trigger go back to sleep
+  // TODO: is this really necessary? and is it working? Test whether this actually works
+  if (Time::getCurtime() < 2) {
+    enter_sleep();
+    return;
+  }
+  // otherwise if we have released it then we are in the 'on' menu
+  switch (magnitude) {
+  case 0:  // off
+    // but only if we held for more than a short click
+    if (heldPast) {
+      enter_sleep();
+    }
+    break;
+  case 1:  // color select
+    cur_state = STATE_COLOR_SELECT_SLOT;
+    // use the nice hue to rgb rainbow
+    g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
+    // reset the menu selection
+    menu_selection = 0;
+    break;
+  case 2:  // pat select
+    cur_state = STATE_PATTERN_SELECT;
+    // reset the menu selection
+    menu_selection = 0;
+    break;
+  case 3:  // conjure mode
+    cur_state = STATE_TOGGLE_CONJURE;
+    break;
+  default: // hold past
+           // TODO: put this somewhere better
+           // reset defaults
+    set_defaults();
+    break;
   }
 }
 
@@ -460,12 +497,13 @@ void Helios::handle_state_pat_select()
   pat.play();
 }
 
-void Helios::handle_state_conjure_mode()
+void Helios::handle_state_toggle_flag(Flags flag)
 {
   // toggle the conjure flag
-  toggle_flag(FLAG_CONJURE);
+  toggle_flag(flag);
   // write out the new global flags and the current mode
   Storage::write_config(0, global_flags);
+  // write out the current mode anyway
   Storage::write_config(1, (uint8_t)cur_mode - 1);
   // switch back to modes
   cur_state = STATE_MODES;
