@@ -275,7 +275,7 @@ void Helios::handle_state_modes()
         case 2: Led::set(RGB_PURPLE1); break;
         case 3: Led::set(RGB_YELLOW1); break;
         case 4: Led::set(RGB_WHITE2); break;
-        case 5: Led::set(HSVColor(Time::getCurtime(), 255, 255)); break;
+        case 5: Led::set(HSVColor(Time::getCurtime(), 255, 180)); break;
         default: Led::clear(); break;
       }
     } else {
