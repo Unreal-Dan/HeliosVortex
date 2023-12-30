@@ -393,7 +393,7 @@ void Helios::handle_state_col_select()
   }
   if (check_longclick && Button::onLongClick()) {
     if (cur_state == STATE_COLOR_SELECT_VAL) {
-      cur_state = STATE_MODES;
+      cur_state = STATE_PICK_SLOT;
     } else {
       cur_state = (State)(cur_state + 1);
     }
