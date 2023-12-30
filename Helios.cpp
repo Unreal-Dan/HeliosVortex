@@ -190,6 +190,12 @@ void Helios::handle_state()
   case STATE_SET_DEFAULTS:
     handle_state_set_defaults();
     break;
+  case STATE_SHIFT_MODE:
+    handle_state_shift_mode();
+    break;
+  case STATE_RANDOMIZE:
+    handle_state_randomize();
+    break;
 #ifdef HELIOS_CLI
   case STATE_SLEEP:
     // simulate sleep in helios CLI
@@ -222,6 +228,11 @@ void Helios::load_cur_mode()
   pat.init();
 }
 
+void Helios::save_cur_mode()
+{
+  Storage::write_pattern(cur_mode, pat);
+}
+
 void Helios::handle_state_modes()
 {
   // whether they have released the button since turning on
@@ -248,14 +259,11 @@ void Helios::handle_state_modes()
   }
 
   // check how long the button is held
-  uint16_t holdDur = (uint16_t)Button::holdDuration();
+  uint32_t holdDur = Button::holdDuration();
   // show a color based on the hold duration past 200
   // the magnitude will be some value from 0-3 corresponding
   // to the holdDurations of 200 to 500
-  uint8_t magnitude = (uint8_t)(holdDur / MENU_HOLD_TIME);
-  if (magnitude > 3) {
-    magnitude = 0;
-  }
+  uint32_t magnitude = (holdDur / MENU_HOLD_TIME);
   bool heldPast = (holdDur > SHORT_CLICK_THRESHOLD);
   // if the button is held for at least 1 second
   if (Button::isPressed() && heldPast) {
@@ -266,11 +274,17 @@ void Helios::handle_state_modes()
         case 1: Led::set(RGB_CYAN1); break;
         case 2: Led::set(RGB_PURPLE1); break;
         case 3: Led::set(RGB_YELLOW1); break;
-        default: break;
+        case 4: Led::set(RGB_WHITE2); break;
+        case 5: Led::set(HSVColor(Time::getCurtime(), 255, 255)); break;
+        default: Led::clear(); break;
       }
     } else {
       // otherwise show the off menu
-      Led::set(magnitude ? RGB_BLUE1 : RGB_RED1);
+      switch (magnitude) {
+        case 0: Led::set(RGB_RED1); break;
+        case 1: Led::set(RGB_BLUE1); break;
+        default: Led::clear(); break;
+      }
     }
   }
   // if this isn't a release tick there's nothing more to do
@@ -283,7 +297,6 @@ void Helios::handle_state_modes()
     handle_on_menu(magnitude, heldPast);
   }
 }
-
 
 void Helios::handle_off_menu(uint8_t mag, bool past)
 {
@@ -323,6 +336,12 @@ void Helios::handle_on_menu(uint8_t mag, bool past)
     break;
   case 3:  // conjure mode
     cur_state = STATE_TOGGLE_CONJURE;
+    break;
+  case 4: // shift mode down
+    cur_state = STATE_SHIFT_MODE;
+    break;
+  case 5: // ???
+    cur_state = STATE_RANDOMIZE;
     break;
   default: // hold past
     break;
@@ -512,9 +531,7 @@ bool Helios::handle_state_col_select_val()
 void Helios::handle_state_pat_select()
 {
   if (Button::onLongClick()) {
-    if (!Storage::write_pattern(cur_mode, pat)) {
-      // failed to save?
-    }
+    save_cur_mode();
     cur_state = STATE_MODES;
   }
   if (Button::onShortClick()) {
@@ -565,6 +582,41 @@ void Helios::handle_state_set_defaults()
     }
     cur_state = STATE_MODES;
   }
+  show_selection();
+}
+
+inline uint32_t crc32(const uint8_t *data, uint8_t size)
+{
+  uint32_t hash = 5381;
+  for (uint8_t i = 0; i < size; ++i) {
+    hash = ((hash << 5) + hash) + data[i];
+  }
+  return hash;
+}
+
+void Helios::handle_state_shift_mode()
+{
+  uint8_t new_mode = (cur_mode + 1) % NUM_MODE_SLOTS;
+  Storage::swap_pattern(cur_mode, new_mode);
+  cur_mode = new_mode;
+  cur_state = STATE_MODES;
+}
+
+void Helios::handle_state_randomize()
+{
+  if (Button::onShortClick()) {
+    uint32_t seed = crc32((const uint8_t *)&pat, PATTERN_SIZE);
+    Random ctx(seed);
+    Colorset &cur_set = pat.colorset();
+    uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
+    cur_set.randomizeColors(ctx, num_cols, Colorset::THEORY);
+    pat.init();
+  }
+  if (Button::onLongClick()) {
+    save_cur_mode();
+    cur_state = STATE_MODES;
+  }
+  pat.play();
   show_selection();
 }
 

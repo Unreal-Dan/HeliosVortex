@@ -43,8 +43,39 @@
 //
 // The duration in ms/ticks to hold the button to force the chip to
 // sleep at any location in the menus
-#define FORCE_SLEEP_TIME 5000
+#define FORCE_SLEEP_TIME 7000
 
+// ============================================================================
+//  Storage Constants
+//
+//  These are various storage sizes of data and some math to
+//  help calculate sizes or space requirements
+
+// Colorset Size
+//
+// the colorset is just an array of colors but it also has a num colors val
+#define COLORSET_SIZE ((sizeof(RGBColor) * NUM_COLOR_SLOTS) + 1)
+
+// Pattern Size
+//
+// The actual pattern storage size is the size of the colorset + 7 params + 1 pat flags
+#define PATTERN_SIZE (COLORSET_SIZE + 7 + 1)
+
+// Slot Size
+//
+// the slot stores the pattern + 1 byte CRC
+#define SLOT_SIZE (PATTERN_SIZE + 1)
+
+// Some math to calculate storage sizes:
+// 3 * 6 = 18 for the colorset
+// 1 + 7 + 1 + 1 = 10 for the rest
+//  = 28 bytes total for a pattern including CRC
+//    -> 8 slots = 8 * 28 = 224
+//      = 31 bytes left
+//    -> 9 slots = 9 * 28 = 252
+//      = 3 bytes left
+
+// forbidden constant:
 // #define HELIOS_ARDUINO 1
 
 #endif

@@ -13,7 +13,9 @@ public:
   static bool init();
 
   static bool read_pattern(uint8_t slot, Pattern &pat);
-  static bool write_pattern(uint8_t slot, const Pattern &pat);
+  static void write_pattern(uint8_t slot, const Pattern &pat);
+
+  static void swap_pattern(uint8_t slot1, uint8_t slot2);
 
   static uint8_t read_config(uint8_t index);
   static void write_config(uint8_t index, uint8_t val);

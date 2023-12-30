@@ -47,8 +47,11 @@ private:
   static void handle_state_pat_select();
   static void handle_state_toggle_flag(Flags flag);
   static void handle_state_set_defaults();
+  static void handle_state_shift_mode();
+  static void handle_state_randomize();
   static void load_next_mode();
   static void load_cur_mode();
+  static void save_cur_mode();
   static void save_global_flags();
   static void show_selection();
 
@@ -67,6 +70,8 @@ private:
     STATE_TOGGLE_CONJURE,
     STATE_TOGGLE_LOCK,
     STATE_SET_DEFAULTS,
+    STATE_SHIFT_MODE,
+    STATE_RANDOMIZE,
 #ifdef HELIOS_CLI
     STATE_SLEEP,
 #endif
