@@ -367,40 +367,31 @@ void Helios::handle_state_col_select()
     }
     menu_selection = (menu_selection + 1) % num_menus;
   }
+  bool check_longclick = true;
   switch (cur_state) {
   default:
   case STATE_COLOR_SELECT_SLOT:
     // pick the target colorset slot
-    if (!handle_state_col_select_slot()) {
-      return;
-    }
+    check_longclick = handle_state_col_select_slot();
     break;
   case STATE_COLOR_SELECT_QUADRANT:
     // pick the hue quadrant
-    if (!handle_state_col_select_quadrant()) {
-      return;
-    }
+    check_longclick = handle_state_col_select_quadrant();
     break;
   case STATE_COLOR_SELECT_HUE:
     // target hue for changes
-    if (!handle_state_col_select_hue()) {
-      return;
-    }
+    check_longclick = handle_state_col_select_hue();
     break;
   case STATE_COLOR_SELECT_SAT:
     // target sat for changes
-    if (!handle_state_col_select_sat()) {
-      return;
-    }
+    check_longclick = handle_state_col_select_sat();
     break;
   case STATE_COLOR_SELECT_VAL:
     // target val for changes
-    if (!handle_state_col_select_val()) {
-      return;
-    }
+    check_longclick = handle_state_col_select_val();
     break;
   }
-  if (Button::onLongClick()) {
+  if (check_longclick && Button::onLongClick()) {
     if (cur_state == STATE_COLOR_SELECT_VAL) {
       cur_state = STATE_MODES;
     } else {
@@ -408,6 +399,8 @@ void Helios::handle_state_col_select()
     }
     menu_selection = 0;
   }
+  // show selection in all of these menus
+  show_selection();
 }
 
 bool Helios::handle_state_col_select_slot()
