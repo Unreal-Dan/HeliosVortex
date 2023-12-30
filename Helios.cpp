@@ -552,9 +552,9 @@ void Helios::handle_state_set_defaults()
   }
   // show low white for exit or red for select
   if (menu_selection) {
-    Led::blink(20, 10, RGB_RED5);
+    Led::strobe(20, 10, RGB_RED5, RGB_OFF);
   } else {
-    Led::blink(64, 20, RGB_WHITE0);
+    Led::strobe(60, 20, RGB_WHITE0, RGB_OFF);
   }
   // when the user long clicks a selection
   if (Button::onLongClick()) {

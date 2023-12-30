@@ -81,8 +81,6 @@ void Led::blink(uint16_t offMs, uint16_t onMs, RGBColor col)
 {
   if ((Time::getCurtime() % MS_TO_TICKS(offMs + onMs)) < MS_TO_TICKS(onMs)) {
     set(col);
-  } else {
-    clear();
   }
 }
 
