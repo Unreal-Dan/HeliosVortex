@@ -29,12 +29,18 @@ private:
 
   // get/set global flags
   static void set_flag(Flags flag) { global_flags = (Flags)(global_flags | flag); }
-  static bool has_flag(Flags flag) { return (global_flags & flag) != 0; }
+  static bool has_flag(Flags flag) { return (global_flags & flag) == flag; }
   static void clear_flag(Flags flag) { global_flags = (Flags)(global_flags & ~flag); }
   static void toggle_flag(Flags flag) { global_flags = (Flags)(global_flags ^ flag); }
 
   static void handle_state();
   static void handle_state_modes();
+
+  static void handle_off_menu(uint8_t mag, bool past);
+  static void handle_on_menu(uint8_t mag, bool past);
+  static void show_on_menu(uint8_t mag);
+  static void show_off_menu(uint8_t mag);
+  static void handle_menu();
   static void handle_state_col_select();
   static bool handle_state_col_select_slot();
   static bool handle_state_col_select_quadrant();
@@ -43,9 +49,11 @@ private:
   static bool handle_state_col_select_val();
   static void handle_state_pat_select();
   static void handle_state_toggle_flag(Flags flag);
-  static void next_mode();
-
-  static void set_defaults();
+  static void handle_state_set_defaults();
+  static void load_next_mode();
+  static void load_cur_mode();
+  static void save_global_flags();
+  static void show_selection();
 
 #ifdef HELIOS_EMBEDDED
   static void clear_output_pins();
@@ -61,6 +69,7 @@ private:
     STATE_PATTERN_SELECT,
     STATE_TOGGLE_CONJURE,
     STATE_TOGGLE_LOCK,
+    STATE_SET_DEFAULTS,
 #ifdef HELIOS_CLI
     STATE_SLEEP,
 #endif

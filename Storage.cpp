@@ -71,26 +71,14 @@ bool Storage::write_pattern(uint8_t slot, const Pattern &pat)
   return true;
 }
 
-uint8_t Storage::config_checksum()
-{
-  uint8_t byte1 = read_byte(CONFIG_START_INDEX - 0);
-  uint8_t byte2 = read_byte(CONFIG_START_INDEX - 1);
-  // bad checksum
-  return byte1 + byte2 + (byte1 ^ byte2);
-}
-
 uint8_t Storage::read_config(uint8_t index)
 {
-  if (config_checksum() != read_byte(CONFIG_CRC_INDEX)) {
-    return 0;
-  }
   return read_byte(CONFIG_START_INDEX - index);
 }
 
 void Storage::write_config(uint8_t index, uint8_t val)
 {
   write_byte(CONFIG_START_INDEX - index, val);
-  write_byte(CONFIG_CRC_INDEX, config_checksum());
 }
 
 uint8_t Storage::crc8(uint8_t pos, uint8_t size)

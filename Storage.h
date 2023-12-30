@@ -19,7 +19,6 @@ public:
   static void write_config(uint8_t index, uint8_t val);
 
 private:
-  static uint8_t config_checksum();
   static uint8_t crc8(uint8_t pos, uint8_t size);
   static uint8_t crc_pos(uint8_t pos);
   static uint8_t read_crc(uint8_t pos);

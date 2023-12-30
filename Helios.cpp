@@ -22,23 +22,36 @@
 
 #include <stdlib.h>
 
-Helios::State Helios::cur_state = STATE_MODES;
-Helios::Flags Helios::global_flags = FLAG_NONE;
-uint8_t Helios::menu_selection = 0;
-uint8_t Helios::cur_mode = 0xFF;
-uint8_t Helios::selected_slot = 0;
-uint8_t Helios::selected_base_hue = 0;
-uint8_t Helios::selected_hue = 0;
-uint8_t Helios::selected_sat = 0;
+Helios::State Helios::cur_state;
+Helios::Flags Helios::global_flags;
+uint8_t Helios::menu_selection;
+uint8_t Helios::cur_mode;
+uint8_t Helios::selected_slot;
+uint8_t Helios::selected_base_hue;
+uint8_t Helios::selected_hue;
+uint8_t Helios::selected_sat;
 Pattern Helios::pat;
-bool Helios::keepgoing = true;
+bool Helios::keepgoing;
 
 #ifdef HELIOS_CLI
-bool Helios::sleeping = false;
+bool Helios::sleeping;
 #endif
 
 bool Helios::init()
 {
+  cur_state = STATE_MODES;
+  menu_selection = 0;
+  cur_mode = 0;
+  selected_slot = 0;
+  selected_base_hue = 0;
+  selected_hue = 0;
+  selected_sat = 0;
+  keepgoing = true;
+
+#ifdef HELIOS_CLI
+  sleeping = false;
+#endif
+
   // initialize the time control and led control
   if (!Time::init()) {
     return false;
@@ -57,14 +70,13 @@ bool Helios::init()
   global_flags = (Flags)Storage::read_config(0);
   if (has_flag(FLAG_CONJURE)) {
     // set the current mode to the stored mode, which will actually
-    // be the target mode minus 1 so that next_mode will iterate to
+    // be the target mode minus 1 so that load_next_mode will iterate to
     // the correct target mode
-    //cur_mode = Storage::read_config(1);
+    cur_mode = Storage::read_config(1);
   }
-  cur_mode = 0xFF;
 
   // iterate to the next mode (or first mode in this case)
-  next_mode();
+  load_cur_mode();
 
 #ifdef HELIOS_EMBEDDED
   // Timer0 setup for 1 kHz interrupt
@@ -139,13 +151,21 @@ void Helios::wakeup()
   // re-initialize helios
   init();
 #ifndef HELIOS_EMBEDDED
-  cur_state = STATE_MODES;
   sleeping = false;
 #endif
 }
 
 void Helios::handle_state()
 {
+  if (Button::holdDuration() > FORCE_SLEEP_TIME) {
+    if (Button::onRelease()) {
+      enter_sleep();
+    }
+    if (Button::isPressed()) {
+      Led::clear();
+      return;
+    }
+  }
   switch (cur_state) {
   case STATE_MODES:
     handle_state_modes();
@@ -166,6 +186,9 @@ void Helios::handle_state()
   case STATE_TOGGLE_LOCK:
     handle_state_toggle_flag(FLAG_LOCKED);
     break;
+  case STATE_SET_DEFAULTS:
+    handle_state_set_defaults();
+    break;
 #ifdef HELIOS_CLI
   case STATE_SLEEP:
     // simulate sleep in helios CLI
@@ -179,10 +202,16 @@ void Helios::handle_state()
   }
 }
 
-void Helios::next_mode()
+void Helios::load_next_mode()
 {
   // increment current mode and wrap around
   cur_mode = (uint8_t)(cur_mode + 1) % NUM_MODE_SLOTS;
+  // now load current mode again
+  load_cur_mode();
+}
+
+void Helios::load_cur_mode()
+{
   // read pattern from storage at cur mode index
   if (!Storage::read_pattern(cur_mode, pat)) {
     // and just initialize default if it cannot be read
@@ -194,85 +223,82 @@ void Helios::next_mode()
   pat.init();
 }
 
-void Helios::set_defaults()
-{
-  for (uint8_t i = 0; i < NUM_MODE_SLOTS; ++i) {
-    Pattern temp;
-    Patterns::make_default(i, temp);
-    Storage::write_pattern(i, temp);
-  }
-}
-
 void Helios::handle_state_modes()
 {
-  if (Button::onShortClick()) {
+  // whether they have released the button since turning on
+  bool hasReleased = (Button::releaseCount() > 0);
+
+  if (Button::releaseCount() > 1 && Button::onShortClick()) {
     if (has_flag(FLAG_CONJURE)) {
       enter_sleep();
     } else {
-      next_mode();
+      load_next_mode();
     }
     return;
   }
 
-  // whether they have released the button since turning on
-  bool hasReleased = (Button::releaseCount() > 0 || !Button::isPressed());
-  const uint8_t numMenus = hasReleased ? 4 : 2;
-  
   // check for lock and go back to sleep
   if (has_flag(FLAG_LOCKED) && hasReleased && !Button::onRelease()) {
     enter_sleep();
     return;
   }
 
-  if (hasReleased) {
+  if (!has_flag(FLAG_LOCKED) && hasReleased) {
     // just play the current mode
     pat.play();
   }
 
   // check how long the button is held
-  uint32_t holdDur = Button::holdDuration();
+  uint16_t holdDur = (uint16_t)Button::holdDuration();
   // show a color based on the hold duration past 200
   // the magnitude will be some value from 0-3 corresponding
   // to the holdDurations of 200 to 500
-  uint16_t magnitude = (holdDur / MENU_HOLD_TIME);
-  if (magnitude >= numMenus) {
+  uint8_t magnitude = (uint8_t)(holdDur / MENU_HOLD_TIME);
+  if (magnitude > 3) {
     magnitude = 0;
   }
   bool heldPast = (holdDur > SHORT_CLICK_THRESHOLD);
   // if the button is held for at least 1 second
   if (Button::isPressed() && heldPast) {
-    const RGBColor menu_cols[4] = { RGB_OFF, RGB_CYAN5, RGB_PURPLE5, RGB_YELLOW5 };
-    const RGBColor off_menu_cols[2] = { RGB_RED5, RGB_WHITE5 };
-    Led::set(hasReleased ? menu_cols[magnitude] : off_menu_cols[magnitude]);
+    if (hasReleased) {
+      show_on_menu(magnitude);
+    } else {
+      show_off_menu(magnitude);
+    }
   }
   // if this isn't a release tick there's nothing more to do
-  if (!Button::onRelease()) {
-    return;
-  }
-  // if we have not released the button yet we're in the 'off' menu
-  if (Button::releaseCount() == 1) {
-    switch (magnitude) {
-    case 0:  // lock
-      cur_state = STATE_TOGGLE_LOCK;
-      break;
-    case 1:  // off
-      break;
-    default:
-      break;
+  if (Button::onRelease()) {
+    if (heldPast && Button::releaseCount() == 1) {
+      handle_off_menu(magnitude, heldPast);
+      return;
     }
-    return;
+    // otherwise if we have released it then we are in the 'on' menu
+    handle_on_menu(magnitude, heldPast);
   }
-  // pressed button in less than 2 ticks = ESD button trigger go back to sleep
-  // TODO: is this really necessary? and is it working? Test whether this actually works
-  if (Time::getCurtime() < 2) {
-    enter_sleep();
-    return;
+}
+
+
+void Helios::handle_off_menu(uint8_t mag, bool past)
+{
+  // if we have not released the button yet we're in the 'off' menu
+  switch (mag) {
+  case 0:  // red lock
+    cur_state = STATE_TOGGLE_LOCK;
+    break;
+  case 1:  // blue reset defaults
+    cur_state = STATE_SET_DEFAULTS;
+    break;
+  default:
+    break;
   }
-  // otherwise if we have released it then we are in the 'on' menu
-  switch (magnitude) {
+}
+
+void Helios::handle_on_menu(uint8_t mag, bool past)
+{
+  switch (mag) {
   case 0:  // off
     // but only if we held for more than a short click
-    if (heldPast) {
+    if (past) {
       enter_sleep();
     }
     break;
@@ -292,9 +318,40 @@ void Helios::handle_state_modes()
     cur_state = STATE_TOGGLE_CONJURE;
     break;
   default: // hold past
-           // TODO: put this somewhere better
-           // reset defaults
-    set_defaults();
+    break;
+  }
+}
+
+void Helios::show_on_menu(uint8_t mag)
+{
+  switch (mag) {
+  case 0:
+    Led::clear();
+    break;
+  case 1:
+    Led::set(RGB_CYAN1);
+    break;
+  case 2:
+    Led::set(RGB_PURPLE1);
+    break;
+  case 3:
+    Led::set(RGB_YELLOW1);
+    break;
+  default:
+    break;
+  }
+}
+
+void Helios::show_off_menu(uint8_t mag)
+{
+  switch (mag) {
+  case 0:
+    Led::set(RGB_RED5);
+    break;
+  case 1:
+    Led::set(RGB_BLUE5);
+    break;
+  default:
     break;
   }
 }
@@ -375,7 +432,7 @@ bool Helios::handle_state_col_select_slot()
   }
   if (menu_selection == num_cols) {
     // add color
-    Led::strobe(100, 100, RGB_WHITE4, RGB_OFF);
+    Led::strobe(100, 100, RGB_WHITE2, RGB_OFF);
   } else if (menu_selection == num_cols + 1) {
     // exit
     Led::strobe(60, 40, RGB_RED3, RGB_OFF);
@@ -482,12 +539,10 @@ bool Helios::handle_state_col_select_val()
 void Helios::handle_state_pat_select()
 {
   if (Button::onLongClick()) {
-    cur_state = STATE_MODES;
-    // save
     if (!Storage::write_pattern(cur_mode, pat)) {
       // failed to save?
     }
-    return;
+    cur_state = STATE_MODES;
   }
   if (Button::onShortClick()) {
     menu_selection = (menu_selection + 1) % PATTERN_COUNT;
@@ -495,6 +550,7 @@ void Helios::handle_state_pat_select()
     pat.init();
   }
   pat.play();
+  show_selection();
 }
 
 void Helios::handle_state_toggle_flag(Flags flag)
@@ -502,9 +558,61 @@ void Helios::handle_state_toggle_flag(Flags flag)
   // toggle the conjure flag
   toggle_flag(flag);
   // write out the new global flags and the current mode
-  Storage::write_config(0, global_flags);
-  // write out the current mode anyway
-  Storage::write_config(1, (uint8_t)cur_mode - 1);
+  save_global_flags();
   // switch back to modes
   cur_state = STATE_MODES;
+}
+
+void Helios::handle_state_set_defaults()
+{
+  if (Button::onShortClick()) {
+    menu_selection = !menu_selection;
+  }
+  // show low white for exit or red for select
+  if (menu_selection) {
+    Led::blink(20, 10, RGB_RED5);
+  } else {
+    Led::blink(64, 20, RGB_WHITE0);
+  }
+  // when the user long clicks a selection
+  if (Button::onLongClick()) {
+    // if the user actually selected 'yes'
+    if (menu_selection == 1) {
+      for (uint8_t i = 0; i < NUM_MODE_SLOTS; ++i) {
+        Patterns::make_default(i, pat);
+        Storage::write_pattern(i, pat);
+      }
+      // reset global flags
+      global_flags = FLAG_NONE;
+      cur_mode = 0;
+      // save global flags
+      save_global_flags();
+      // re-load current mode
+      load_cur_mode();
+    }
+    cur_state = STATE_MODES;
+  }
+  show_selection();
+}
+
+void Helios::save_global_flags()
+{
+  Storage::write_config(0, global_flags);
+  Storage::write_config(1, cur_mode);
+}
+
+void Helios::show_selection()
+{
+  // only show seletion while pressing the button
+  if (!Button::isPressed()) {
+    return;
+  }
+  uint32_t holdDur = Button::holdDuration();
+  // if the hold duration is outside the flashing range do nothing
+  if (holdDur < SHORT_CLICK_THRESHOLD ||
+      holdDur > (SHORT_CLICK_THRESHOLD + SELECTION_FLASH_DURATION)) {
+    return;
+  }
+  // set some sort of dim white
+  Led::set(RGB_WHITE5);
 }

@@ -20,8 +20,8 @@ static const PatternArgs default_args[NUM_MODE_SLOTS] = {
 // modes that use the same colorset -- these demonstrate the max amount
 // of colors in each set but you can absolutely list a lesser amount
 static const uint32_t color_codes0[] = { RGB_RED, RGB_GREEN, RGB_BLUE, RGB_YELLOW, RGB_PURPLE, RGB_CYAN };
-static const uint32_t color_codes1[] = { RGB_ORANGE, RGB_PINK, RGB_WHITE, RGB_BLUE, RGB_YELLOW, RGB_RED };
-static const uint32_t color_codes2[] = { RGB_GREEN, RGB_CYAN, RGB_PURPLE, RGB_RED3, RGB_BLUE3, RGB_GREEN3 };
+static const uint32_t color_codes1[] = { RGB_GREEN, RGB_PINK, RGB_WHITE, RGB_BLUE, RGB_YELLOW, RGB_RED };
+static const uint32_t color_codes2[] = { RGB_BLUE, RGB_CYAN, RGB_PURPLE, RGB_RED3, RGB_BLUE3, RGB_GREEN3 };
 static const uint32_t color_codes3[] = { RGB_YELLOW3, RGB_PURPLE3, RGB_CYAN3, RGB_ORANGE, RGB_WHITE, RGB_OFF };
 static const uint32_t color_codes4[] = { RGB_WHITE4, RGB_BLUE4, RGB_YELLOW4, RGB_RED4, RGB_GREEN4, RGB_CYAN4 };
 static const uint32_t color_codes5[] = { RGB_PURPLE4, RGB_ORANGE4, RGB_PINK, RGB_MAGENTA, RGB_CYAN, RGB_PINK };
@@ -38,9 +38,9 @@ struct default_colorset {
 // the array of colorset entries, make sure the number on the left reflects
 // the number of colors in the array on the right
 static const default_colorset default_colorsets[] = {
-  { 6, color_codes0 }, // 0
-  { 6, color_codes1 }, // 1
-  { 6, color_codes2 }, // 2
+  { 1, color_codes0 }, // 0
+  { 1, color_codes1 }, // 1
+  { 1, color_codes2 }, // 2
   { 6, color_codes3 }, // 3
   { 6, color_codes4 }, // 4
   { 6, color_codes5 }, // 5
