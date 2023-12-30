@@ -38,9 +38,6 @@ private:
 
   static void handle_off_menu(uint8_t mag, bool past);
   static void handle_on_menu(uint8_t mag, bool past);
-  static void show_on_menu(uint8_t mag);
-  static void show_off_menu(uint8_t mag);
-  static void handle_menu();
   static void handle_state_col_select();
   static bool handle_state_col_select_slot();
   static bool handle_state_col_select_quadrant();

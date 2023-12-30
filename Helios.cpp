@@ -329,15 +329,6 @@ void Helios::handle_on_menu(uint8_t mag, bool past)
   }
 }
 
-void Helios::show_on_menu(uint8_t mag)
-{
-  
-}
-
-void Helios::show_off_menu(uint8_t mag)
-{
-}
-
 void Helios::handle_state_col_select()
 {
   if (Button::onShortClick()) {
