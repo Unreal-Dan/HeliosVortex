@@ -122,7 +122,6 @@ void Helios::enter_sleep()
 {
   // clear the led
   Led::clear();
-  Led::update();
 #ifdef HELIOS_EMBEDDED
   // init the output pins to prevent any floating pins
   clear_output_pins();
