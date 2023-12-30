@@ -414,23 +414,40 @@ bool Helios::handle_state_col_select_slot()
 {
   Colorset &set = pat.colorset();
   uint8_t num_cols = set.numColors();
-  if (Button::onLongClick()) {
-    if (menu_selection == (num_cols + 1)) {
-      // exit
-      cur_state = STATE_MODES;
-      return false;
-    }
-    selected_slot = menu_selection;
-  }
+
+  bool long_click = Button::onLongClick();
+
   if (menu_selection == num_cols) {
     // add color
     Led::strobe(100, 100, RGB_WHITE2, RGB_OFF);
+    if (long_click) {
+      selected_slot = menu_selection;
+    }
   } else if (menu_selection == num_cols + 1) {
     // exit
     Led::strobe(60, 40, RGB_RED3, RGB_OFF);
+    if (long_click) {
+      save_cur_mode();
+      cur_state = STATE_MODES;
+      return false;
+    }
   } else {
     // render current selection
-    Led::set(set.get(menu_selection));
+    RGBColor col = set.get(menu_selection);
+    Led::set(col);
+    uint32_t hold_dur = Button::holdDuration();
+    bool deleting = ((hold_dur > DELETE_COLOR_TIME) &&
+        ((hold_dur % (DELETE_COLOR_TIME * 2)) > DELETE_COLOR_TIME));
+    if (deleting) {
+      if (Button::isPressed()) {
+        // flash red
+        Led::strobe(150, 150, RGB_RED4, col);
+      }
+      if (long_click) {
+        set.removeColor(menu_selection);
+        return false;
+      }
+    }
   }
   return true;
 }
