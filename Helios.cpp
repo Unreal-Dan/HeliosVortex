@@ -39,19 +39,6 @@ bool Helios::sleeping;
 
 bool Helios::init()
 {
-  cur_state = STATE_MODES;
-  menu_selection = 0;
-  cur_mode = 0;
-  selected_slot = 0;
-  selected_base_hue = 0;
-  selected_hue = 0;
-  selected_sat = 0;
-  keepgoing = true;
-
-#ifdef HELIOS_CLI
-  sleeping = false;
-#endif
-
   // initialize the time control and led control
   if (!Time::init()) {
     return false;
@@ -66,24 +53,37 @@ bool Helios::init()
     return false;
   }
 
+  // initialize globals
+  cur_state = STATE_MODES;
+  menu_selection = 0;
+  cur_mode = 0;
+  selected_slot = 0;
+  selected_base_hue = 0;
+  selected_hue = 0;
+  selected_sat = 0;
+  keepgoing = true;
+#ifdef HELIOS_CLI
+  sleeping = false;
+#endif
+
   // read the global flags from index 0 config
   global_flags = (Flags)Storage::read_config(0);
   if (has_flag(FLAG_CONJURE)) {
-    // set the current mode to the stored mode, which will actually
-    // be the target mode minus 1 so that load_next_mode will iterate to
-    // the correct target mode
+    // if conjure is enabled then load the current mode index from storage
     cur_mode = Storage::read_config(1);
   }
 
-  // iterate to the next mode (or first mode in this case)
+  // load the current mode from store and initialize it
   load_cur_mode();
 
 #ifdef HELIOS_EMBEDDED
   // Timer0 setup for 1 kHz interrupt
   TCCR0A |= (1 << WGM01);
-  OCR0A = 124; // 1ms at 8MHz clock with prescaler of 64
+  // 1ms at 8MHz clock with prescaler of 64
+  OCR0A = 124;
   TIMSK |= (1 << OCIE0A);
-  TCCR0B |= (1 << CS01) | (1 << CS00); // Start timer with prescaler of 64
+  // Start timer with prescaler of 64
+  TCCR0B |= (1 << CS01) | (1 << CS00);
   // enable interrupts
   sei();
 #endif
@@ -148,9 +148,11 @@ void Helios::clear_output_pins()
 
 void Helios::wakeup()
 {
+#ifdef HELIOS_EMBEDDED
   // re-initialize helios
+  // TODO: should CLI do this too?
   init();
-#ifndef HELIOS_EMBEDDED
+#else
   sleeping = false;
 #endif
 }
@@ -193,9 +195,7 @@ void Helios::handle_state()
   case STATE_SLEEP:
     // simulate sleep in helios CLI
     if (Button::onPress()) {
-      // wakeup
-      printf("Wakeup\n");
-      sleeping = false;
+      wakeup();
     }
     break;
 #endif
@@ -260,10 +260,18 @@ void Helios::handle_state_modes()
   bool heldPast = (holdDur > SHORT_CLICK_THRESHOLD);
   // if the button is held for at least 1 second
   if (Button::isPressed() && heldPast) {
+    // if the button has been released before then show the on menu
     if (hasReleased) {
-      show_on_menu(magnitude);
+      switch (magnitude) {
+        case 0: Led::clear(); break;
+        case 1: Led::set(RGB_CYAN1); break;
+        case 2: Led::set(RGB_PURPLE1); break;
+        case 3: Led::set(RGB_YELLOW1); break;
+        default: break;
+      }
     } else {
-      show_off_menu(magnitude);
+      // otherwise show the off menu
+      Led::set(magnitude ? RGB_BLUE1 : RGB_RED1);
     }
   }
   // if this isn't a release tick there's nothing more to do
@@ -324,36 +332,11 @@ void Helios::handle_on_menu(uint8_t mag, bool past)
 
 void Helios::show_on_menu(uint8_t mag)
 {
-  switch (mag) {
-  case 0:
-    Led::clear();
-    break;
-  case 1:
-    Led::set(RGB_CYAN1);
-    break;
-  case 2:
-    Led::set(RGB_PURPLE1);
-    break;
-  case 3:
-    Led::set(RGB_YELLOW1);
-    break;
-  default:
-    break;
-  }
+  
 }
 
 void Helios::show_off_menu(uint8_t mag)
 {
-  switch (mag) {
-  case 0:
-    Led::set(RGB_RED5);
-    break;
-  case 1:
-    Led::set(RGB_BLUE5);
-    break;
-  default:
-    break;
-  }
 }
 
 void Helios::handle_state_col_select()
