@@ -176,7 +176,7 @@ void Colorset::randomize(Random &ctx, uint8_t numColors)
 {
   clear();
   if (!numColors) {
-    numColors = ctx.next8(2, 9);
+    numColors = ctx.next8(2, NUM_COLOR_SLOTS);
   }
   ValueStyle valStyle = (ValueStyle)ctx.next8(0, VAL_STYLE_COUNT);
 
