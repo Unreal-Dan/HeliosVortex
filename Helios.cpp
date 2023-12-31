@@ -1,18 +1,18 @@
-#include <stdint.h>
-
 #include "Helios.h"
 
+#include <stdint.h>
+
+#include "Button.h"
 #include "ColorConstants.h"
-#include "TimeControl.h"
-#include "Storage.h"
+#include "Led.h"
 #include "Pattern.h"
 #include "Random.h"
-#include "Button.h"
-#include "Led.h"
+#include "Storage.h"
+#include "TimeControl.h"
 
 #ifdef HELIOS_EMBEDDED
-#include <avr/sleep.h>
 #include <avr/interrupt.h>
+#include <avr/sleep.h>
 #include <avr/wdt.h>
 #endif
 
@@ -37,8 +37,7 @@ bool Helios::keepgoing;
 bool Helios::sleeping;
 #endif
 
-bool Helios::init()
-{
+bool Helios::init() {
   // initialize the time control and led control
   if (!Time::init()) {
     return false;
@@ -91,15 +90,13 @@ bool Helios::init()
 }
 
 #ifdef HELIOS_EMBEDDED
-ISR(TIM0_COMPA_vect)
-{
+ISR(TIM0_COMPA_vect) {
   // 1 kHz system tick
   Helios::tick();
 }
 #endif
 
-void Helios::tick()
-{
+void Helios::tick() {
   // sample the button and re-calculate all button globals
   // the button globals should not change anywhere else
   Button::update();
@@ -118,8 +115,7 @@ void Helios::tick()
   Time::tickClock();
 }
 
-void Helios::enter_sleep()
-{
+void Helios::enter_sleep() {
   // clear the led
   Led::clear();
 #ifdef HELIOS_EMBEDDED
@@ -139,14 +135,12 @@ void Helios::enter_sleep()
 }
 
 #ifdef HELIOS_EMBEDDED
-void Helios::clear_output_pins()
-{
+void Helios::clear_output_pins() {
   // TODO: turn off any peripherals and stop floating pins
 }
 #endif
 
-void Helios::wakeup()
-{
+void Helios::wakeup() {
 #ifdef HELIOS_EMBEDDED
   // re-initialize helios
   // TODO: should CLI do this too?
@@ -156,8 +150,7 @@ void Helios::wakeup()
 #endif
 }
 
-void Helios::handle_state()
-{
+void Helios::handle_state() {
   if (Button::holdDuration() > FORCE_SLEEP_TIME) {
     if (Button::onRelease()) {
       enter_sleep();
@@ -168,55 +161,53 @@ void Helios::handle_state()
     }
   }
   switch (cur_state) {
-  case STATE_MODES:
-    handle_state_modes();
-    break;
-  case STATE_COLOR_SELECT_SLOT:
-  case STATE_COLOR_SELECT_QUADRANT:
-  case STATE_COLOR_SELECT_HUE:
-  case STATE_COLOR_SELECT_SAT:
-  case STATE_COLOR_SELECT_VAL:
-    handle_state_col_select();
-    break;
-  case STATE_PATTERN_SELECT:
-    handle_state_pat_select();
-    break;
-  case STATE_TOGGLE_CONJURE:
-    handle_state_toggle_flag(FLAG_CONJURE);
-    break;
-  case STATE_TOGGLE_LOCK:
-    handle_state_toggle_flag(FLAG_LOCKED);
-    break;
-  case STATE_SET_DEFAULTS:
-    handle_state_set_defaults();
-    break;
-  case STATE_SHIFT_MODE:
-    handle_state_shift_mode();
-    break;
-  case STATE_RANDOMIZE:
-    handle_state_randomize();
-    break;
+    case STATE_MODES:
+      handle_state_modes();
+      break;
+    case STATE_COLOR_SELECT_SLOT:
+    case STATE_COLOR_SELECT_QUADRANT:
+    case STATE_COLOR_SELECT_HUE:
+    case STATE_COLOR_SELECT_SAT:
+    case STATE_COLOR_SELECT_VAL:
+      handle_state_col_select();
+      break;
+    case STATE_PATTERN_SELECT:
+      handle_state_pat_select();
+      break;
+    case STATE_TOGGLE_CONJURE:
+      handle_state_toggle_flag(FLAG_CONJURE);
+      break;
+    case STATE_TOGGLE_LOCK:
+      handle_state_toggle_flag(FLAG_LOCKED);
+      break;
+    case STATE_SET_DEFAULTS:
+      handle_state_set_defaults();
+      break;
+    case STATE_SHIFT_MODE:
+      handle_state_shift_mode();
+      break;
+    case STATE_RANDOMIZE:
+      handle_state_randomize();
+      break;
 #ifdef HELIOS_CLI
-  case STATE_SLEEP:
-    // simulate sleep in helios CLI
-    if (Button::onPress()) {
-      wakeup();
-    }
-    break;
+    case STATE_SLEEP:
+      // simulate sleep in helios CLI
+      if (Button::onPress()) {
+        wakeup();
+      }
+      break;
 #endif
   }
 }
 
-void Helios::load_next_mode()
-{
+void Helios::load_next_mode() {
   // increment current mode and wrap around
   cur_mode = (uint8_t)(cur_mode + 1) % NUM_MODE_SLOTS;
   // now load current mode again
   load_cur_mode();
 }
 
-void Helios::load_cur_mode()
-{
+void Helios::load_cur_mode() {
   // read pattern from storage at cur mode index
   if (!Storage::read_pattern(cur_mode, pat)) {
     // and just initialize default if it cannot be read
@@ -228,13 +219,11 @@ void Helios::load_cur_mode()
   pat.init();
 }
 
-void Helios::save_cur_mode()
-{
+void Helios::save_cur_mode() {
   Storage::write_pattern(cur_mode, pat);
 }
 
-void Helios::handle_state_modes()
-{
+void Helios::handle_state_modes() {
   // whether they have released the button since turning on
   bool hasReleased = (Button::releaseCount() > 0);
 
@@ -270,20 +259,40 @@ void Helios::handle_state_modes()
     // if the button has been released before then show the on menu
     if (hasReleased) {
       switch (magnitude) {
-        case 0: Led::clear(); break;
-        case 1: Led::set(RGB_CYAN1); break;
-        case 2: Led::set(RGB_PURPLE1); break;
-        case 3: Led::set(RGB_YELLOW1); break;
-        case 4: Led::set(RGB_WHITE2); break;
-        case 5: Led::set(HSVColor(Time::getCurtime(), 255, 180)); break;
-        default: Led::clear(); break;
+        case 0:
+          Led::clear();
+          break;
+        case 1:
+          Led::set(HELIOS_RGB_TURQUOISE_MEDIUM);
+          break;
+        case 2:
+          Led::set(HELIOS_RGB_MAGENTA_MEDIUM);
+          break;
+        case 3:
+          Led::set(HELIOS_RGB_YELLOW_MEDIUM);
+          break;
+        case 4:
+          Led::set(RGB_WHITE2);
+          break;
+        case 5:
+          Led::set(HSVColor(Time::getCurtime(), 255, 180));
+          break;
+        default:
+          Led::clear();
+          break;
       }
     } else {
       // otherwise show the off menu
       switch (magnitude) {
-        case 0: Led::set(RGB_RED1); break;
-        case 1: Led::set(RGB_BLUE1); break;
-        default: Led::clear(); break;
+        case 0:
+          Led::set(HELIOS_RGB_RED_MEDIUM);
+          break;
+        case 1:
+          Led::set(HELIOS_RGB_BLUE_MEDIUM);
+          break;
+        default:
+          Led::clear();
+          break;
       }
     }
   }
@@ -298,58 +307,55 @@ void Helios::handle_state_modes()
   }
 }
 
-void Helios::handle_off_menu(uint8_t mag, bool past)
-{
+void Helios::handle_off_menu(uint8_t mag, bool past) {
   // if we have not released the button yet we're in the 'off' menu
   switch (mag) {
-  case 0:  // red lock
-    cur_state = STATE_TOGGLE_LOCK;
-    break;
-  case 1:  // blue reset defaults
-    cur_state = STATE_SET_DEFAULTS;
-    break;
-  default:
-    break;
+    case 0:  // red lock
+      cur_state = STATE_TOGGLE_LOCK;
+      break;
+    case 1:  // blue reset defaults
+      cur_state = STATE_SET_DEFAULTS;
+      break;
+    default:
+      break;
   }
 }
 
-void Helios::handle_on_menu(uint8_t mag, bool past)
-{
+void Helios::handle_on_menu(uint8_t mag, bool past) {
   switch (mag) {
-  case 0:  // off
-    // but only if we held for more than a short click
-    if (past) {
-      enter_sleep();
-    }
-    break;
-  case 1:  // color select
-    cur_state = STATE_COLOR_SELECT_SLOT;
-    // use the nice hue to rgb rainbow
-    g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
-    // reset the menu selection
-    menu_selection = 0;
-    break;
-  case 2:  // pat select
-    cur_state = STATE_PATTERN_SELECT;
-    // reset the menu selection
-    menu_selection = 0;
-    break;
-  case 3:  // conjure mode
-    cur_state = STATE_TOGGLE_CONJURE;
-    break;
-  case 4: // shift mode down
-    cur_state = STATE_SHIFT_MODE;
-    break;
-  case 5: // ???
-    cur_state = STATE_RANDOMIZE;
-    break;
-  default: // hold past
-    break;
+    case 0:  // off
+      // but only if we held for more than a short click
+      if (past) {
+        enter_sleep();
+      }
+      break;
+    case 1:  // color select
+      cur_state = STATE_COLOR_SELECT_SLOT;
+      // use the nice hue to rgb rainbow
+      // g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
+      // reset the menu selection
+      menu_selection = 0;
+      break;
+    case 2:  // pat select
+      cur_state = STATE_PATTERN_SELECT;
+      // reset the menu selection
+      menu_selection = 0;
+      break;
+    case 3:  // conjure mode
+      cur_state = STATE_TOGGLE_CONJURE;
+      break;
+    case 4:  // shift mode down
+      cur_state = STATE_SHIFT_MODE;
+      break;
+    case 5:  // ???
+      cur_state = STATE_RANDOMIZE;
+      break;
+    default:  // hold past
+      break;
   }
 }
 
-void Helios::handle_state_col_select()
-{
+void Helios::handle_state_col_select() {
   if (Button::onShortClick()) {
     // next hue/sat/val selection
     uint8_t num_menus = 4;
@@ -368,37 +374,37 @@ void Helios::handle_state_col_select()
     menu_selection = (menu_selection + 1) % num_menus;
   }
   switch (cur_state) {
-  default:
-  case STATE_COLOR_SELECT_SLOT:
-    // pick the target colorset slot
-    if (!handle_state_col_select_slot()) {
-      return;
-    }
-    break;
-  case STATE_COLOR_SELECT_QUADRANT:
-    // pick the hue quadrant
-    if (!handle_state_col_select_quadrant()) {
-      return;
-    }
-    break;
-  case STATE_COLOR_SELECT_HUE:
-    // target hue for changes
-    if (!handle_state_col_select_hue()) {
-      return;
-    }
-    break;
-  case STATE_COLOR_SELECT_SAT:
-    // target sat for changes
-    if (!handle_state_col_select_sat()) {
-      return;
-    }
-    break;
-  case STATE_COLOR_SELECT_VAL:
-    // target val for changes
-    if (!handle_state_col_select_val()) {
-      return;
-    }
-    break;
+    default:
+    case STATE_COLOR_SELECT_SLOT:
+      // pick the target colorset slot
+      if (!handle_state_col_select_slot()) {
+        return;
+      }
+      break;
+    case STATE_COLOR_SELECT_QUADRANT:
+      // pick the hue quadrant
+      if (!handle_state_col_select_quadrant()) {
+        return;
+      }
+      break;
+    case STATE_COLOR_SELECT_HUE:
+      // target hue for changes
+      if (!handle_state_col_select_hue()) {
+        return;
+      }
+      break;
+    case STATE_COLOR_SELECT_SAT:
+      // target sat for changes
+      if (!handle_state_col_select_sat()) {
+        return;
+      }
+      break;
+    case STATE_COLOR_SELECT_VAL:
+      // target val for changes
+      if (!handle_state_col_select_val()) {
+        return;
+      }
+      break;
   }
   if (Button::onLongClick()) {
     if (cur_state == STATE_COLOR_SELECT_VAL) {
@@ -410,8 +416,7 @@ void Helios::handle_state_col_select()
   }
 }
 
-bool Helios::handle_state_col_select_slot()
-{
+bool Helios::handle_state_col_select_slot() {
   Colorset &set = pat.colorset();
   uint8_t num_cols = set.numColors();
   if (Button::onLongClick()) {
@@ -427,7 +432,7 @@ bool Helios::handle_state_col_select_slot()
     Led::strobe(100, 100, RGB_WHITE2, RGB_OFF);
   } else if (menu_selection == num_cols + 1) {
     // exit
-    Led::strobe(60, 40, RGB_RED3, RGB_OFF);
+    Led::strobe(60, 40, HELIOS_RGB_RED_MEDIUM, RGB_OFF);
   } else {
     // render current selection
     Led::set(set.get(menu_selection));
@@ -435,60 +440,58 @@ bool Helios::handle_state_col_select_slot()
   return true;
 }
 
-bool Helios::handle_state_col_select_quadrant()
-{
+bool Helios::handle_state_col_select_quadrant() {
   uint8_t hue_quad = (menu_selection - 2);
   uint8_t hue = hue_quad * (255 / 4);
   HSVColor hcol(hue, 255, 255);
   if (Button::onLongClick()) {
     // select hue/sat/val
     switch (menu_selection) {
-    case 0: // exit
-      cur_state = STATE_MODES;
-      return false;
-    case 1: // selected blank
-      // add blank to set
-      pat.colorset().set(selected_slot, RGB_OFF);
-      // go to slot selection - 1 because we will increment outside here
-      cur_state = STATE_COLOR_SELECT_SLOT;
-      return false;
-    case 2: // selected white
-      // adds white, skip hue/sat to brightness
-      selected_hue = 0;
-      selected_sat = 0;
-      cur_state = STATE_COLOR_SELECT_VAL;
-      return false;
-    default: // 3-6
-      selected_base_hue = hue;
-      break;
+      case 0:  // exit
+        cur_state = STATE_MODES;
+        return false;
+      case 1:  // selected blank
+        // add blank to set
+        pat.colorset().set(selected_slot, RGB_OFF);
+        // go to slot selection - 1 because we will increment outside here
+        cur_state = STATE_COLOR_SELECT_SLOT;
+        return false;
+      case 2:  // selected white
+        // adds white, skip hue/sat to brightness
+        selected_hue = 0;
+        selected_sat = 0;
+        cur_state = STATE_COLOR_SELECT_VAL;
+        return false;
+      default:  // 3-6
+        selected_base_hue = hue;
+        break;
     }
   }
   // default col1/col2 to off and white for the first two options
   RGBColor col1 = RGB_OFF;
   RGBColor col2;
   switch (menu_selection) {
-  case 0: // exit
-    col2 = RGB_RED8;
-    break;
-  case 1: // blank
-    col2 = RGB_WHITE1;
-    break;
-  case 2: // white
-    col2 = RGB_WHITE;
-    break;
-  default: // colors
-    col1 = hcol;
-    hcol.hue += 32;
-    col2 = hcol;
-    break;
+    case 0:  // exit
+      col2 = HELIOS_RGB_RED_MEDIUM;
+      break;
+    case 1:  // blank
+      col2 = RGB_WHITE1;
+      break;
+    case 2:  // white
+      col2 = RGB_WHITE;
+      break;
+    default:  // colors
+      col1 = hcol;
+      hcol.hue += 32;
+      col2 = hcol;
+      break;
   }
   // render current selection
   Led::strobe(6, 10, col1, col2);
   return true;
 }
 
-bool Helios::handle_state_col_select_hue()
-{
+bool Helios::handle_state_col_select_hue() {
   uint8_t hue = selected_base_hue + (menu_selection * 16);
   if (Button::onLongClick()) {
     // select hue/sat/val
@@ -499,8 +502,7 @@ bool Helios::handle_state_col_select_hue()
   return true;
 }
 
-bool Helios::handle_state_col_select_sat()
-{
+bool Helios::handle_state_col_select_sat() {
   uint8_t sat = 255 - (menu_selection * 60);
   // use the nice hue to rgb rainbow
   if (Button::onLongClick()) {
@@ -512,8 +514,7 @@ bool Helios::handle_state_col_select_sat()
   return true;
 }
 
-bool Helios::handle_state_col_select_val()
-{
+bool Helios::handle_state_col_select_val() {
   uint8_t val = 255 - (menu_selection * 50);
   RGBColor targetCol = HSVColor(selected_hue, selected_sat, val);
   // use the nice hue to rgb rainbow
@@ -528,8 +529,7 @@ bool Helios::handle_state_col_select_val()
   return true;
 }
 
-void Helios::handle_state_pat_select()
-{
+void Helios::handle_state_pat_select() {
   if (Button::onLongClick()) {
     save_cur_mode();
     cur_state = STATE_MODES;
@@ -543,8 +543,7 @@ void Helios::handle_state_pat_select()
   show_selection();
 }
 
-void Helios::handle_state_toggle_flag(Flags flag)
-{
+void Helios::handle_state_toggle_flag(Flags flag) {
   // toggle the conjure flag
   toggle_flag(flag);
   // write out the new global flags and the current mode
@@ -553,14 +552,13 @@ void Helios::handle_state_toggle_flag(Flags flag)
   cur_state = STATE_MODES;
 }
 
-void Helios::handle_state_set_defaults()
-{
+void Helios::handle_state_set_defaults() {
   if (Button::onShortClick()) {
     menu_selection = !menu_selection;
   }
   // show low white for exit or red for select
   if (menu_selection) {
-    Led::strobe(20, 10, RGB_RED5, RGB_OFF);
+    Led::strobe(20, 10, HELIOS_RGB_RED_MEDIUM, RGB_OFF);
   } else {
     Led::strobe(60, 20, RGB_WHITE0, RGB_OFF);
   }
@@ -585,8 +583,7 @@ void Helios::handle_state_set_defaults()
   show_selection();
 }
 
-inline uint32_t crc32(const uint8_t *data, uint8_t size)
-{
+inline uint32_t crc32(const uint8_t *data, uint8_t size) {
   uint32_t hash = 5381;
   for (uint8_t i = 0; i < size; ++i) {
     hash = ((hash << 5) + hash) + data[i];
@@ -594,16 +591,14 @@ inline uint32_t crc32(const uint8_t *data, uint8_t size)
   return hash;
 }
 
-void Helios::handle_state_shift_mode()
-{
+void Helios::handle_state_shift_mode() {
   uint8_t new_mode = (cur_mode + 1) % NUM_MODE_SLOTS;
   Storage::swap_pattern(cur_mode, new_mode);
   cur_mode = new_mode;
   cur_state = STATE_MODES;
 }
 
-void Helios::handle_state_randomize()
-{
+void Helios::handle_state_randomize() {
   if (Button::onShortClick()) {
     uint32_t seed = crc32((const uint8_t *)&pat, PATTERN_SIZE);
     Random ctx(seed);
@@ -620,14 +615,12 @@ void Helios::handle_state_randomize()
   show_selection();
 }
 
-void Helios::save_global_flags()
-{
+void Helios::save_global_flags() {
   Storage::write_config(0, global_flags);
   Storage::write_config(1, cur_mode);
 }
 
-void Helios::show_selection()
-{
+void Helios::show_selection() {
   // only show seletion while pressing the button
   if (!Button::isPressed()) {
     return;

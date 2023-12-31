@@ -7,27 +7,28 @@
 // modes that use the same colorset -- these demonstrate the max amount
 // of colors in each set but you can absolutely list a lesser amount
 // TODO: find a better way to store these that isn't stack
-static const uint32_t color_codes0[] = {RGB_RED, RGB_GREEN, RGB_BLUE, RGB_YELLOW, RGB_PURPLE, RGB_CYAN};
-// static const uint32_t color_codes1[] = { RGB_GREEN, RGB_PINK, RGB_WHITE, RGB_BLUE, RGB_YELLOW, RGB_RED };
-// static const uint32_t color_codes2[] = { RGB_BLUE, RGB_CYAN, RGB_PURPLE, RGB_RED3, RGB_BLUE3, RGB_GREEN3 };
-// static const uint32_t color_codes3[] = { RGB_YELLOW3, RGB_PURPLE3, RGB_CYAN3, RGB_ORANGE, RGB_WHITE, RGB_OFF };
-// static const uint32_t color_codes4[] = { RGB_WHITE4, RGB_BLUE4, RGB_YELLOW4, RGB_RED4, RGB_GREEN4, RGB_CYAN4 };
-// static const uint32_t color_codes5[] = { RGB_PURPLE4, RGB_ORANGE4, RGB_PINK, RGB_MAGENTA, RGB_CYAN, RGB_PINK };
-// static const uint32_t color_codes6[] = { RGB_WHITE6, RGB_BLUE6, RGB_YELLOW6, RGB_RED6, RGB_GREEN6, RGB_CYAN6 };
-// static const uint32_t color_codes7[] = { RGB_PURPLE6, RGB_ORANGE6, RGB_GREEN, RGB_CYAN, RGB_BLUE, RGB_PURPLE };
-// static const uint32_t color_codes8[] = { RGB_WHITE9, RGB_BLUE9, RGB_YELLOW9, RGB_RED9, RGB_GREEN9, RGB_CYAN9 };
+static const uint32_t color_codes0[] = {HELIOS_RGB_RED, HELIOS_RGB_ORANGE, HELIOS_RGB_YELLOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_BLUE, HELIOS_RGB_PINK};
+static const uint32_t color_codes1[] = {HELIOS_RGB_RED, HELIOS_RGB_BLOOD_ORANGE_SATURATION_MEDIUM, HELIOS_RGB_ORANGE, HELIOS_RGB_YELLOW_SATURATION_LOW};
+static const uint32_t color_codes2[] = {HELIOS_RGB_PURPLE_SATURATION_MEDIUM, HELIOS_RGB_WHITE_LOWEST, HELIOS_RGB_MAGENTA_LOWEST, HELIOS_RGB_BLUE_LOWEST};
+static const uint32_t color_codes3[] = {HELIOS_RGB_MAGENTA, HELIOS_RGB_YELLOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_PINK_SATURATION_LOW, HELIOS_RGB_RED, HELIOS_RGB_YELLOW};
+static const uint32_t color_codes4[] = {HELIOS_RGB_WHITE_LOWEST, HELIOS_RGB_ROYAL_BLUE_LOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_ROYAL_BLUE_LOW, HELIOS_RGB_MAGENTA_LOWEST, RGB_OFF};
+static const uint32_t color_codes5[] = {HELIOS_RGB_RED, HELIOS_RGB_CORAL_PINK, HELIOS_RGB_ROYAL_BLUE, HELIOS_RGB_BLUE, HELIOS_RGB_GREEN, HELIOS_RGB_YELLOW};
+
+// static const uint32_t color_codes6[] = { HELIOS_RGB_WHITE6, HELIOS_RGB_BLUE6, HELIOS_RGB_YELLOW6, HELIOS_RGB_RED6, HELIOS_RGB_GREEN6, HELIOS_RGB_TURQUOISE6 };
+// static const uint32_t color_codes7[] = { HELIOS_RGB_PURPLE6, HELIOS_RGB_ORANGE6, HELIOS_RGB_GREEN, HELIOS_RGB_TURQUOISE, HELIOS_RGB_BLUE, HELIOS_RGB_PURPLE };
+// static const uint32_t color_codes8[] = { HELIOS_RGB_WHITE9, HELIOS_RGB_BLUE9, HELIOS_RGB_YELLOW9, HELIOS_RGB_RED9, HELIOS_RGB_GREEN9, HELIOS_RGB_TURQUOISE9 };
 
 // the parameters of the 9 defaults
 static const PatternArgs default_args[NUM_MODE_SLOTS] = {
-    {2, 13, 0, 0, 0, 1, 0},   // 0
-    {6, 50, 0, 0, 0, 0, 0},   // 1
-    {25, 13, 0, 0, 0, 1, 0},  // 2
-    {6, 13, 0, 0, 0, 1, 1},   // 3
-    {5, 5, 200, 0, 4, 0, 0},  // 4
-    {1, 15, 0, 50, 0, 0, 0},  // 5
-    {20, 20, 0, 0, 0, 0, 0},  // 6
-    {4, 5, 150, 0, 8, 0, 0},  // 7
-    {12, 10, 0, 0, 3, 0, 0},  // 8
+    {1, 0, 40, 0, 0, 0, 0},  // 0
+    {1, 9, 0, 0, 0, 0, 0},   // 1
+    {9, 0, 0, 0, 0, 0, 0},   // 2
+    {3, 23, 0, 0, 0, 0, 0},  // 3
+    {3, 1, 0, 0, 0, 0, 0},   // 4
+    {1, 50, 0, 0, 0, 0, 0},  // 5
+                             // {20, 20, 0, 0, 0, 0, 0},  // 6
+                             // {4, 5, 150, 0, 8, 0, 0},  // 7
+                             // {12, 10, 0, 0, 3, 0, 0},  // 8
 };
 
 // Define Colorset configurations for each slot
@@ -39,15 +40,15 @@ struct default_colorset {
 // the array of colorset entries, make sure the number on the left reflects
 // the number of colors in the array on the right
 static const default_colorset default_colorsets[] = {
-    {1, color_codes0},  // 0
-    {2, color_codes0},  // 1
-    {3, color_codes0},  // 2
-    {4, color_codes0},  // 3
-    {5, color_codes0},  // 4
-    {6, color_codes0},  // 5
-    {6, color_codes0},  // 6
-    {6, color_codes0},  // 7
-    {6, color_codes0}   // 8
+    {6, color_codes0},  // 0
+    {4, color_codes1},  // 1
+    {4, color_codes2},  // 2
+    {6, color_codes3},  // 3
+    {5, color_codes4},  // 4
+    {6, color_codes5},  // 5
+                        // {6, color_codes0},  // 6
+                        // {6, color_codes0},  // 7
+                        // {6, color_codes0}   // 8
 };
 
 void Patterns::make_default(uint8_t index, Pattern &pat) {
