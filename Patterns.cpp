@@ -9,7 +9,7 @@
 // TODO: find a better way to store these that isn't stack
 static const uint32_t color_codes0[] = {HELIOS_RGB_RED, HELIOS_RGB_ORANGE, HELIOS_RGB_YELLOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_BLUE, HELIOS_RGB_PINK};
 static const uint32_t color_codes1[] = {HELIOS_RGB_RED, HELIOS_RGB_CORAL_ORANGE_SAT_MEDIUM, HELIOS_RGB_ORANGE, HELIOS_RGB_YELLOW_SAT_LOW};
-static const uint32_t color_codes2[] = {HELIOS_RGB_PURPLE_SAT_MEDIUM, HELIOS_RGB_WHITE_BRI_LOWEST, HELIOS_RGB_MAGENTA_BRI_LOWEST, HELIOS_RGB_BLUE_BRI_LOWEST};
+static const uint32_t color_codes2[] = {HELIOS_RGB_PURPLE_SAT_MEDIUM, HELIOS_RGB_RED_BRI_LOWEST, HELIOS_RGB_MAGENTA_BRI_LOWEST, HELIOS_RGB_BLUE_BRI_LOWEST};
 static const uint32_t color_codes3[] = {HELIOS_RGB_MAGENTA, HELIOS_RGB_YELLOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_PINK_SAT_LOW, HELIOS_RGB_RED, HELIOS_RGB_YELLOW};
 static const uint32_t color_codes4[] = {HELIOS_RGB_WHITE_BRI_LOWEST, HELIOS_RGB_ROYAL_BLUE_BRI_LOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_ROYAL_BLUE_BRI_LOW, HELIOS_RGB_MAGENTA_BRI_LOWEST, RGB_OFF};
 static const uint32_t color_codes5[] = {HELIOS_RGB_RED, HELIOS_RGB_HOT_PINK, HELIOS_RGB_ROYAL_BLUE, HELIOS_RGB_BLUE, HELIOS_RGB_GREEN, HELIOS_RGB_YELLOW};
@@ -40,12 +40,12 @@ struct default_colorset {
 // the array of colorset entries, make sure the number on the left reflects
 // the number of colors in the array on the right
 static const default_colorset default_colorsets[] = {
-    {6, color_codes0},  // 0
-    {4, color_codes1},  // 1
-    {4, color_codes2},  // 2
-    {6, color_codes3},  // 3
-    {5, color_codes4},  // 4
-    {6, color_codes5},  // 5
+    {6, color_codes0},  // 0 Lightside
+    {4, color_codes1},  // 1 Sauna
+    {4, color_codes2},  // 2 UltraViolet
+    {6, color_codes3},  // 3 Space Carnival
+    {5, color_codes4},  // 4 Ice Blade
+    {6, color_codes5},  // 5 Rainbow Glitter
     {6, color_codes0},  // 6
     {6, color_codes0},  // 7
     {6, color_codes3}   // 8
