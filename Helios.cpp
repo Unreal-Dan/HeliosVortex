@@ -267,13 +267,13 @@ void Helios::handle_state_modes() {
           Led::clear();
           break;
         case 1:
-          Led::set(HELIOS_RGB_TURQUOISE_BRI_MEDIUM);
+          Led::set(HELIOS_RGB_TURQUOISE_BRI_LOW);
           break;
         case 2:
-          Led::set(HELIOS_RGB_MAGENTA_BRI_MEDIUM);
+          Led::set(HELIOS_RGB_MAGENTA_BRI_LOW);
           break;
         case 3:
-          Led::set(HELIOS_RGB_YELLOW_BRI_MEDIUM);
+          Led::set(HELIOS_RGB_YELLOW_BRI_LOW);
           break;
         case 4:
           Led::set(RGB_WHITE2);
@@ -292,10 +292,10 @@ void Helios::handle_state_modes() {
           Led::clear();
           break;
         case 1:
-          Led::set(HELIOS_RGB_RED_BRI_MEDIUM);
+          Led::set(HELIOS_RGB_RED_BRI_LOW);
           break;
         case 2:
-          Led::set(HELIOS_RGB_BLUE_BRI_MEDIUM);
+          Led::set(HELIOS_RGB_BLUE_BRI_LOW);
           break;
         default:
           Led::clear();
@@ -432,7 +432,7 @@ bool Helios::handle_state_col_select_slot() {
     }
   } else if (menu_selection == num_cols + 1 || (num_cols == NUM_COLOR_SLOTS && menu_selection == num_cols)) {
     // exit
-    Led::strobe(60, 40, HELIOS_RGB_RED_BRI_MEDIUM, RGB_OFF);
+    Led::strobe(60, 40, HELIOS_RGB_RED_BRI_LOW, RGB_OFF);
     if (long_click) {
       // restore hsv to rgb algorithm type, done color selection
       g_hsv_rgb_alg = HSV_TO_RGB_GENERIC;
@@ -473,7 +473,7 @@ bool Helios::handle_state_col_select_quadrant() {
   uint8_t hue2 = hue_values[hue_quad][1];
   HSVColor hcol(hue1, 255, 255);
 
-  RGBColor color_values[3] = {HELIOS_RGB_RED_BRI_MEDIUM, RGB_WHITE1, RGB_WHITE};
+  RGBColor color_values[3] = {HELIOS_RGB_RED_BRI_LOW, RGB_WHITE1, RGB_WHITE};
   uint16_t strobe_values[4][2] = {{60, 40}, {5, 30}, {9, 0}, {500, 500}};
 
   if (Button::onLongClick()) {
@@ -533,7 +533,7 @@ bool Helios::handle_state_col_select_hue() {
 }
 
 bool Helios::handle_state_col_select_sat() {
-  uint8_t saturation_values[4] = {HELIOS_HSV_SAT_HIGH, HELIOS_HSV_SAT_MEDIUM, HELIOS_HSV_SAT_LOW, HELIOS_HSV_SAT_LOWEST};
+  uint8_t saturation_values[4] = {HELIOS_HSV_SAT_HIGH, HELIOS_HSV_SAT_LOW, HELIOS_HSV_SAT_LOW, HELIOS_HSV_SAT_LOWEST};
   uint8_t sat = saturation_values[menu_selection];
 
   // use the nice hue to rgb rainbow
@@ -547,7 +547,7 @@ bool Helios::handle_state_col_select_sat() {
 }
 
 bool Helios::handle_state_col_select_val() {
-  uint8_t brightness_values[4] = {HELIOS_HSV_BRI_HIGH, HELIOS_HSV_BRI_MEDIUM, HELIOS_HSV_BRI_LOW, HELIOS_HSV_BRI_LOWEST};
+  uint8_t brightness_values[4] = {HELIOS_HSV_BRI_HIGH, HELIOS_HSV_BRI_LOW, HELIOS_HSV_BRI_LOW, HELIOS_HSV_BRI_LOWEST};
   uint8_t val = brightness_values[menu_selection];
 
   RGBColor targetCol = HSVColor(selected_hue, selected_sat, val);
@@ -592,7 +592,7 @@ void Helios::handle_state_set_defaults() {
   }
   // show low white for exit or red for select
   if (menu_selection) {
-    Led::strobe(20, 10, HELIOS_RGB_RED_BRI_MEDIUM, RGB_OFF);
+    Led::strobe(20, 10, HELIOS_RGB_RED_BRI_LOW, RGB_OFF);
   } else {
     Led::strobe(60, 20, RGB_WHITE0, RGB_OFF);
   }
