@@ -14,21 +14,6 @@
 #define STORAGE_FILENAME "Helios.storage"
 #endif
 
-// the colorset is just an array of colors but it also has a num colors val
-#define COLORSET_SIZE ((sizeof(RGBColor) * NUM_COLOR_SLOTS) + 1)
-// The actual pattern storage size is the size of the colorset + 7 params + 1 pat flags
-#define PATTERN_SIZE (COLORSET_SIZE + 7 + 1)
-// the slot stores the pattern + 1 byte CRC
-#define SLOT_SIZE (PATTERN_SIZE + 1)
-// Some math to calculate storage sizes:
-// 3 * 6 = 18 for the colorset
-// 1 + 7 + 1 + 1 = 10 for the rest
-//  = 28 bytes total for a pattern including CRC
-//    -> 8 slots = 8 * 28 = 224
-//      = 31 bytes left
-//    -> 9 slots = 9 * 28 = 252
-//      = 3 bytes left
-
 // the index of the crc of the config bytes
 #define CONFIG_CRC_INDEX 255
 // the index of the last config byte (or first counting down)
@@ -55,7 +40,7 @@ bool Storage::read_pattern(uint8_t slot, Pattern &pat)
   return true;
 }
 
-bool Storage::write_pattern(uint8_t slot, const Pattern &pat)
+void Storage::write_pattern(uint8_t slot, const Pattern &pat)
 {
   uint8_t pos = slot * SLOT_SIZE;
   for (uint8_t i = 0; i < PATTERN_SIZE; ++i) {
@@ -68,29 +53,28 @@ bool Storage::write_pattern(uint8_t slot, const Pattern &pat)
     }
   }
   write_crc(pos);
-  return true;
 }
 
-uint8_t Storage::config_checksum()
+void Storage::swap_pattern(uint8_t slot1, uint8_t slot2)
 {
-  uint8_t byte1 = read_byte(CONFIG_START_INDEX - 0);
-  uint8_t byte2 = read_byte(CONFIG_START_INDEX - 1);
-  // bad checksum
-  return byte1 + byte2 + (byte1 ^ byte2);
+  uint8_t pos1 = slot1 * SLOT_SIZE;
+  uint8_t pos2 = slot2 * SLOT_SIZE;
+  for (uint8_t i = 0; i < SLOT_SIZE; ++i) {
+    uint8_t b1 = read_byte(pos1 + i);
+    uint8_t b2 = read_byte(pos2 + i);
+    write_byte(pos1 + i, b2);
+    write_byte(pos2 + i, b1);
+  }
 }
 
 uint8_t Storage::read_config(uint8_t index)
 {
-  if (config_checksum() != read_byte(CONFIG_CRC_INDEX)) {
-    return 0;
-  }
   return read_byte(CONFIG_START_INDEX - index);
 }
 
 void Storage::write_config(uint8_t index, uint8_t val)
 {
   write_byte(CONFIG_START_INDEX - index, val);
-  write_byte(CONFIG_CRC_INDEX, config_checksum());
 }
 
 uint8_t Storage::crc8(uint8_t pos, uint8_t size)
