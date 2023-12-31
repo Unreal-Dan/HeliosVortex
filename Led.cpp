@@ -70,33 +70,31 @@ void Led::strobe(uint8_t on_time, uint8_t off_time, RGBColor off_col, RGBColor o
   set(((Time::getCurtime() % (on_time + off_time)) > on_time) ? off_col : on_col);
 }
 
-void Led::blinkOffset(uint32_t time, uint16_t offMs, uint16_t onMs, RGBColor col)
+void Led::breath(uint8_t hue, uint32_t duration, uint8_t magnitude, uint8_t sat, uint8_t val)
 {
-  if ((time % MS_TO_TICKS(offMs + onMs)) < MS_TO_TICKS(onMs)) {
-    set(col);
+  if (!duration) {
+    // don't divide by 0
+    return;
   }
-}
 
-void Led::blink(uint16_t offMs, uint16_t onMs, RGBColor col)
-{
-  if ((Time::getCurtime() % MS_TO_TICKS(offMs + onMs)) < MS_TO_TICKS(onMs)) {
-    set(col);
+  // Determine the phase in the cycle
+  uint32_t phase = Time::getCurtime() % (2 * duration);
+
+  // Calculate hue shift
+  int32_t hueShift;
+  if (phase < duration) {
+    // Ascending phase - from hue to hue + magnitude
+    hueShift = (phase * magnitude) / duration;
+  } else {
+    // Descending phase - from hue + magnitude to hue
+    hueShift = ((2 * duration - phase) * magnitude) / duration;
   }
-}
 
-void Led::breath(uint8_t hue, uint32_t variance, uint32_t magnitude, uint8_t sat, uint8_t val)
-{
-  set(HSVColor((uint8_t)(hue + ((sin(variance * 0.0174533) + 1) * magnitude)), sat, val));
-}
+  // Apply hue shift - ensure hue stays within valid range
+  uint8_t shiftedHue = (hue + hueShift) % 256; // Assuming hue is in 0-255 range
 
-void Led::breathSat(uint8_t hue, uint32_t variance, uint32_t magnitude, uint8_t sat, uint8_t val)
-{
-  set(HSVColor(hue, 255 - (uint8_t)(sat + 128 + ((sin(variance * 0.0174533) + 1) * magnitude)), val));
-}
-
-void Led::breathVal(uint8_t hue, uint32_t variance, uint32_t magnitude, uint8_t sat, uint8_t val)
-{
-  set(HSVColor(hue, sat, 255 - (uint8_t)(val + 128 + ((sin(variance * 0.0174533) + 1) * magnitude))));
+  // Apply the hsv color as a strobing hue shift
+  strobe(2, 13, RGB_OFF, HSVColor(shiftedHue, sat, val));
 }
 
 void Led::hold(RGBColor col)
@@ -119,7 +117,7 @@ void Led::update()
   static uint8_t counter = 0;
   counter++;
   // run the software PWM on each pin
-  if (counter < m_ledColor.red) { 
+  if (counter < m_ledColor.red) {
     PORTB |= (1 << PWM_PIN_R);
   } else {
     PORTB &= ~(1 << PWM_PIN_R);

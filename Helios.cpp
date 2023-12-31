@@ -341,7 +341,7 @@ void Helios::handle_on_menu(uint8_t mag, bool past) {
     case 1:  // color select
       cur_state = STATE_COLOR_SELECT_SLOT;
       // use the nice hue to rgb rainbow
-      // g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
+      g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
       // reset the menu selection
       menu_selection = 0;
       break;
@@ -378,7 +378,7 @@ void Helios::handle_state_col_select() {
         num_menus++;
       }
     } else if (cur_state == STATE_COLOR_SELECT_QUADRANT) {
-      num_menus = 6;
+      num_menus = 7;
     }
     menu_selection = (menu_selection + 1) % num_menus;
   }
@@ -462,7 +462,7 @@ bool Helios::handle_state_col_select_slot() {
 }
 
 bool Helios::handle_state_col_select_quadrant() {
-  uint8_t hue_quad = (menu_selection - 2);
+  uint8_t hue_quad = (menu_selection - 3);
   uint8_t hue = hue_quad * (255 / 4);
   HSVColor hcol(hue, 255, 255);
   if (Button::onLongClick()) {
@@ -502,10 +502,8 @@ bool Helios::handle_state_col_select_quadrant() {
       col2 = RGB_WHITE;
       break;
     default:  // colors
-      col1 = hcol;
-      hcol.hue += 32;
-      col2 = hcol;
-      break;
+      Led::breath(hcol.hue);
+      return true;
   }
   // render current selection
   Led::strobe(6, 10, col1, col2);
