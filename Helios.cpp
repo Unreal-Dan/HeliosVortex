@@ -263,13 +263,13 @@ void Helios::handle_state_modes() {
           Led::clear();
           break;
         case 1:
-          Led::set(HELIOS_RGB_TURQUOISE_MEDIUM);
+          Led::set(HELIOS_RGB_TURQUOISE_BRI_MEDIUM);
           break;
         case 2:
-          Led::set(HELIOS_RGB_MAGENTA_MEDIUM);
+          Led::set(HELIOS_RGB_MAGENTA_BRI_MEDIUM);
           break;
         case 3:
-          Led::set(HELIOS_RGB_YELLOW_MEDIUM);
+          Led::set(HELIOS_RGB_YELLOW_BRI_MEDIUM);
           break;
         case 4:
           Led::set(RGB_WHITE2);
@@ -285,10 +285,10 @@ void Helios::handle_state_modes() {
       // otherwise show the off menu
       switch (magnitude) {
         case 0:
-          Led::set(HELIOS_RGB_RED_MEDIUM);
+          Led::set(HELIOS_RGB_RED_BRI_MEDIUM);
           break;
         case 1:
-          Led::set(HELIOS_RGB_BLUE_MEDIUM);
+          Led::set(HELIOS_RGB_BLUE_BRI_MEDIUM);
           break;
         default:
           Led::clear();
@@ -432,7 +432,7 @@ bool Helios::handle_state_col_select_slot() {
     Led::strobe(100, 100, RGB_WHITE2, RGB_OFF);
   } else if (menu_selection == num_cols + 1) {
     // exit
-    Led::strobe(60, 40, HELIOS_RGB_RED_MEDIUM, RGB_OFF);
+    Led::strobe(60, 40, HELIOS_RGB_RED_BRI_MEDIUM, RGB_OFF);
   } else {
     // render current selection
     Led::set(set.get(menu_selection));
@@ -472,7 +472,7 @@ bool Helios::handle_state_col_select_quadrant() {
   RGBColor col2;
   switch (menu_selection) {
     case 0:  // exit
-      col2 = HELIOS_RGB_RED_MEDIUM;
+      col2 = HELIOS_RGB_RED_BRI_MEDIUM;
       break;
     case 1:  // blank
       col2 = RGB_WHITE1;
@@ -558,7 +558,7 @@ void Helios::handle_state_set_defaults() {
   }
   // show low white for exit or red for select
   if (menu_selection) {
-    Led::strobe(20, 10, HELIOS_RGB_RED_MEDIUM, RGB_OFF);
+    Led::strobe(20, 10, HELIOS_RGB_RED_BRI_MEDIUM, RGB_OFF);
   } else {
     Led::strobe(60, 20, RGB_WHITE0, RGB_OFF);
   }
