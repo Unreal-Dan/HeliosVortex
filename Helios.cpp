@@ -309,6 +309,8 @@ void Helios::handle_off_menu(uint8_t mag, bool past)
     cur_state = STATE_SET_DEFAULTS;
     break;
   default:
+    // just go back to sleep in hold-paste off menu
+    enter_sleep();
     break;
   }
 }
@@ -393,7 +395,7 @@ void Helios::handle_state_col_select()
   }
   if (check_longclick && Button::onLongClick()) {
     if (cur_state == STATE_COLOR_SELECT_VAL) {
-      cur_state = STATE_PICK_SLOT;
+      cur_state = STATE_COLOR_SELECT_SLOT;
     } else {
       cur_state = (State)(cur_state + 1);
     }
@@ -420,6 +422,8 @@ bool Helios::handle_state_col_select_slot()
     // exit
     Led::strobe(60, 40, RGB_RED3, RGB_OFF);
     if (long_click) {
+      // restore hsv to rgb algorithm type, done color selection
+      g_hsv_rgb_alg = HSV_TO_RGB_GENERIC;
       save_cur_mode();
       cur_state = STATE_MODES;
       return false;
@@ -530,8 +534,8 @@ bool Helios::handle_state_col_select_val()
   if (Button::onLongClick()) {
     // change the current patterns color
     pat.colorset().set(selected_slot, targetCol);
-    // restore hsv to rgb algorithm type, done color selection
-    g_hsv_rgb_alg = HSV_TO_RGB_GENERIC;
+    pat.init();
+    save_cur_mode();
   }
   // render current selection
   Led::set(targetCol);

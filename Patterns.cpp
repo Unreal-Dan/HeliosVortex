@@ -7,7 +7,7 @@
 // modes that use the same colorset -- these demonstrate the max amount
 // of colors in each set but you can absolutely list a lesser amount
 // TODO: find a better way to store these that isn't stack
-static const uint32_t color_codes0[] = { RGB_RED, RGB_GREEN, RGB_BLUE, RGB_YELLOW, RGB_PURPLE, RGB_CYAN };
+static const uint32_t color_codes0[] = { RGB_RED, RGB_GREEN, RGB_BLUE };
 //static const uint32_t color_codes1[] = { RGB_GREEN, RGB_PINK, RGB_WHITE, RGB_BLUE, RGB_YELLOW, RGB_RED };
 //static const uint32_t color_codes2[] = { RGB_BLUE, RGB_CYAN, RGB_PURPLE, RGB_RED3, RGB_BLUE3, RGB_GREEN3 };
 //static const uint32_t color_codes3[] = { RGB_YELLOW3, RGB_PURPLE3, RGB_CYAN3, RGB_ORANGE, RGB_WHITE, RGB_OFF };
@@ -42,12 +42,12 @@ static const default_colorset default_colorsets[] = {
   { 1, color_codes0 }, // 0
   { 2, color_codes0 }, // 1
   { 3, color_codes0 }, // 2
-  { 4, color_codes0 }, // 3
-  { 5, color_codes0 }, // 4
-  { 6, color_codes0 }, // 5
-  { 6, color_codes0 }, // 6
-  { 6, color_codes0 }, // 7
-  { 6, color_codes0 }  // 8
+  { 3, color_codes0 }, // 3
+  { 3, color_codes0 }, // 4
+  { 3, color_codes0 }, // 5
+  { 3, color_codes0 }, // 6
+  { 3, color_codes0 }, // 7
+  { 3, color_codes0 }  // 8
 };
 
 void Patterns::make_default(uint8_t index, Pattern &pat)
