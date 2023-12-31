@@ -313,10 +313,10 @@ void Helios::handle_state_modes() {
 void Helios::handle_off_menu(uint8_t mag, bool past) {
   // if we have not released the button yet we're in the 'off' menu
   switch (mag) {
-    case 0:  // red lock
+    case 1:  // red lock
       cur_state = STATE_TOGGLE_LOCK;
       break;
-    case 1:  // blue reset defaults
+    case 2:  // blue reset defaults
       cur_state = STATE_SET_DEFAULTS;
       break;
     default:
@@ -595,7 +595,7 @@ inline uint32_t crc32(const uint8_t *data, uint8_t size) {
 }
 
 void Helios::handle_state_shift_mode() {
-  uint8_t new_mode = (cur_mode + 1) % NUM_MODE_SLOTS;
+  uint8_t new_mode = (cur_mode - 1) % NUM_MODE_SLOTS;
   Storage::swap_pattern(cur_mode, new_mode);
   cur_mode = new_mode;
   cur_state = STATE_MODES;
