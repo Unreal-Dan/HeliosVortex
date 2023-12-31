@@ -10,7 +10,7 @@
 // Selection Flash Duration
 //
 // How long the led flashes when selecting something
-#define SELECTION_FLASH_DURATION 250
+#define SELECTION_FLASH_DURATION 500
 
 // Max Color Slots
 //

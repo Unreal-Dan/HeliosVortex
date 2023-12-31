@@ -467,7 +467,7 @@ void Helios::handle_state_col_select()
     menu_selection = 0;
   }
   // show selection in all of these menus
-  show_selection();
+  show_selection(false);
 }
 
 bool Helios::handle_state_col_select_slot()
@@ -652,7 +652,7 @@ void Helios::handle_state_pat_select()
     pat.init();
   }
   pat.play();
-  show_selection();
+  show_selection(true);
 }
 
 void Helios::handle_state_toggle_flag(Flags flag)
@@ -701,7 +701,7 @@ void Helios::handle_state_set_defaults()
     }
     cur_state = STATE_MODES;
   }
-  show_selection();
+  show_selection(true);
 }
 
 inline uint32_t crc32(const uint8_t *data, uint8_t size)
@@ -739,7 +739,7 @@ void Helios::handle_state_randomize()
     cur_state = STATE_MODES;
   }
   pat.play();
-  show_selection();
+  show_selection(true);
 }
 
 void Helios::save_global_flags()
@@ -748,7 +748,7 @@ void Helios::save_global_flags()
   Storage::write_config(1, cur_mode);
 }
 
-void Helios::show_selection()
+void Helios::show_selection(bool white)
 {
   // only show seletion while pressing the button
   if (!Button::isPressed())
@@ -762,8 +762,21 @@ void Helios::show_selection()
   {
     return;
   }
-  // set some sort of dim white
-  Led::set(RGB_WHITE5);
+  if (white)
+  {
+    Led::set(RGB_WHITE5);
+  }
+  else
+  {
+    // get the current color
+    RGBColor currentColor = Led::get();
 
-  // TODO: Grab current color on LED and make it brighter or darker
+    // dim the current color
+    currentColor.red /= 2;
+    currentColor.green /= 2;
+    currentColor.blue /= 2;
+
+    // set the dimmed color
+    Led::set(currentColor);
+  }
 }
