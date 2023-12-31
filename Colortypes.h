@@ -9,7 +9,6 @@
 enum hsv_to_rgb_algorithm : uint8_t
 {
   HSV_TO_RGB_GENERIC,
-  HSV_TO_RGB_RAW,
   HSV_TO_RGB_RAINBOW
 };
 
@@ -94,15 +93,9 @@ public:
 // are given equal weight, this makes for-example yellow larger
 // best to use this function as it is the legacy choice
 RGBColor hsv_to_rgb_rainbow(const HSVColor &rhs);
-// stolen from FastLED raw hsv to rgb conversion, idk what is special
-// about this one but I think the hue stops at 190 maybe?
-RGBColor hsv_to_rgb_raw_C(const HSVColor &rhs);
 // generic hsv to rgb conversion nothing special
 RGBColor hsv_to_rgb_generic(const HSVColor &rhs);
 
-// Convert rgb to hsv with slower approximation that matches
-// the fastled hsv to rgb 'rainbow'
-HSVColor rgb_to_hsv_approx(const RGBColor &rhs);
 // Convert rgb to hsv with generic fast method
 HSVColor rgb_to_hsv_generic(const RGBColor &rhs);
 

@@ -158,15 +158,19 @@ void Helios::wakeup()
 
 void Helios::handle_state()
 {
+  // check for the force sleep button hold regardless of which state we're in
   if (Button::holdDuration() > FORCE_SLEEP_TIME) {
+    // when released the device will just sleep
     if (Button::onRelease()) {
       enter_sleep();
     }
+    // but as long as it's held past the sleep time it just turns off the led
     if (Button::isPressed()) {
       Led::clear();
       return;
     }
   }
+  // otherwise just handle the state like normal
   switch (cur_state) {
   case STATE_MODES:
     handle_state_modes();
@@ -260,10 +264,10 @@ void Helios::handle_state_modes()
 
   // check how long the button is held
   uint32_t holdDur = Button::holdDuration();
-  // show a color based on the hold duration past 200
-  // the magnitude will be some value from 0-3 corresponding
-  // to the holdDurations of 200 to 500
-  uint32_t magnitude = (holdDur / MENU_HOLD_TIME);
+  // calculate a magnitude which corresponds to how many times past the MENU_HOLD_TIME
+  // the user has held the button, so 0 means haven't held fully past one yet, etc
+  uint8_t magnitude = (uint8_t)(holdDur / MENU_HOLD_TIME);
+  // whether the user has held the button longer than a short click
   bool heldPast = (holdDur > SHORT_CLICK_THRESHOLD);
   // if the button is held for at least 1 second
   if (Button::isPressed() && heldPast) {
@@ -309,6 +313,8 @@ void Helios::handle_off_menu(uint8_t mag, bool past)
     cur_state = STATE_SET_DEFAULTS;
     break;
   default:
+    // just go back to sleep in hold-paste off menu
+    enter_sleep();
     break;
   }
 }
@@ -367,70 +373,82 @@ void Helios::handle_state_col_select()
     }
     menu_selection = (menu_selection + 1) % num_menus;
   }
+  bool check_longclick = true;
   switch (cur_state) {
   default:
   case STATE_COLOR_SELECT_SLOT:
     // pick the target colorset slot
-    if (!handle_state_col_select_slot()) {
-      return;
-    }
+    check_longclick = handle_state_col_select_slot();
     break;
   case STATE_COLOR_SELECT_QUADRANT:
     // pick the hue quadrant
-    if (!handle_state_col_select_quadrant()) {
-      return;
-    }
+    check_longclick = handle_state_col_select_quadrant();
     break;
   case STATE_COLOR_SELECT_HUE:
     // target hue for changes
-    if (!handle_state_col_select_hue()) {
-      return;
-    }
+    check_longclick = handle_state_col_select_hue();
     break;
   case STATE_COLOR_SELECT_SAT:
     // target sat for changes
-    if (!handle_state_col_select_sat()) {
-      return;
-    }
+    check_longclick = handle_state_col_select_sat();
     break;
   case STATE_COLOR_SELECT_VAL:
     // target val for changes
-    if (!handle_state_col_select_val()) {
-      return;
-    }
+    check_longclick = handle_state_col_select_val();
     break;
   }
-  if (Button::onLongClick()) {
+  if (check_longclick && Button::onLongClick()) {
     if (cur_state == STATE_COLOR_SELECT_VAL) {
-      cur_state = STATE_MODES;
+      cur_state = STATE_COLOR_SELECT_SLOT;
     } else {
       cur_state = (State)(cur_state + 1);
     }
     menu_selection = 0;
   }
+  // show selection in all of these menus
+  show_selection();
 }
 
 bool Helios::handle_state_col_select_slot()
 {
   Colorset &set = pat.colorset();
   uint8_t num_cols = set.numColors();
-  if (Button::onLongClick()) {
-    if (menu_selection == (num_cols + 1)) {
-      // exit
-      cur_state = STATE_MODES;
-      return false;
-    }
-    selected_slot = menu_selection;
-  }
+
+  bool long_click = Button::onLongClick();
+
   if (menu_selection == num_cols) {
     // add color
     Led::strobe(100, 100, RGB_WHITE2, RGB_OFF);
+    if (long_click) {
+      selected_slot = menu_selection;
+    }
   } else if (menu_selection == num_cols + 1) {
     // exit
     Led::strobe(60, 40, RGB_RED3, RGB_OFF);
+    if (long_click) {
+      // restore hsv to rgb algorithm type, done color selection
+      g_hsv_rgb_alg = HSV_TO_RGB_GENERIC;
+      save_cur_mode();
+      cur_state = STATE_MODES;
+      return false;
+    }
   } else {
     // render current selection
-    Led::set(set.get(menu_selection));
+    RGBColor col = set.get(menu_selection);
+    Led::set(col);
+    uint32_t hold_dur = Button::holdDuration();
+    bool deleting = ((hold_dur > DELETE_COLOR_TIME) &&
+        ((hold_dur % (DELETE_COLOR_TIME * 2)) > DELETE_COLOR_TIME));
+    if (deleting) {
+      if (Button::isPressed()) {
+        // flash red
+        Led::strobe(150, 150, RGB_RED4, col);
+      }
+      if (long_click) {
+        set.removeColor(menu_selection);
+        return false;
+      }
+    }
   }
   return true;
 }
@@ -478,7 +496,7 @@ bool Helios::handle_state_col_select_quadrant()
     break;
   default: // colors
     col1 = hcol;
-    hcol.hue += 32;
+    hcol.hue += 48;
     col2 = hcol;
     break;
   }
@@ -520,8 +538,8 @@ bool Helios::handle_state_col_select_val()
   if (Button::onLongClick()) {
     // change the current patterns color
     pat.colorset().set(selected_slot, targetCol);
-    // restore hsv to rgb algorithm type, done color selection
-    g_hsv_rgb_alg = HSV_TO_RGB_GENERIC;
+    pat.init();
+    save_cur_mode();
   }
   // render current selection
   Led::set(targetCol);

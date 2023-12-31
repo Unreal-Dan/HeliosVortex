@@ -80,6 +80,7 @@ static void parse_options(int argc, char *argv[])
   static struct option long_options[] = {
     {"hex", no_argument, nullptr, 'x'},
     {"color", no_argument, nullptr, 'c'},
+    {"quiet", no_argument, nullptr, 'q'},
     {"lockstep", no_argument, nullptr, 'l'},
     {"in-place", no_argument, nullptr, 'i'},
     {"storage", optional_argument, nullptr, 's'},
@@ -87,7 +88,7 @@ static void parse_options(int argc, char *argv[])
     {"help", no_argument, nullptr, 'h'},
     {nullptr, 0, nullptr, 0}
   };
-  while ((opt = getopt_long(argc, argv, "xctliransP:C:A:h", long_options, &option_index)) != -1) {
+  while ((opt = getopt_long(argc, argv, "xcqtliransP:C:A:h", long_options, &option_index)) != -1) {
     switch (opt) {
     case 'x':
       // if the user wants pretty colors or hex codes
@@ -96,6 +97,9 @@ static void parse_options(int argc, char *argv[])
     case 'c':
       // if the user wants pretty colors
       output_type = OUTPUT_TYPE_COLOR;
+      break;
+    case 'q':
+      output_type = OUTPUT_TYPE_NONE;
       break;
     case 'l':
       // if the user wants to step in lockstep with the engine
@@ -169,6 +173,9 @@ static bool read_inputs()
 // render the led
 static void show()
 {
+  if (output_type == OUTPUT_TYPE_NONE) {
+    return;
+  }
   string out;
   if (in_place) {
     // this resets the cursor back to the beginning of the line
@@ -189,8 +196,6 @@ static void show()
       snprintf(buf, sizeof(buf), "%02X%02X%02X", Led::get().red, Led::get().green, Led::get().blue);
       out += buf;
     }
-  } else { // OUTPUT_TYPE_NONE
-           // do nothing
   }
   if (!in_place) {
     out += "\n";
