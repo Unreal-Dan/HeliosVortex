@@ -20,7 +20,7 @@
 // Mode Slots
 //
 // The number of modes on the device
-#define NUM_MODE_SLOTS 9
+#define NUM_MODE_SLOTS 6
 
 // Default Brightness
 //
@@ -44,6 +44,14 @@
 // The duration in ms/ticks to hold the button to force the chip to
 // sleep at any location in the menus
 #define FORCE_SLEEP_TIME 7000
+
+// Delete Color Time
+//
+// How long to hold button on a color to start the delete color flash
+// begins and starts flashes. Also how long the cycling flash is for the
+// delete color selection, ie how long the user has to release to delete
+// the color before it cycles back
+#define DELETE_COLOR_TIME 1500
 
 // ============================================================================
 //  Storage Constants

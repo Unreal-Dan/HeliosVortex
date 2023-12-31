@@ -7,16 +7,12 @@
 // modes that use the same colorset -- these demonstrate the max amount
 // of colors in each set but you can absolutely list a lesser amount
 // TODO: find a better way to store these that isn't stack
-static const uint32_t color_codes0[] = {HELIOS_RGB_RED, HELIOS_RGB_ORANGE, HELIOS_RGB_YELLOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_BLUE, HELIOS_RGB_PINK};
-static const uint32_t color_codes1[] = {HELIOS_RGB_RED, HELIOS_RGB_CORAL_ORANGE_SAT_MEDIUM, HELIOS_RGB_ORANGE, HELIOS_RGB_YELLOW_SAT_LOW};
-static const uint32_t color_codes2[] = {HELIOS_RGB_PURPLE_SAT_MEDIUM, HELIOS_RGB_RED_BRI_LOWEST, HELIOS_RGB_MAGENTA_BRI_LOWEST, HELIOS_RGB_BLUE_BRI_LOWEST};
-static const uint32_t color_codes3[] = {HELIOS_RGB_MAGENTA, HELIOS_RGB_YELLOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_PINK_SAT_LOW, HELIOS_RGB_RED, HELIOS_RGB_YELLOW};
-static const uint32_t color_codes4[] = {HELIOS_RGB_WHITE_BRI_LOWEST, HELIOS_RGB_ROYAL_BLUE_BRI_LOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_ROYAL_BLUE_BRI_LOW, HELIOS_RGB_MAGENTA_BRI_LOWEST, RGB_OFF};
-static const uint32_t color_codes5[] = {HELIOS_RGB_RED, HELIOS_RGB_HOT_PINK, HELIOS_RGB_ROYAL_BLUE, HELIOS_RGB_BLUE, HELIOS_RGB_GREEN, HELIOS_RGB_YELLOW};
-
-// static const uint32_t color_codes6[] = { HELIOS_RGB_WHITE6, HELIOS_RGB_BLUE6, HELIOS_RGB_YELLOW6, HELIOS_RGB_RED6, HELIOS_RGB_GREEN6, HELIOS_RGB_TURQUOISE6 };
-// static const uint32_t color_codes7[] = { HELIOS_RGB_PURPLE6, HELIOS_RGB_ORANGE6, HELIOS_RGB_GREEN, HELIOS_RGB_TURQUOISE, HELIOS_RGB_BLUE, HELIOS_RGB_PURPLE };
-// static const uint32_t color_codes8[] = { HELIOS_RGB_WHITE9, HELIOS_RGB_BLUE9, HELIOS_RGB_YELLOW9, HELIOS_RGB_RED9, HELIOS_RGB_GREEN9, HELIOS_RGB_TURQUOISE9 };
+static const uint32_t color_codes0[] = { HELIOS_RGB_RED, HELIOS_RGB_ORANGE, HELIOS_RGB_YELLOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_BLUE, HELIOS_RGB_PINK };
+static const uint32_t color_codes1[] = { HELIOS_RGB_RED, HELIOS_RGB_CORAL_ORANGE_SAT_MEDIUM, HELIOS_RGB_ORANGE, HELIOS_RGB_YELLOW_SAT_LOW };
+static const uint32_t color_codes2[] = { HELIOS_RGB_PURPLE_SAT_MEDIUM, HELIOS_RGB_RED_BRI_LOWEST, HELIOS_RGB_MAGENTA_BRI_LOWEST, HELIOS_RGB_BLUE_BRI_LOWEST };
+static const uint32_t color_codes3[] = { HELIOS_RGB_MAGENTA, HELIOS_RGB_YELLOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_PINK_SAT_LOW, HELIOS_RGB_RED, HELIOS_RGB_YELLOW };
+static const uint32_t color_codes4[] = { HELIOS_RGB_WHITE_BRI_LOWEST, HELIOS_RGB_ROYAL_BLUE_BRI_LOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_ROYAL_BLUE_BRI_LOW, HELIOS_RGB_MAGENTA_BRI_LOWEST, RGB_OFF };
+static const uint32_t color_codes5[] = { HELIOS_RGB_RED, HELIOS_RGB_HOT_PINK, HELIOS_RGB_ROYAL_BLUE, HELIOS_RGB_BLUE, HELIOS_RGB_GREEN, HELIOS_RGB_YELLOW };
 
 // the parameters of the 9 defaults
 static const PatternArgs default_args[NUM_MODE_SLOTS] = {
@@ -26,9 +22,9 @@ static const PatternArgs default_args[NUM_MODE_SLOTS] = {
     {3, 23, 0, 0, 0, 0, 0},    // 3 PATTERN_STROBIE
     {3, 1, 0, 0, 0, 0, 0},     // 4 PATTERN_ULTRA_DOPS
     {1, 50, 0, 0, 0, 0, 0},    // 5 PATTERN_FLICKER
-    {3, 23, 0, 0, 0, 10, 0},   // 6 PATTERN_BLEND_STROBIE
-    {1, 10, 10, 10, 0, 0, 0},  // 7 PATTERN_DASHDOPS
-    {2, 6, 12, 30, 2, 0, 0},   // 8 PATTERN_GAPCYCLE
+    //{3, 23, 0, 0, 0, 10, 0},   // 6 PATTERN_BLEND_STROBIE
+    //{1, 10, 10, 10, 0, 0, 0},  // 7 PATTERN_DASHDOPS
+    //{2, 6, 12, 30, 2, 0, 0},   // 8 PATTERN_GAPCYCLE
 };
 
 // Define Colorset configurations for each slot
@@ -46,13 +42,13 @@ static const default_colorset default_colorsets[] = {
     {6, color_codes3},  // 3 Space Carnival
     {5, color_codes4},  // 4 Ice Blade
     {6, color_codes5},  // 5 Rainbow Glitter
-    {6, color_codes0},  // 6
-    {6, color_codes0},  // 7
-    {6, color_codes3}   // 8
+    //{6, color_codes0},  // 6
+    //{6, color_codes0},  // 7
+    //{6, color_codes3}   // 8
 };
 
 void Patterns::make_default(uint8_t index, Pattern &pat) {
-  if (index > 8) {
+  if (index >= NUM_MODE_SLOTS) {
     return;
   }
   // assign default args
