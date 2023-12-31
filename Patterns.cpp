@@ -14,19 +14,6 @@ static const uint32_t color_codes3[] = { HELIOS_RGB_MAGENTA, HELIOS_RGB_YELLOW, 
 static const uint32_t color_codes4[] = { HELIOS_RGB_WHITE_BRI_LOWEST, HELIOS_RGB_ROYAL_BLUE_BRI_LOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_ROYAL_BLUE_BRI_LOW, HELIOS_RGB_MAGENTA_BRI_LOWEST, RGB_OFF };
 static const uint32_t color_codes5[] = { HELIOS_RGB_RED, HELIOS_RGB_HOT_PINK, HELIOS_RGB_ROYAL_BLUE, HELIOS_RGB_BLUE, HELIOS_RGB_GREEN, HELIOS_RGB_YELLOW };
 
-// the parameters of the 9 defaults
-static const PatternArgs default_args[NUM_MODE_SLOTS] = {
-    {1, 0, 40, 0, 0, 0, 0},    // 0 PATTERN_GLOW
-    {1, 9, 0, 0, 0, 0, 0},     // 1 PATTERN_DOPS
-    {9, 0, 0, 0, 0, 0, 0},     // 2 PATTERN_RIBBON
-    {3, 23, 0, 0, 0, 0, 0},    // 3 PATTERN_STROBIE
-    {3, 1, 0, 0, 0, 0, 0},     // 4 PATTERN_ULTRA_DOPS
-    {1, 50, 0, 0, 0, 0, 0},    // 5 PATTERN_FLICKER
-    //{3, 23, 0, 0, 0, 10, 0},   // 6 PATTERN_BLEND_STROBIE
-    //{1, 10, 10, 10, 0, 0, 0},  // 7 PATTERN_DASHDOPS
-    //{2, 6, 12, 30, 2, 0, 0},   // 8 PATTERN_GAPCYCLE
-};
-
 // Define Colorset configurations for each slot
 struct default_colorset {
   uint8_t num_cols;
@@ -42,22 +29,46 @@ static const default_colorset default_colorsets[] = {
     {6, color_codes3},  // 3 Space Carnival
     {5, color_codes4},  // 4 Ice Blade
     {6, color_codes5},  // 5 Rainbow Glitter
-    //{6, color_codes0},  // 6
-    //{6, color_codes0},  // 7
-    //{6, color_codes3}   // 8
 };
 
 void Patterns::make_default(uint8_t index, Pattern &pat) {
   if (index >= NUM_MODE_SLOTS) {
     return;
   }
+  PatternArgs args;
+  switch (index) {
+    case 0: // Lightside
+      args.on_dur = 1;
+      args.gap_dur = 40;
+      break;
+    case 1: // Sauna
+      args.on_dur = 1;
+      args.off_dur = 9;
+      break;
+    case 2: // UltraViolet
+      args.on_dur = 9;
+      break;
+    case 3: // Space Carnival
+      args.on_dur = 3;
+      args.off_dur = 23;
+      break;
+    case 4: // Ice Blade
+      args.on_dur = 3;
+      args.off_dur = 1;
+      break;
+    case 5: // Rainbow Glitter
+      args.on_dur = 1;
+      args.off_dur = 50;
+      break;
+  }
   // assign default args
-  pat.setArgs(default_args[index]);
+  pat.setArgs(args);
   // assign default colorset
   pat.setColorset(Colorset(default_colorsets[index].num_cols, default_colorsets[index].cols));
 }
+
 void Patterns::make_pattern(PatternID id, Pattern &pat) {
-  PatternArgs args = {0, 0, 0, 0, 0, 0, 0};
+  PatternArgs args;
   switch (id) {
     default:
     case PATTERN_STROBEGAP:

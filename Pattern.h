@@ -8,6 +8,9 @@
 
 // for specifying things like default args
 struct PatternArgs {
+  PatternArgs() : on_dur(0), off_dur(0), gap_dur(0), dash_dur(0),
+    group_size(0), blend_speed(0), num_flips(0)
+  {}
   uint8_t on_dur;
   uint8_t off_dur;
   uint8_t gap_dur;
