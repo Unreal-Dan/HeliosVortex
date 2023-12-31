@@ -8,8 +8,7 @@
 // with a class, and there are 'shell' patterns which are simply wrapperns around another pattern
 // with different parameters passed to the constructor.  There is no way to know which patterns
 // are 'core' patterns, except by looking at PatternBuilder::generate to see which classes exist
-enum PatternID : int8_t
-{
+enum PatternID : int8_t {
   // no pattern at all, use this sparingly and default to
   // PATTERN_FIRST when possible
   PATTERN_NONE = (PatternID)-1,
@@ -20,34 +19,41 @@ enum PatternID : int8_t
 
   // all 'single led' patterns below
 
-  PATTERN_STROBE = PATTERN_FIRST,
-  PATTERN_HYPERSTROBE,
-  PATTERN_PICOSTROBE,
-  PATTERN_STROBIE,
+  PATTERN_RIBBON = PATTERN_FIRST,
+  PATTERN_ULTRA_DOPS,
   PATTERN_DOPS,
-  PATTERN_ULTRADOPS,
+  PATTERN_STROBE,
+  PATTERN_STROBIE,
+  PATTERN_HYPERSTROBE,
+  PATTERN_FLARE,
+  PATTERN_GLOW,
+  PATTERN_FLICKER,
+  PATTERN_BLINKIE,
+  INOVA_BLINK,
+  PATTERN_BLEND,
+  PATTERN_BLEND_STROBE,
+  PATTERN_BLEND_STROBIE,
+  PATTERN_DASHCYCLE,
+  PATTERN_ULTRADASH,
+  PATTERN_DASHDOPS,
+  PATTERN_TRACER,
+  PATTERN_MINIRIBBON,
+
+  PATTERN_BLENDSTROBEGAP,
+
   PATTERN_STROBEGAP,
   PATTERN_HYPERGAP,
-  PATTERN_PICOGAP,
   PATTERN_STROBIEGAP,
   PATTERN_DOPSGAP,
-  PATTERN_ULTRAGAP,
-  PATTERN_BLINKIE,
   PATTERN_GHOSTCRUSH,
   PATTERN_DOUBLEDOPS,
   PATTERN_CHOPPER,
   PATTERN_DASHGAP,
-  PATTERN_DASHDOPS,
+
   PATTERN_DASHCRUSH,
-  PATTERN_ULTRADASH,
+
   PATTERN_GAPCYCLE,
-  PATTERN_DASHCYCLE,
-  PATTERN_TRACER,
-  PATTERN_RIBBON,
-  PATTERN_MINIRIBBON,
-  PATTERN_BLEND,
-  PATTERN_BLENDSTROBE,
-  PATTERN_BLENDSTROBEGAP,
+
   PATTERN_COMPLEMENTARY_BLEND,
   PATTERN_COMPLEMENTARY_BLENDSTROBE,
   PATTERN_COMPLEMENTARY_BLENDSTROBEGAP,
@@ -58,14 +64,13 @@ enum PatternID : int8_t
   // Meta pattern constants
   INTERNAL_PATTERNS_END,
   PATTERN_LAST = (INTERNAL_PATTERNS_END - 1),
-  PATTERN_COUNT = (PATTERN_LAST - PATTERN_FIRST) + 1, // total number of patterns
+  PATTERN_COUNT = (PATTERN_LAST - PATTERN_FIRST) + 1,  // total number of patterns
 };
 
 class Pattern;
 
-class Patterns
-{
-public:
+class Patterns {
+ public:
   static void make_default(uint8_t index, Pattern &pat);
   static void make_pattern(PatternID id, Pattern &pat);
 };

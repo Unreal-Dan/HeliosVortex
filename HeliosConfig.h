@@ -20,7 +20,7 @@
 // Mode Slots
 //
 // The number of modes on the device
-#define NUM_MODE_SLOTS 9
+#define NUM_MODE_SLOTS 6
 
 // Default Brightness
 //
