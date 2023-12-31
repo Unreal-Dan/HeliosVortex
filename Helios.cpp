@@ -158,15 +158,19 @@ void Helios::wakeup()
 
 void Helios::handle_state()
 {
+  // check for the force sleep button hold regardless of which state we're in
   if (Button::holdDuration() > FORCE_SLEEP_TIME) {
+    // when released the device will just sleep
     if (Button::onRelease()) {
       enter_sleep();
     }
+    // but as long as it's held past the sleep time it just turns off the led
     if (Button::isPressed()) {
       Led::clear();
       return;
     }
   }
+  // otherwise just handle the state like normal
   switch (cur_state) {
   case STATE_MODES:
     handle_state_modes();
@@ -260,10 +264,10 @@ void Helios::handle_state_modes()
 
   // check how long the button is held
   uint32_t holdDur = Button::holdDuration();
-  // show a color based on the hold duration past 200
-  // the magnitude will be some value from 0-3 corresponding
-  // to the holdDurations of 200 to 500
-  uint32_t magnitude = (holdDur / MENU_HOLD_TIME);
+  // calculate a magnitude which corresponds to how many times past the MENU_HOLD_TIME
+  // the user has held the button, so 0 means haven't held fully past one yet, etc
+  uint8_t magnitude = (uint8_t)(holdDur / MENU_HOLD_TIME);
+  // whether the user has held the button longer than a short click
   bool heldPast = (holdDur > SHORT_CLICK_THRESHOLD);
   // if the button is held for at least 1 second
   if (Button::isPressed() && heldPast) {
