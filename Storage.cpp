@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
+#include <fcntl.h>
 #define STORAGE_FILENAME "Helios.storage"
 #endif
 
@@ -166,6 +167,9 @@ uint8_t Storage::read_byte(uint8_t address)
   return EEDR;
 #else
   uint8_t val = 0;
+  if (!access(STORAGE_FILENAME, O_RDONLY)) {
+    return val;
+  }
   FILE *f = fopen(STORAGE_FILENAME, "rb"); // Open file for reading in binary mode
   if (!f) {
 		// this error is ok, just means no storage

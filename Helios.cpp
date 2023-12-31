@@ -492,7 +492,7 @@ bool Helios::handle_state_col_select_quadrant()
     break;
   default: // colors
     col1 = hcol;
-    hcol.hue += 32;
+    hcol.hue += 48;
     col2 = hcol;
     break;
   }
