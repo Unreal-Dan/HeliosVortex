@@ -285,9 +285,12 @@ void Helios::handle_state_modes() {
       // otherwise show the off menu
       switch (magnitude) {
         case 0:
-          Led::set(HELIOS_RGB_RED_BRI_MEDIUM);
+          Led::clear();
           break;
         case 1:
+          Led::set(HELIOS_RGB_RED_BRI_MEDIUM);
+          break;
+        case 2:
           Led::set(HELIOS_RGB_BLUE_BRI_MEDIUM);
           break;
         default:
