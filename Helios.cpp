@@ -382,7 +382,7 @@ void Helios::handle_on_menu(uint8_t mag, bool past)
   case 1: // color select
     cur_state = STATE_COLOR_SELECT_SLOT;
     // use the nice hue to rgb rainbow
-    g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
+    // g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
     // reset the menu selection
     menu_selection = 0;
     break;
@@ -526,10 +526,20 @@ bool Helios::handle_state_col_select_slot()
 
 bool Helios::handle_state_col_select_quadrant()
 {
-  // TODO: Define the color quadrants turn into a switch statement or using storing the colors in an array
-  uint8_t hue_quad = (menu_selection - 3);
-  uint8_t hue = hue_quad * (255 / 4);
-  HSVColor hcol(hue, 255, 255);
+  uint8_t hue_quad = (menu_selection - 3) % 4;
+  uint8_t hue_values[4][2] = {
+      {HELIOS_HSV_HUE_RED, HELIOS_HSV_HUE_ORANGE},
+      {HELIOS_HSV_HUE_LIME_GREEN, HELIOS_HSV_HUE_SEAFOAM},
+      {HELIOS_HSV_HUE_ICE_BLUE, HELIOS_HSV_HUE_BLUE},
+      {HELIOS_HSV_HUE_PURPLE, HELIOS_HSV_HUE_HOT_PINK}};
+
+  uint8_t hue1 = hue_values[hue_quad][0];
+  uint8_t hue2 = hue_values[hue_quad][1];
+  HSVColor hcol(hue1, 255, 255);
+
+  RGBColor color_values[3] = {HELIOS_RGB_RED_BRI_MEDIUM, RGB_WHITE1, RGB_WHITE};
+  uint16_t strobe_values[4][2] = {{60, 40}, {5, 30}, {9, 0}, {500, 500}};
+
   if (Button::onLongClick())
   {
     // select hue/sat/val
@@ -551,34 +561,32 @@ bool Helios::handle_state_col_select_quadrant()
       cur_state = STATE_COLOR_SELECT_VAL;
       return false;
     default: // 3-6
-      selected_base_hue = hue;
+      selected_base_hue = hue1;
       break;
     }
   }
+
   // default col1/col2 to off and white for the first two options
   RGBColor col1 = RGB_OFF;
   RGBColor col2;
-  switch (menu_selection)
+  uint16_t col1str;
+  uint16_t col2str;
+
+  if (menu_selection < 3)
   {
-  case 0: // exit
-    col2 = HELIOS_RGB_RED_BRI_MEDIUM;
-    Led::strobe(9, 0, col1, col2);
-    break;
-  case 1: // blank
-    col2 = RGB_WHITE1;
-    Led::strobe(5, 30, col1, col2);
-    break;
-  case 2: // white
-    col2 = RGB_WHITE;
-    Led::strobe(9, 0, col1, col2);
-    break;
-  default: // colors
-    col1 = hcol;
-    hcol.hue += 32;
-    col2 = hcol;
-    Led::strobe(500, 500, col1, col2);
-    break;
+    col2 = color_values[menu_selection];
+    col1str = strobe_values[menu_selection][0];
+    col2str = strobe_values[menu_selection][1];
   }
+  else
+  {
+    col1 = HSVColor(hue1, 255, 255);
+    col2 = HSVColor(hue2, 255, 255);
+    col1str = strobe_values[3][0];
+    col2str = strobe_values[3][1];
+  }
+
+  Led::strobe(col1str, col2str, col1, col2);
   return true;
 }
 
@@ -597,7 +605,9 @@ bool Helios::handle_state_col_select_hue()
 
 bool Helios::handle_state_col_select_sat()
 {
-  uint8_t sat = 255 - (menu_selection * 60);
+  uint8_t saturation_values[4] = {HELIOS_HSV_SAT_HIGH, HELIOS_HSV_SAT_MEDIUM, HELIOS_HSV_SAT_LOW, HELIOS_HSV_SAT_LOWEST};
+  uint8_t sat = saturation_values[menu_selection];
+
   // use the nice hue to rgb rainbow
   if (Button::onLongClick())
   {
@@ -611,7 +621,9 @@ bool Helios::handle_state_col_select_sat()
 
 bool Helios::handle_state_col_select_val()
 {
-  uint8_t val = 255 - (menu_selection * 50);
+  uint8_t brightness_values[4] = {HELIOS_HSV_BRI_HIGH, HELIOS_HSV_BRI_MEDIUM, HELIOS_HSV_BRI_LOW, HELIOS_HSV_BRI_LOWEST};
+  uint8_t val = brightness_values[menu_selection];
+
   RGBColor targetCol = HSVColor(selected_hue, selected_sat, val);
   // use the nice hue to rgb rainbow
   if (Button::onLongClick())
