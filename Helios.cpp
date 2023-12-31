@@ -424,13 +424,13 @@ bool Helios::handle_state_col_select_slot() {
 
   bool long_click = Button::onLongClick();
 
-  if (menu_selection == num_cols) {
+  if (num_cols < NUM_COLOR_SLOTS && menu_selection == num_cols) {
     // add color
     Led::strobe(100, 100, RGB_WHITE2, RGB_OFF);
     if (long_click) {
       selected_slot = menu_selection;
     }
-  } else if (menu_selection == num_cols + 1) {
+  } else if (menu_selection == num_cols + 1 || (num_cols == NUM_COLOR_SLOTS && menu_selection == num_cols)) {
     // exit
     Led::strobe(60, 40, HELIOS_RGB_RED_BRI_MEDIUM, RGB_OFF);
     if (long_click) {
