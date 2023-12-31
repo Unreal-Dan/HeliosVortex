@@ -578,11 +578,7 @@ bool Helios::handle_state_col_select_quadrant()
     col2 = hcol;
     Led::strobe(500, 500, col1, col2);
     break;
-    // Led::breath(hcol.hue);
-    // return true;
   }
-  // render current selection
-  // Led::strobe(500, 500, col1, col2);
   return true;
 }
 
