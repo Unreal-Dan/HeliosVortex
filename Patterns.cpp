@@ -6,8 +6,7 @@
 // define arrays of colors, you can reuse these if you have multiple
 // modes that use the same colorset -- these demonstrate the max amount
 // of colors in each set but you can absolutely list a lesser amount
-// static const uint32_t color_codes0[] = {HELIOS_RGB_RED, HELIOS_RGB_HOT_PINK, HELIOS_RGB_ROYAL_BLUE, HELIOS_RGB_BLUE, HELIOS_RGB_GREEN, HELIOS_RGB_YELLOW};
-static const uint32_t color_codes0[] = {HELIOS_RGB_YELLOW, HELIOS_RGB_RED, HELIOS_RGB_ORANGE, HELIOS_RGB_TURQUOISE, HELIOS_RGB_BLUE, HELIOS_RGB_PINK};
+static const uint32_t color_codes0[] = {HELIOS_RGB_RED, HELIOS_RGB_HOT_PINK, HELIOS_RGB_ROYAL_BLUE, HELIOS_RGB_BLUE, HELIOS_RGB_GREEN, HELIOS_RGB_YELLOW};
 static const uint32_t color_codes1[] = {HELIOS_RGB_RED, HELIOS_RGB_CORAL_ORANGE_SAT_MEDIUM, HELIOS_RGB_ORANGE, HELIOS_RGB_YELLOW_SAT_LOW};
 static const uint32_t color_codes2[] = {HELIOS_RGB_PURPLE_SAT_MEDIUM, HELIOS_RGB_RED_BRI_LOWEST, HELIOS_RGB_MAGENTA_BRI_LOWEST, HELIOS_RGB_BLUE_BRI_LOWEST};
 static const uint32_t color_codes3[] = {HELIOS_RGB_MAGENTA, HELIOS_RGB_YELLOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_PINK_SAT_LOW, HELIOS_RGB_RED, HELIOS_RGB_YELLOW};
@@ -38,7 +37,7 @@ void Patterns::make_default(uint8_t index, Pattern &pat) {
   PatternArgs args;
   switch (index) {
     case 0:  // Lightside
-      args.on_dur = 2;
+      args.on_dur = 5;
       args.gap_dur = 40;
       break;
     case 1:  // Sauna

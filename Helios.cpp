@@ -340,10 +340,12 @@ void Helios::handle_on_menu(uint8_t mag, bool past) {
       break;
     case 1:  // color select
       cur_state = STATE_COLOR_SELECT_SLOT;
-      // use the nice hue to rgb rainbow
-      // g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
       // reset the menu selection
       menu_selection = 0;
+#if ALTERNATIVE_HSV_RGB == 1
+      // use the nice hue to rgb rainbow
+      g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
+#endif
       break;
     case 2:  // pat select
       cur_state = STATE_PATTERN_SELECT;
@@ -434,8 +436,10 @@ bool Helios::handle_state_col_select_slot() {
     // exit
     Led::strobe(60, 40, HELIOS_RGB_RED_BRI_LOW, RGB_OFF);
     if (long_click) {
+#if ALTERNATIVE_HSV_RGB == 1
       // restore hsv to rgb algorithm type, done color selection
       g_hsv_rgb_alg = HSV_TO_RGB_GENERIC;
+#endif
       save_cur_mode();
       cur_state = STATE_MODES;
       return false;
@@ -669,14 +673,11 @@ void Helios::show_selection(bool white) {
     Led::set(RGB_WHITE5);
   } else {
     // get the current color
-    RGBColor currentColor = Led::get();
-
-    // dim the current color
-    currentColor.red /= 2;
-    currentColor.green /= 2;
-    currentColor.blue /= 2;
-
+    RGBColor cur = Led::get();
+    cur.red /= 2;
+    cur.green /= 2;
+    cur.blue /= 2;
     // set the dimmed color
-    Led::set(currentColor);
+    Led::set(cur);
   }
 }

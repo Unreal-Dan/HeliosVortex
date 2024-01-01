@@ -53,6 +53,12 @@
 // the color before it cycles back
 #define DELETE_COLOR_TIME 1500
 
+// Alternative HSV to RGB
+//
+// This enabled the alternative HSV to RGB algorithm to be used in the
+// color selection menu and provide a slightly different range of colors
+#define ALTERNATIVE_HSV_RGB 0
+
 // ============================================================================
 //  Storage Constants
 //

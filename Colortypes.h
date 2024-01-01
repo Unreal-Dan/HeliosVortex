@@ -6,6 +6,7 @@
 #include "HeliosConfig.h"
 #include "ColorConstants.h"
 
+#if ALTERNATIVE_HSV_RGB == 1
 enum hsv_to_rgb_algorithm : uint8_t
 {
   HSV_TO_RGB_GENERIC,
@@ -15,6 +16,7 @@ enum hsv_to_rgb_algorithm : uint8_t
 // global hsv to rgb algorithm selector, switch this to control
 // all hsv to rgb conversions
 extern hsv_to_rgb_algorithm g_hsv_rgb_alg;
+#endif
 
 class ByteStream;
 class RGBColor;

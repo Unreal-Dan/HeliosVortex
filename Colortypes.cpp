@@ -1,7 +1,9 @@
 #include "ColorTypes.h"
 
+#if ALTERNATIVE_HSV_RGB == 1
 // global hsv to rgb algorithm selector
 hsv_to_rgb_algorithm g_hsv_rgb_alg = HSV_TO_RGB_GENERIC;
+#endif
 
 HSVColor::HSVColor() :
   hue(0),
@@ -149,6 +151,7 @@ RGBColor::RGBColor(const HSVColor &rhs)
 
 RGBColor &RGBColor::operator=(const HSVColor &rhs)
 {
+#if ALTERNATIVE_HSV_RGB == 1
   switch (g_hsv_rgb_alg) {
   case HSV_TO_RGB_RAINBOW:
     *this = hsv_to_rgb_rainbow(rhs);
@@ -157,6 +160,9 @@ RGBColor &RGBColor::operator=(const HSVColor &rhs)
     *this = hsv_to_rgb_generic(rhs);
     break;
   }
+#else
+  *this = hsv_to_rgb_generic(rhs);
+#endif
   return *this;
 }
 
@@ -193,6 +199,7 @@ RGBColor RGBColor::adjustBrightness(uint8_t fadeBy)
 // ========================================================
 //  Below are various functions for converting hsv <-> rgb
 
+#if ALTERNATIVE_HSV_RGB == 1
 #define SCALE8(i, scale)  (((uint16_t)i * (uint16_t)(scale)) >> 8)
 #define FIXFRAC8(N,D) (((N)*256)/(D))
 
@@ -371,6 +378,7 @@ RGBColor hsv_to_rgb_rainbow(const HSVColor &rhs)
   col.blue = b;
   return col;
 }
+#endif
 
 // generic hsv to rgb conversion nothing special
 RGBColor hsv_to_rgb_generic(const HSVColor &rhs)
