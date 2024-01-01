@@ -78,8 +78,13 @@ bool Helios::init() {
 #ifdef HELIOS_EMBEDDED
   // Timer0 setup for 1 kHz interrupt
   TCCR0A |= (1 << WGM01);
-  // 1ms at 8MHz clock with prescaler of 64
+#if F_CPU == 16000000L
+  // 1ms at 16MHz clock with prescaler of 64
+  OCR0A = 249;
+#elif F_CPU == 8000000L
+  // 1ms at 8mhz clock with prescaler of 64
   OCR0A = 124;
+#endif
   TIMSK |= (1 << OCIE0A);
   // Start timer with prescaler of 64
   TCCR0B |= (1 << CS01) | (1 << CS00);
@@ -514,15 +519,19 @@ bool Helios::handle_state_col_select_quadrant() {
   RGBColor col1 = RGB_OFF;
   RGBColor col2;
 
+  uint16_t on_dur = menu_data[3].on_dur;
+  uint16_t off_dur = menu_data[3].off_dur;
+
   if (menu_selection < 3) {
     col2 = color_values[menu_selection];
+    on_dur = menu_data[menu_selection].on_dur;
+    off_dur = menu_data[menu_selection].off_dur;
   } else {
     col1 = HSVColor(menu_data[hue_quad].hue1, 255, 255);
     col2 = HSVColor(menu_data[hue_quad].hue2, 255, 255);
-    menu_selection = 3;
   }
 
-  Led::strobe(menu_data[menu_selection].on_dur, menu_data[menu_selection].off_dur, col1, col2);
+  Led::strobe(on_dur, off_dur, col1, col2);
   return true;
 }
 
