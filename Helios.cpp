@@ -470,14 +470,14 @@ bool Helios::handle_state_col_select_slot() {
   return true;
 }
 
-struct menu_entry_data {
+struct QuadMenuData {
   uint8_t hue1;
   uint8_t hue2;
   uint16_t on_dur;
   uint16_t off_dur;
 };
 
-menu_entry_data menu_data[4] = {
+QuadMenuData menu_data[4] = {
   // hue1                       hue2                     on   off
   // ===============================================================
   {HELIOS_HSV_HUE_RED,          HELIOS_HSV_HUE_ORANGE,   60,  40},
@@ -536,33 +536,26 @@ bool Helios::handle_state_col_select_quadrant() {
 }
 
 bool Helios::handle_state_col_select_hue() {
-  uint8_t menu_data[4][4] = {
-      {
-          HELIOS_HSV_HUE_RED,
-          HELIOS_HSV_HUE_CORAL_ORANGE,
-          HELIOS_HSV_HUE_ORANGE,
-          HELIOS_HSV_HUE_YELLOW,
-      },
-      {
-          HELIOS_HSV_HUE_LIME_GREEN,
-          HELIOS_HSV_HUE_GREEN,
-          HELIOS_HSV_HUE_SEAFOAM,
-          HELIOS_HSV_HUE_TURQUOISE,
-      },
-      {
-          HELIOS_HSV_HUE_ICE_BLUE,
-          HELIOS_HSV_HUE_LIGHT_BLUE,
-          HELIOS_HSV_HUE_BLUE,
-          HELIOS_HSV_HUE_ROYAL_BLUE,
-      },
-      {
-          HELIOS_HSV_HUE_PURPLE,
-          HELIOS_HSV_HUE_PINK,
-          HELIOS_HSV_HUE_HOT_PINK,
-          HELIOS_HSV_HUE_MAGENTA,
-      }};
+  struct ColorsMenuData {
+    uint8_t hues[4];
+  };
 
-  uint8_t hue = menu_data[selected_base_quad][menu_selection];
+  ColorsMenuData menu_data[4] = {
+    {
+      {HELIOS_HSV_HUE_RED, HELIOS_HSV_HUE_CORAL_ORANGE, HELIOS_HSV_HUE_ORANGE, HELIOS_HSV_HUE_YELLOW}
+    },
+    {
+      {HELIOS_HSV_HUE_LIME_GREEN, HELIOS_HSV_HUE_GREEN, HELIOS_HSV_HUE_SEAFOAM, HELIOS_HSV_HUE_TURQUOISE}
+    },
+    {
+      {HELIOS_HSV_HUE_ICE_BLUE, HELIOS_HSV_HUE_LIGHT_BLUE, HELIOS_HSV_HUE_BLUE, HELIOS_HSV_HUE_ROYAL_BLUE}
+    },
+    {
+      {HELIOS_HSV_HUE_PURPLE, HELIOS_HSV_HUE_PINK, HELIOS_HSV_HUE_HOT_PINK, HELIOS_HSV_HUE_MAGENTA}
+    }
+  };
+
+  uint8_t hue = menu_data[selected_base_quad].hues[menu_selection];
   if (Button::onLongClick()) {
     // select hue/sat/val
     selected_hue = hue;
