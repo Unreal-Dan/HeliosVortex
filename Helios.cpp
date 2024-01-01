@@ -27,7 +27,7 @@ Helios::Flags Helios::global_flags;
 uint8_t Helios::menu_selection;
 uint8_t Helios::cur_mode;
 uint8_t Helios::selected_slot;
-uint8_t Helios::selected_base_hue;
+uint8_t Helios::selected_base_quad;
 uint8_t Helios::selected_hue;
 uint8_t Helios::selected_sat;
 Pattern Helios::pat;
@@ -57,7 +57,7 @@ bool Helios::init() {
   menu_selection = 0;
   cur_mode = 0;
   selected_slot = 0;
-  selected_base_hue = 0;
+  selected_base_quad = 0;
   selected_hue = 0;
   selected_sat = 0;
   keepgoing = true;
@@ -510,7 +510,7 @@ bool Helios::handle_state_col_select_quadrant() {
         cur_state = STATE_COLOR_SELECT_VAL;
         return false;
       default:  // 3-6
-        selected_base_hue = menu_data[hue_quad].hue1;
+        selected_base_quad = hue_quad;
         break;
     }
   }
@@ -536,7 +536,33 @@ bool Helios::handle_state_col_select_quadrant() {
 }
 
 bool Helios::handle_state_col_select_hue() {
-  uint8_t hue = selected_base_hue + (menu_selection * 16);
+  uint8_t menu_data[4][4] = {
+      {
+          HELIOS_HSV_HUE_RED,
+          HELIOS_HSV_HUE_CORAL_ORANGE,
+          HELIOS_HSV_HUE_ORANGE,
+          HELIOS_HSV_HUE_YELLOW,
+      },
+      {
+          HELIOS_HSV_HUE_LIME_GREEN,
+          HELIOS_HSV_HUE_GREEN,
+          HELIOS_HSV_HUE_SEAFOAM,
+          HELIOS_HSV_HUE_TURQUOISE,
+      },
+      {
+          HELIOS_HSV_HUE_ICE_BLUE,
+          HELIOS_HSV_HUE_LIGHT_BLUE,
+          HELIOS_HSV_HUE_BLUE,
+          HELIOS_HSV_HUE_ROYAL_BLUE,
+      },
+      {
+          HELIOS_HSV_HUE_PURPLE,
+          HELIOS_HSV_HUE_PINK,
+          HELIOS_HSV_HUE_HOT_PINK,
+          HELIOS_HSV_HUE_MAGENTA,
+      }};
+
+  uint8_t hue = menu_data[selected_base_quad][menu_selection];
   if (Button::onLongClick()) {
     // select hue/sat/val
     selected_hue = hue;
