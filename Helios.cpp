@@ -252,7 +252,7 @@ void Helios::handle_state_modes() {
   }
 
   // check how long the button is held
-  uint32_t holdDur = Button::holdDuration();
+  uint16_t holdDur = (uint16_t)Button::holdDuration();
   // calculate a magnitude which corresponds to how many times past the MENU_HOLD_TIME
   // the user has held the button, so 0 means haven't held fully past one yet, etc
   uint8_t magnitude = (uint8_t)(holdDur / MENU_HOLD_TIME);
@@ -448,7 +448,7 @@ bool Helios::handle_state_col_select_slot() {
     // render current selection
     RGBColor col = set.get(menu_selection);
     Led::set(col);
-    uint32_t hold_dur = Button::holdDuration();
+    uint16_t hold_dur = (uint16_t)Button::holdDuration();
     bool deleting = ((hold_dur > DELETE_COLOR_TIME) &&
                      ((hold_dur % (DELETE_COLOR_TIME * 2)) > DELETE_COLOR_TIME));
     if (deleting) {
@@ -465,20 +465,26 @@ bool Helios::handle_state_col_select_slot() {
   return true;
 }
 
+struct menu_entry_data {
+  uint8_t hue1;
+  uint8_t hue2;
+  uint16_t on_dur;
+  uint16_t off_dur;
+};
+
+menu_entry_data menu_data[4] = {
+  // hue1                       hue2                     on   off
+  // ===============================================================
+  {HELIOS_HSV_HUE_RED,          HELIOS_HSV_HUE_ORANGE,   60,  40},
+  {HELIOS_HSV_HUE_LIME_GREEN,   HELIOS_HSV_HUE_SEAFOAM,  5,   30},
+  {HELIOS_HSV_HUE_ICE_BLUE,     HELIOS_HSV_HUE_BLUE,     9,   0},
+  {HELIOS_HSV_HUE_PURPLE,       HELIOS_HSV_HUE_HOT_PINK, 500, 500}
+};
+
 bool Helios::handle_state_col_select_quadrant() {
   uint8_t hue_quad = (menu_selection - 3) % 4;
-  uint8_t hue_values[4][2] = {
-      {HELIOS_HSV_HUE_RED, HELIOS_HSV_HUE_ORANGE},
-      {HELIOS_HSV_HUE_LIME_GREEN, HELIOS_HSV_HUE_SEAFOAM},
-      {HELIOS_HSV_HUE_ICE_BLUE, HELIOS_HSV_HUE_BLUE},
-      {HELIOS_HSV_HUE_PURPLE, HELIOS_HSV_HUE_HOT_PINK}};
-
-  uint8_t hue1 = hue_values[hue_quad][0];
-  uint8_t hue2 = hue_values[hue_quad][1];
-  HSVColor hcol(hue1, 255, 255);
-
+  HSVColor hcol(menu_data[hue_quad].hue1, 255, 255);
   RGBColor color_values[3] = {HELIOS_RGB_RED_BRI_LOW, RGB_WHITE1, RGB_WHITE};
-  uint16_t strobe_values[4][2] = {{60, 40}, {5, 30}, {9, 0}, {500, 500}};
 
   if (Button::onLongClick()) {
     // select hue/sat/val
@@ -499,7 +505,7 @@ bool Helios::handle_state_col_select_quadrant() {
         cur_state = STATE_COLOR_SELECT_VAL;
         return false;
       default:  // 3-6
-        selected_base_hue = hue1;
+        selected_base_hue = menu_data[hue_quad].hue1;
         break;
     }
   }
@@ -507,21 +513,16 @@ bool Helios::handle_state_col_select_quadrant() {
   // default col1/col2 to off and white for the first two options
   RGBColor col1 = RGB_OFF;
   RGBColor col2;
-  uint16_t col1str;
-  uint16_t col2str;
 
   if (menu_selection < 3) {
     col2 = color_values[menu_selection];
-    col1str = strobe_values[menu_selection][0];
-    col2str = strobe_values[menu_selection][1];
   } else {
-    col1 = HSVColor(hue1, 255, 255);
-    col2 = HSVColor(hue2, 255, 255);
-    col1str = strobe_values[3][0];
-    col2str = strobe_values[3][1];
+    col1 = HSVColor(menu_data[hue_quad].hue1, 255, 255);
+    col2 = HSVColor(menu_data[hue_quad].hue2, 255, 255);
+    menu_selection = 3;
   }
 
-  Led::strobe(col1str, col2str, col1, col2);
+  Led::strobe(menu_data[menu_selection].on_dur, menu_data[menu_selection].off_dur, col1, col2);
   return true;
 }
 
@@ -537,7 +538,10 @@ bool Helios::handle_state_col_select_hue() {
 }
 
 bool Helios::handle_state_col_select_sat() {
-  uint8_t saturation_values[4] = {HELIOS_HSV_SAT_HIGH, HELIOS_HSV_SAT_LOW, HELIOS_HSV_SAT_LOW, HELIOS_HSV_SAT_LOWEST};
+  if (menu_selection > 3) {
+    menu_selection = 3;
+  }
+  uint8_t saturation_values[4] = {HELIOS_HSV_SAT_HIGH, HELIOS_HSV_SAT_MEDIUM, HELIOS_HSV_SAT_LOW, HELIOS_HSV_SAT_LOWEST};
   uint8_t sat = saturation_values[menu_selection];
 
   // use the nice hue to rgb rainbow
@@ -551,7 +555,10 @@ bool Helios::handle_state_col_select_sat() {
 }
 
 bool Helios::handle_state_col_select_val() {
-  uint8_t brightness_values[4] = {HELIOS_HSV_BRI_HIGH, HELIOS_HSV_BRI_LOW, HELIOS_HSV_BRI_LOW, HELIOS_HSV_BRI_LOWEST};
+  if (menu_selection > 3) {
+    menu_selection = 3;
+  }
+  uint8_t brightness_values[4] = {HELIOS_HSV_BRI_HIGH, HELIOS_HSV_BRI_MEDIUM, HELIOS_HSV_BRI_LOW, HELIOS_HSV_BRI_LOWEST};
   uint8_t val = brightness_values[menu_selection];
 
   RGBColor targetCol = HSVColor(selected_hue, selected_sat, val);
@@ -578,7 +585,7 @@ void Helios::handle_state_pat_select() {
     pat.init();
   }
   pat.play();
-  show_selection(true);
+  show_selection();
 }
 
 void Helios::handle_state_toggle_flag(Flags flag) {
@@ -618,7 +625,7 @@ void Helios::handle_state_set_defaults() {
     }
     cur_state = STATE_MODES;
   }
-  show_selection(true);
+  show_selection();
 }
 
 inline uint32_t crc32(const uint8_t *data, uint8_t size) {
@@ -650,7 +657,7 @@ void Helios::handle_state_randomize() {
     cur_state = STATE_MODES;
   }
   pat.play();
-  show_selection(true);
+  show_selection();
 }
 
 void Helios::save_global_flags() {

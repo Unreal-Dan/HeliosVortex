@@ -53,7 +53,7 @@ private:
   static void load_cur_mode();
   static void save_cur_mode();
   static void save_global_flags();
-  static void show_selection(bool white);
+  static void show_selection(bool white = true);
 
 #ifdef HELIOS_EMBEDDED
   static void clear_output_pins();

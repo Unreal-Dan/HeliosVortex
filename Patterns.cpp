@@ -37,7 +37,7 @@ void Patterns::make_default(uint8_t index, Pattern &pat) {
   PatternArgs args;
   switch (index) {
     case 0:  // Lightside
-      args.on_dur = 5;
+      args.on_dur = 2;
       args.gap_dur = 40;
       break;
     case 1:  // Sauna
