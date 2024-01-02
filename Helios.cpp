@@ -478,7 +478,7 @@ struct QuadMenuData {
 };
 
 QuadMenuData menu_data[4] = {
-  // hue1                       hue2                     on   off
+  // hue1                hue2              on   off
   // ===============================================================
   {HSV_HUE_RED,          HSV_HUE_ORANGE,   60,  40},
   {HSV_HUE_LIME_GREEN,   HSV_HUE_SEAFOAM,  5,   30},
