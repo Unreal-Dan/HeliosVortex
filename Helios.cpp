@@ -357,7 +357,7 @@ void Helios::handle_off_menu(uint8_t mag, bool past)
     switch (mag) {
       case 1:  // red lock
         cur_state = STATE_TOGGLE_LOCK;
-        Led::set(RGB_OFF);
+        Led::clear();
         break;
       case 2:  // blue reset defaults
         cur_state = STATE_SET_DEFAULTS;
