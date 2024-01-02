@@ -26,7 +26,7 @@ public:
   static void adjustBrightness(uint8_t fadeBy);
 
   // strobe between two colors with a simple on/off timing
-  static void strobe(uint8_t on_time, uint8_t off_time, RGBColor col1, RGBColor col2);
+  static void strobe(uint16_t on_time, uint16_t off_time, RGBColor col1, RGBColor col2);
 
   // breath the hue on an index
   // warning: these use hsv to rgb in realtime!

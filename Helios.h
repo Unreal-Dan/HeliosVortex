@@ -53,7 +53,7 @@ private:
   static void load_cur_mode();
   static void save_cur_mode();
   static void save_global_flags();
-  static void show_selection();
+  static void show_selection(RGBColor color);
 
 #ifdef HELIOS_EMBEDDED
   static void clear_output_pins();
@@ -85,7 +85,7 @@ private:
   static uint8_t cur_mode;
   // the quadrant that was selected in color select
   static uint8_t selected_slot;
-  static uint8_t selected_base_hue;
+  static uint8_t selected_base_quad;
   static uint8_t selected_hue;
   static uint8_t selected_sat;
   static PatternArgs default_args[6];

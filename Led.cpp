@@ -65,7 +65,7 @@ void Led::adjustBrightness(uint8_t fadeBy)
   m_ledColor.adjustBrightness(fadeBy);
 }
 
-void Led::strobe(uint8_t on_time, uint8_t off_time, RGBColor off_col, RGBColor on_col)
+void Led::strobe(uint16_t on_time, uint16_t off_time, RGBColor off_col, RGBColor on_col)
 {
   set(((Time::getCurtime() % (on_time + off_time)) > on_time) ? off_col : on_col);
 }
@@ -76,10 +76,8 @@ void Led::breath(uint8_t hue, uint32_t duration, uint8_t magnitude, uint8_t sat,
     // don't divide by 0
     return;
   }
-
   // Determine the phase in the cycle
   uint32_t phase = Time::getCurtime() % (2 * duration);
-
   // Calculate hue shift
   int32_t hueShift;
   if (phase < duration) {
@@ -89,10 +87,8 @@ void Led::breath(uint8_t hue, uint32_t duration, uint8_t magnitude, uint8_t sat,
     // Descending phase - from hue + magnitude to hue
     hueShift = ((2 * duration - phase) * magnitude) / duration;
   }
-
   // Apply hue shift - ensure hue stays within valid range
-  uint8_t shiftedHue = (hue + hueShift) % 256; // Assuming hue is in 0-255 range
-
+  uint8_t shiftedHue = hue + hueShift;
   // Apply the hsv color as a strobing hue shift
   strobe(2, 13, RGB_OFF, HSVColor(shiftedHue, sat, val));
 }

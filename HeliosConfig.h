@@ -10,7 +10,7 @@
 // Selection Flash Duration
 //
 // How long the led flashes when selecting something
-#define SELECTION_FLASH_DURATION 250
+#define SELECTION_FLASH_DURATION 500
 
 // Max Color Slots
 //
@@ -52,6 +52,12 @@
 // delete color selection, ie how long the user has to release to delete
 // the color before it cycles back
 #define DELETE_COLOR_TIME 1500
+
+// Alternative HSV to RGB
+//
+// This enabled the alternative HSV to RGB algorithm to be used in the
+// color selection menu and provide a slightly different range of colors
+#define ALTERNATIVE_HSV_RGB 0
 
 // ============================================================================
 //  Storage Constants

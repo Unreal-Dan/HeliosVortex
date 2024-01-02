@@ -1,17 +1,17 @@
 #include "Patterns.h"
 
-#include "Pattern.h"
 #include "Storage.h"
+#include "Pattern.h"
 
 // define arrays of colors, you can reuse these if you have multiple
 // modes that use the same colorset -- these demonstrate the max amount
 // of colors in each set but you can absolutely list a lesser amount
-static const uint32_t color_codes0[] = { HELIOS_RGB_RED, HELIOS_RGB_ORANGE, HELIOS_RGB_YELLOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_BLUE, HELIOS_RGB_PINK };
-static const uint32_t color_codes1[] = { HELIOS_RGB_RED, HELIOS_RGB_CORAL_ORANGE_SAT_MEDIUM, HELIOS_RGB_ORANGE, HELIOS_RGB_YELLOW_SAT_LOW };
-static const uint32_t color_codes2[] = { HELIOS_RGB_PURPLE_SAT_MEDIUM, HELIOS_RGB_RED_BRI_LOWEST, HELIOS_RGB_MAGENTA_BRI_LOWEST, HELIOS_RGB_BLUE_BRI_LOWEST };
-static const uint32_t color_codes3[] = { HELIOS_RGB_MAGENTA, HELIOS_RGB_YELLOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_PINK_SAT_LOW, HELIOS_RGB_RED, HELIOS_RGB_YELLOW };
-static const uint32_t color_codes4[] = { HELIOS_RGB_WHITE_BRI_LOWEST, HELIOS_RGB_ROYAL_BLUE_BRI_LOW, HELIOS_RGB_TURQUOISE, HELIOS_RGB_ROYAL_BLUE_BRI_LOW, HELIOS_RGB_MAGENTA_BRI_LOWEST };
-static const uint32_t color_codes5[] = { HELIOS_RGB_RED, HELIOS_RGB_HOT_PINK, HELIOS_RGB_ROYAL_BLUE, HELIOS_RGB_BLUE, HELIOS_RGB_GREEN, HELIOS_RGB_YELLOW };
+static const uint32_t color_codes0[] = {RGB_RED, RGB_ORANGE, RGB_YELLOW, RGB_TURQUOISE, RGB_BLUE, RGB_PINK};
+static const uint32_t color_codes1[] = {RGB_RED, RGB_CORAL_ORANGE_SAT_MEDIUM, RGB_ORANGE, RGB_YELLOW_SAT_LOW};
+static const uint32_t color_codes2[] = {RGB_PURPLE_SAT_MEDIUM, RGB_RED_BRI_LOWEST, RGB_MAGENTA_BRI_LOWEST, RGB_BLUE_BRI_LOWEST};
+static const uint32_t color_codes3[] = {RGB_MAGENTA, RGB_YELLOW, RGB_TURQUOISE, RGB_PINK_SAT_LOW, RGB_RED, RGB_YELLOW};
+static const uint32_t color_codes4[] = {RGB_WHITE_BRI_LOWEST, RGB_ROYAL_BLUE_BRI_LOW, RGB_TURQUOISE, RGB_ROYAL_BLUE_BRI_LOW, RGB_MAGENTA_BRI_LOWEST};
+static const uint32_t color_codes5[] = {RGB_RED, RGB_HOT_PINK, RGB_ROYAL_BLUE, RGB_BLUE, RGB_GREEN, RGB_YELLOW};
 
 // Define Colorset configurations for each slot
 struct default_colorset {
@@ -22,40 +22,41 @@ struct default_colorset {
 // the array of colorset entries, make sure the number on the left reflects
 // the number of colors in the array on the right
 static const default_colorset default_colorsets[] = {
-    {6, color_codes0},  // 0 Lightside
-    {4, color_codes1},  // 1 Sauna
-    {4, color_codes2},  // 2 UltraViolet
-    {6, color_codes3},  // 3 Space Carnival
-    {5, color_codes4},  // 4 Ice Blade
-    {6, color_codes5},  // 5 Rainbow Glitter
+  { 6, color_codes0 },  // 0 Lightside
+  { 4, color_codes1 },  // 1 Sauna
+  { 4, color_codes2 },  // 2 UltraViolet
+  { 6, color_codes3 },  // 3 Space Carnival
+  { 5, color_codes4 },  // 4 Ice Blade
+  { 6, color_codes5 },  // 5 Rainbow Glitter
 };
 
-void Patterns::make_default(uint8_t index, Pattern &pat) {
+void Patterns::make_default(uint8_t index, Pattern &pat) 
+{
   if (index >= NUM_MODE_SLOTS) {
     return;
   }
   PatternArgs args;
   switch (index) {
-    case 0: // Lightside
-      args.on_dur = 1;
+    case 0:  // Lightside
+      args.on_dur = 2;
       args.gap_dur = 40;
       break;
-    case 1: // Sauna
+    case 1:  // Sauna
       args.on_dur = 1;
       args.off_dur = 9;
       break;
-    case 2: // UltraViolet
+    case 2:  // UltraViolet
       args.on_dur = 9;
       break;
-    case 3: // Space Carnival
+    case 3:  // Space Carnival
       args.on_dur = 3;
       args.off_dur = 23;
       break;
-    case 4: // Ice Blade
+    case 4:  // Ice Blade
       args.on_dur = 3;
       args.off_dur = 1;
       break;
-    case 5: // Rainbow Glitter
+    case 5:  // Rainbow Glitter
       args.on_dur = 1;
       args.off_dur = 50;
       break;
@@ -68,7 +69,8 @@ void Patterns::make_default(uint8_t index, Pattern &pat) {
   pat.setColorset(set);
 }
 
-void Patterns::make_pattern(PatternID id, Pattern &pat) {
+void Patterns::make_pattern(PatternID id, Pattern &pat) 
+{
   PatternArgs args;
   switch (id) {
     default:
@@ -83,8 +85,7 @@ void Patterns::make_pattern(PatternID id, Pattern &pat) {
       args.off_dur = 30;
       break;
     case PATTERN_GLOW:
-      args.on_dur = 1;
-      args.off_dur = 0;
+      args.on_dur = 2;
       args.gap_dur = 40;
       break;
     case PATTERN_FLICKER:
