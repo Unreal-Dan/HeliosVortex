@@ -299,6 +299,7 @@ void Helios::handle_state_modes()
           break;
       }
     } else {
+      // Hold for 5 Seconds to Exit Lock
       if (has_flag(FLAG_LOCKED)) {
         switch (magnitude) {
           case 0:
