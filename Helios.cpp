@@ -279,19 +279,19 @@ void Helios::handle_state_modes()
         case 0:
           Led::clear();
           break;
-        case 1:
+        case 1: // Color Selection
           Led::set(RGB_TURQUOISE_BRI_LOW);
           break;
-        case 2:
+        case 2: // Pattern Selection
           Led::set(RGB_MAGENTA_BRI_LOW);
           break;
-        case 3:
+        case 3: // Conjure Mode
           Led::set(RGB_YELLOW_BRI_LOW);
           break;
-        case 4:
+        case 4: // Shift Mode
           Led::set(RGB_WHITE_BRI_LOW);
           break;
-        case 5:
+        case 5: // Randomizer
           Led::set(HSVColor(Time::getCurtime(), 255, 180));
           break;
         default:
@@ -304,10 +304,10 @@ void Helios::handle_state_modes()
         case 0:
           Led::clear();
           break;
-        case 1:
+        case 1: // Glow Lock
           Led::set(RGB_RED_BRI_LOW);
           break;
-        case 2:
+        case 2: // Master Reset
           Led::set(RGB_BLUE_BRI_LOW);
           break;
         default:
@@ -432,8 +432,13 @@ void Helios::handle_state_col_select()
     }
     menu_selection = 0;
   }
+  // get the current color
+  RGBColor cur = Led::get();
+  cur.red /= 2;
+  cur.green /= 2;
+  cur.blue /= 2;
   // show selection in all of these menus
-  show_selection(false);
+  show_selection(cur);
 }
 
 bool Helios::handle_state_col_select_slot() 
@@ -624,7 +629,7 @@ void Helios::handle_state_pat_select()
     pat.init();
   }
   pat.play();
-  show_selection();
+  show_selection(RGB_MAGENTA_BRI_LOW);
 }
 
 void Helios::handle_state_toggle_flag(Flags flag) 
@@ -666,7 +671,7 @@ void Helios::handle_state_set_defaults()
     }
     cur_state = STATE_MODES;
   }
-  show_selection();
+  show_selection(RGB_WHITE_BRI_LOW);
 }
 
 inline uint32_t crc32(const uint8_t *data, uint8_t size) 
@@ -701,7 +706,7 @@ void Helios::handle_state_randomize()
     cur_state = STATE_MODES;
   }
   pat.play();
-  show_selection();
+  show_selection(RGB_WHITE_BRI_LOW);
 }
 
 void Helios::save_global_flags() 
@@ -710,7 +715,7 @@ void Helios::save_global_flags()
   Storage::write_config(1, cur_mode);
 }
 
-void Helios::show_selection(bool white) 
+void Helios::show_selection(RGBColor color) 
 {
   // only show seletion while pressing the button
   if (!Button::isPressed()) {
@@ -722,15 +727,6 @@ void Helios::show_selection(bool white)
       holdDur > (SHORT_CLICK_THRESHOLD + SELECTION_FLASH_DURATION)) {
     return;
   }
-  if (white) {
-    Led::set(RGB_WHITE_BRI_MEDIUM);
-  } else {
-    // get the current color
-    RGBColor cur = Led::get();
-    cur.red /= 2;
-    cur.green /= 2;
-    cur.blue /= 2;
-    // set the dimmed color
-    Led::set(cur);
-  }
+  // set the selection color
+  Led::set(color);
 }

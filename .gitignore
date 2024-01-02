@@ -6,5 +6,5 @@
 *.bin
 *.eep
 *.elf
-vscode
+.vscode
 
