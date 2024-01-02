@@ -272,16 +272,16 @@ void Helios::handle_state_modes() {
           Led::clear();
           break;
         case 1:
-          Led::set(HELIOS_RGB_TURQUOISE_BRI_LOW);
+          Led::set(RGB_TURQUOISE_BRI_LOW);
           break;
         case 2:
-          Led::set(HELIOS_RGB_MAGENTA_BRI_LOW);
+          Led::set(RGB_MAGENTA_BRI_LOW);
           break;
         case 3:
-          Led::set(HELIOS_RGB_YELLOW_BRI_LOW);
+          Led::set(RGB_YELLOW_BRI_LOW);
           break;
         case 4:
-          Led::set(RGB_WHITE2);
+          Led::set(RGB_WHITE_BRI_LOW);
           break;
         case 5:
           Led::set(HSVColor(Time::getCurtime(), 255, 180));
@@ -297,10 +297,10 @@ void Helios::handle_state_modes() {
           Led::clear();
           break;
         case 1:
-          Led::set(HELIOS_RGB_RED_BRI_LOW);
+          Led::set(RGB_RED_BRI_LOW);
           break;
         case 2:
-          Led::set(HELIOS_RGB_BLUE_BRI_LOW);
+          Led::set(RGB_BLUE_BRI_LOW);
           break;
         default:
           Led::clear();
@@ -433,13 +433,13 @@ bool Helios::handle_state_col_select_slot() {
 
   if (num_cols < NUM_COLOR_SLOTS && menu_selection == num_cols) {
     // add color
-    Led::strobe(100, 100, RGB_WHITE2, RGB_OFF);
+    Led::strobe(100, 100, RGB_WHITE_BRI_LOW, RGB_OFF);
     if (long_click) {
       selected_slot = menu_selection;
     }
   } else if (menu_selection == num_cols + 1 || (num_cols == NUM_COLOR_SLOTS && menu_selection == num_cols)) {
     // exit
-    Led::strobe(60, 40, HELIOS_RGB_RED_BRI_LOW, RGB_OFF);
+    Led::strobe(60, 40, RGB_RED_BRI_LOW, RGB_OFF);
     if (long_click) {
 #if ALTERNATIVE_HSV_RGB == 1
       // restore hsv to rgb algorithm type, done color selection
@@ -459,7 +459,7 @@ bool Helios::handle_state_col_select_slot() {
     if (deleting) {
       if (Button::isPressed()) {
         // flash red
-        Led::strobe(150, 150, RGB_RED4, col);
+        Led::strobe(150, 150, RGB_RED_BRI_LOW, col);
       }
       if (long_click) {
         set.removeColor(menu_selection);
@@ -480,16 +480,16 @@ struct QuadMenuData {
 QuadMenuData menu_data[4] = {
   // hue1                       hue2                     on   off
   // ===============================================================
-  {HELIOS_HSV_HUE_RED,          HELIOS_HSV_HUE_ORANGE,   60,  40},
-  {HELIOS_HSV_HUE_LIME_GREEN,   HELIOS_HSV_HUE_SEAFOAM,  5,   30},
-  {HELIOS_HSV_HUE_ICE_BLUE,     HELIOS_HSV_HUE_BLUE,     9,   0},
-  {HELIOS_HSV_HUE_PURPLE,       HELIOS_HSV_HUE_HOT_PINK, 500, 500}
+  {HSV_HUE_RED,          HSV_HUE_ORANGE,   60,  40},
+  {HSV_HUE_LIME_GREEN,   HSV_HUE_SEAFOAM,  5,   30},
+  {HSV_HUE_ICE_BLUE,     HSV_HUE_BLUE,     9,   0},
+  {HSV_HUE_PURPLE,       HSV_HUE_HOT_PINK, 500, 500}
 };
 
 bool Helios::handle_state_col_select_quadrant() {
   uint8_t hue_quad = (menu_selection - 3) % 4;
   HSVColor hcol(menu_data[hue_quad].hue1, 255, 255);
-  RGBColor color_values[3] = {HELIOS_RGB_RED_BRI_LOW, RGB_WHITE1, RGB_WHITE};
+  RGBColor color_values[3] = {RGB_RED_BRI_LOW, RGB_WHITE_BRI_LOWEST, RGB_WHITE};
 
   if (Button::onLongClick()) {
     // select hue/sat/val
@@ -543,10 +543,10 @@ bool Helios::handle_state_col_select_hue() {
   static const ColorsMenuData menu_data[4] = {
     // hue1               hue2                  hue3              hue4
     // ==================================================================================
-    { HELIOS_HSV_HUE_RED,        HELIOS_HSV_HUE_CORAL_ORANGE, HELIOS_HSV_HUE_ORANGE,   HELIOS_HSV_HUE_YELLOW },
-    { HELIOS_HSV_HUE_LIME_GREEN, HELIOS_HSV_HUE_GREEN,        HELIOS_HSV_HUE_SEAFOAM,  HELIOS_HSV_HUE_TURQUOISE },
-    { HELIOS_HSV_HUE_ICE_BLUE,   HELIOS_HSV_HUE_LIGHT_BLUE,   HELIOS_HSV_HUE_BLUE,     HELIOS_HSV_HUE_ROYAL_BLUE },
-    { HELIOS_HSV_HUE_PURPLE,     HELIOS_HSV_HUE_PINK,         HELIOS_HSV_HUE_HOT_PINK, HELIOS_HSV_HUE_MAGENTA },
+    { HSV_HUE_RED,        HSV_HUE_CORAL_ORANGE, HSV_HUE_ORANGE,   HSV_HUE_YELLOW },
+    { HSV_HUE_LIME_GREEN, HSV_HUE_GREEN,        HSV_HUE_SEAFOAM,  HSV_HUE_TURQUOISE },
+    { HSV_HUE_ICE_BLUE,   HSV_HUE_LIGHT_BLUE,   HSV_HUE_BLUE,     HSV_HUE_ROYAL_BLUE },
+    { HSV_HUE_PURPLE,     HSV_HUE_PINK,         HSV_HUE_HOT_PINK, HSV_HUE_MAGENTA },
   };
 
   uint8_t hue = menu_data[selected_base_quad].hues[menu_selection];
@@ -563,7 +563,7 @@ bool Helios::handle_state_col_select_sat() {
   if (menu_selection > 3) {
     menu_selection = 3;
   }
-  uint8_t saturation_values[4] = {HELIOS_HSV_SAT_HIGH, HELIOS_HSV_SAT_MEDIUM, HELIOS_HSV_SAT_LOW, HELIOS_HSV_SAT_LOWEST};
+  uint8_t saturation_values[4] = {HSV_SAT_HIGH, HSV_SAT_MEDIUM, HSV_SAT_LOW, HSV_SAT_LOWEST};
   uint8_t sat = saturation_values[menu_selection];
 
   // use the nice hue to rgb rainbow
@@ -580,7 +580,7 @@ bool Helios::handle_state_col_select_val() {
   if (menu_selection > 3) {
     menu_selection = 3;
   }
-  uint8_t brightness_values[4] = {HELIOS_HSV_BRI_HIGH, HELIOS_HSV_BRI_MEDIUM, HELIOS_HSV_BRI_LOW, HELIOS_HSV_BRI_LOWEST};
+  uint8_t brightness_values[4] = {HSV_BRI_HIGH, HSV_BRI_MEDIUM, HSV_BRI_LOW, HSV_BRI_LOWEST};
   uint8_t val = brightness_values[menu_selection];
 
   RGBColor targetCol = HSVColor(selected_hue, selected_sat, val);
@@ -625,9 +625,9 @@ void Helios::handle_state_set_defaults() {
   }
   // show low white for exit or red for select
   if (menu_selection) {
-    Led::strobe(20, 10, HELIOS_RGB_RED_BRI_LOW, RGB_OFF);
+    Led::strobe(20, 10, RGB_RED_BRI_LOW, RGB_OFF);
   } else {
-    Led::strobe(60, 20, RGB_WHITE0, RGB_OFF);
+    Led::strobe(60, 20, RGB_WHITE_BRI_LOWEST, RGB_OFF);
   }
   // when the user long clicks a selection
   if (Button::onLongClick()) {
@@ -699,7 +699,7 @@ void Helios::show_selection(bool white) {
     return;
   }
   if (white) {
-    Led::set(RGB_WHITE5);
+    Led::set(RGB_WHITE_BRI_MEDIUM);
   } else {
     // get the current color
     RGBColor cur = Led::get();
