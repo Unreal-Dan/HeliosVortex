@@ -726,6 +726,7 @@ void Helios::handle_state_randomize()
     Colorset &cur_set = pat.colorset();
     uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
     cur_set.randomizeColors(ctx, num_cols, Colorset::THEORY);
+    Patterns::make_pattern((PatternID)(ctx.next8() % PATTERN_COUNT), pat);
     pat.init();
   }
   if (Button::onLongClick()) {
