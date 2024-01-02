@@ -1,7 +1,7 @@
 #include "Patterns.h"
 
-#include "Pattern.h"
 #include "Storage.h"
+#include "Pattern.h"
 
 // define arrays of colors, you can reuse these if you have multiple
 // modes that use the same colorset -- these demonstrate the max amount
@@ -22,15 +22,16 @@ struct default_colorset {
 // the array of colorset entries, make sure the number on the left reflects
 // the number of colors in the array on the right
 static const default_colorset default_colorsets[] = {
-    {6, color_codes0},  // 0 Lightside
-    {4, color_codes1},  // 1 Sauna
-    {4, color_codes2},  // 2 UltraViolet
-    {6, color_codes3},  // 3 Space Carnival
-    {5, color_codes4},  // 4 Ice Blade
-    {6, color_codes5},  // 5 Rainbow Glitter
+  { 6, color_codes0 },  // 0 Lightside
+  { 4, color_codes1 },  // 1 Sauna
+  { 4, color_codes2 },  // 2 UltraViolet
+  { 6, color_codes3 },  // 3 Space Carnival
+  { 5, color_codes4 },  // 4 Ice Blade
+  { 6, color_codes5 },  // 5 Rainbow Glitter
 };
 
-void Patterns::make_default(uint8_t index, Pattern &pat) {
+void Patterns::make_default(uint8_t index, Pattern &pat) 
+{
   if (index >= NUM_MODE_SLOTS) {
     return;
   }
@@ -68,7 +69,8 @@ void Patterns::make_default(uint8_t index, Pattern &pat) {
   pat.setColorset(set);
 }
 
-void Patterns::make_pattern(PatternID id, Pattern &pat) {
+void Patterns::make_pattern(PatternID id, Pattern &pat) 
+{
   PatternArgs args;
   switch (id) {
     default:
