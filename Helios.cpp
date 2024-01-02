@@ -539,20 +539,14 @@ bool Helios::handle_state_col_select_hue() {
   struct ColorsMenuData {
     uint8_t hues[4];
   };
-
-  ColorsMenuData menu_data[4] = {
-    {
-      {HELIOS_HSV_HUE_RED, HELIOS_HSV_HUE_CORAL_ORANGE, HELIOS_HSV_HUE_ORANGE, HELIOS_HSV_HUE_YELLOW}
-    },
-    {
-      {HELIOS_HSV_HUE_LIME_GREEN, HELIOS_HSV_HUE_GREEN, HELIOS_HSV_HUE_SEAFOAM, HELIOS_HSV_HUE_TURQUOISE}
-    },
-    {
-      {HELIOS_HSV_HUE_ICE_BLUE, HELIOS_HSV_HUE_LIGHT_BLUE, HELIOS_HSV_HUE_BLUE, HELIOS_HSV_HUE_ROYAL_BLUE}
-    },
-    {
-      {HELIOS_HSV_HUE_PURPLE, HELIOS_HSV_HUE_PINK, HELIOS_HSV_HUE_HOT_PINK, HELIOS_HSV_HUE_MAGENTA}
-    }
+  // array of hues for selection
+  static const ColorsMenuData menu_data[4] = {
+    // hue1               hue2                  hue3              hue4
+    // ==================================================================================
+    { HELIOS_HSV_HUE_RED,        HELIOS_HSV_HUE_CORAL_ORANGE, HELIOS_HSV_HUE_ORANGE,   HELIOS_HSV_HUE_YELLOW },
+    { HELIOS_HSV_HUE_LIME_GREEN, HELIOS_HSV_HUE_GREEN,        HELIOS_HSV_HUE_SEAFOAM,  HELIOS_HSV_HUE_TURQUOISE },
+    { HELIOS_HSV_HUE_ICE_BLUE,   HELIOS_HSV_HUE_LIGHT_BLUE,   HELIOS_HSV_HUE_BLUE,     HELIOS_HSV_HUE_ROYAL_BLUE },
+    { HELIOS_HSV_HUE_PURPLE,     HELIOS_HSV_HUE_PINK,         HELIOS_HSV_HUE_HOT_PINK, HELIOS_HSV_HUE_MAGENTA },
   };
 
   uint8_t hue = menu_data[selected_base_quad].hues[menu_selection];
