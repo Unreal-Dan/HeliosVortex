@@ -794,7 +794,7 @@ void Helios::show_selection(RGBColor color)
   if (!Button::isPressed()) {
     return;
   }
-  uint32_t holdDur = Button::holdDuration();
+  uint16_t holdDur = Button::holdDuration();
   // if the hold duration is outside the flashing range do nothing
   if (holdDur < SHORT_CLICK_THRESHOLD ||
       holdDur > (SHORT_CLICK_THRESHOLD + SELECTION_FLASH_DURATION)) {
