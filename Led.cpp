@@ -7,8 +7,6 @@
 #include "HeliosConfig.h"
 #include "Helios.h"
 
-#define SCALE8(i, scale)  (((uint16_t)i * (uint16_t)(scale)) >> 8)
-
 #ifdef HELIOS_EMBEDDED
 #ifdef HELIOS_ARDUINO
 #include <arduino.h>
@@ -22,6 +20,8 @@
 #define PWM_PIN_R PB0 // Red channel (pin 5)
 #define PWM_PIN_G PB1 // Green channel (pin 6)
 #define PWM_PIN_B PB4 // Blue channel (pin 3)
+
+#define SCALE8(i, scale)  (((uint16_t)i * (uint16_t)(scale)) >> 8)
 
 // array of led color values
 RGBColor Led::m_ledColor = RGB_OFF;

@@ -67,6 +67,17 @@
 #define BRIGHNESS_MEDIUM 170
 #define BRIGHNESS_LOW 85
 
+// Pre-defined saturation values
+#define HSV_SAT_HIGH 255
+#define HSV_SAT_MEDIUM 220
+#define HSV_SAT_LOW 170
+#define HSV_SAT_LOWEST 130
+
+// Pre-defined brightness values
+#define HSV_BRI_HIGH 255
+#define HSV_BRI_MEDIUM 120
+#define HSV_BRI_LOW 60
+#define HSV_BRI_LOWEST 10
 
 // ============================================================================
 //  Storage Constants
