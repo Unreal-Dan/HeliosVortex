@@ -732,13 +732,13 @@ void Helios::handle_state_set_global_brightness()
     // set the brightness based on the selection
     switch (menu_selection) {
       case 0:
-        Led::setBrightness(255);
+        Led::setBrightness(BRIGHTNESS_HIGH);
         break;
       case 1:
-        Led::setBrightness(170);
+        Led::setBrightness(BRIGHNESS_MEDIUM);
         break;
       case 2:
-        Led::setBrightness(85);
+        Led::setBrightness(BRIGHNESS_LOW);
         break;
     }
     cur_state = STATE_MODES;
