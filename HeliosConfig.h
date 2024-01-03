@@ -70,8 +70,8 @@
 // Pre-defined saturation values
 #define HSV_SAT_HIGH 255
 #define HSV_SAT_MEDIUM 220
-#define HSV_SAT_LOW 170
-#define HSV_SAT_LOWEST 130
+#define HSV_SAT_LOW 190
+#define HSV_SAT_LOWEST 160
 
 // Pre-defined brightness values
 #define HSV_BRI_HIGH 255
