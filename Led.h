@@ -51,6 +51,7 @@ private:
   static uint8_t m_brightness;
   // led color
   static RGBColor m_ledColor;
+  static RGBColor m_realColor;
 };
 
 #endif
