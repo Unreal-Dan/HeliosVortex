@@ -196,6 +196,9 @@ void Helios::handle_state()
     case STATE_SET_DEFAULTS:
       handle_state_set_defaults();
       break;
+    case STATE_SET_GLOBAL_BRIGHTNESS:
+      handle_state_set_global_brightness();
+      break;
     case STATE_SHIFT_MODE:
       handle_state_shift_mode();
       break;
@@ -323,6 +326,9 @@ void Helios::handle_state_modes()
           case 2:  // Master Reset
             Led::set(RGB_BLUE_BRI_LOW);
             break;
+          case 3:  // Global Brightness
+            Led::set(RGB_GREEN_BRI_LOW);
+            break;
           default:
             Led::clear();
             break;
@@ -362,6 +368,9 @@ void Helios::handle_off_menu(uint8_t mag, bool past)
         break;
       case 2:  // blue reset defaults
         cur_state = STATE_SET_DEFAULTS;
+        break;
+      case 3:  // green global brightness
+        cur_state = STATE_SET_GLOBAL_BRIGHTNESS;
         break;
       default:
         // just go back to sleep in hold-paste off menu
@@ -695,6 +704,42 @@ void Helios::handle_state_set_defaults()
       save_global_flags();
       // re-load current mode
       load_cur_mode();
+    }
+    cur_state = STATE_MODES;
+  }
+  show_selection(RGB_WHITE_BRI_LOW);
+}
+
+void Helios::handle_state_set_global_brightness()
+{
+  if (Button::onShortClick()) {
+    menu_selection = (menu_selection + 1) % 3;
+  }
+  // show different levels of green for each selection
+  switch (menu_selection) {
+    case 0:
+      Led::set(RGB_GREEN);
+      break;
+    case 1:
+      Led::set(RGB_GREEN_BRI_MEDIUM);
+      break;
+    case 2:
+      Led::set(RGB_GREEN_BRI_LOW);
+      break;
+  }
+  // when the user long clicks a selection
+  if (Button::onLongClick()) {
+    // set the brightness based on the selection
+    switch (menu_selection) {
+      case 0:
+        Led::setBrightness(255);
+        break;
+      case 1:
+        Led::setBrightness(200);
+        break;
+      case 2:
+        Led::setBrightness(50);
+        break;
     }
     cur_state = STATE_MODES;
   }
