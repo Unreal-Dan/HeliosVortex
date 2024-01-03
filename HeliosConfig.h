@@ -59,6 +59,25 @@
 // color selection menu and provide a slightly different range of colors
 #define ALTERNATIVE_HSV_RGB 0
 
+// Brightness Options
+//
+// These are the four options available in the global brightness menu
+// There is only four options, be careful not to go too low
+#define HSV_SAT_HIGH 255
+#define HSV_SAT_MEDIUM 220
+#define HSV_SAT_LOW 170
+#define HSV_SAT_LOWEST 130
+
+// Saturation Options
+//
+// These are the four saturations available in the color selection menu
+// Any color can be picked with any of these 4 saturations
+#define HSV_BRI_HIGH 255
+#define HSV_BRI_MEDIUM 120
+#define HSV_BRI_LOW 60
+#define HSV_BRI_LOWEST 10
+
+
 // ============================================================================
 //  Storage Constants
 //
@@ -91,5 +110,7 @@
 
 // forbidden constant:
 // #define HELIOS_ARDUINO 1
+
+
 
 #endif

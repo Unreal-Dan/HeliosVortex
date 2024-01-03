@@ -7,6 +7,8 @@
 #include "HeliosConfig.h"
 #include "Helios.h"
 
+#define SCALE8(i, scale)  (((uint16_t)i * (uint16_t)(scale)) >> 8)
+
 #ifdef HELIOS_EMBEDDED
 #ifdef HELIOS_ARDUINO
 #include <arduino.h>
@@ -102,28 +104,31 @@ void Led::hold(RGBColor col)
 
 void Led::update()
 {
+  uint8_t red = SCALE8(m_ledColor.red, m_brightness);
+  uint8_t green = SCALE8(m_ledColor.green, m_brightness);
+  uint8_t blue = SCALE8(m_ledColor.blue, m_brightness);
 #ifdef HELIOS_EMBEDDED
   // write out the rgb values to analog pins
 #ifdef HELIOS_ARDUINO
-  analogWrite(PWM_PIN_R, m_ledColor.red);
-  analogWrite(PWM_PIN_G, m_ledColor.green);
-  analogWrite(PWM_PIN_B, m_ledColor.blue);
+  analogWrite(PWM_PIN_R, red);
+  analogWrite(PWM_PIN_G, green);
+  analogWrite(PWM_PIN_B, blue);
 #else
   // a counter to keep track of milliseconds for the PWM
   static uint8_t counter = 0;
   counter++;
   // run the software PWM on each pin
-  if (counter < m_ledColor.red) {
+  if (counter < red) {
     PORTB |= (1 << PWM_PIN_R);
   } else {
     PORTB &= ~(1 << PWM_PIN_R);
   }
-  if (counter < m_ledColor.green) {
+  if (counter < green) {
     PORTB |= (1 << PWM_PIN_G);
   } else {
     PORTB &= ~(1 << PWM_PIN_G);
   }
-  if (counter < m_ledColor.blue) {
+  if (counter < blue) {
     PORTB |= (1 << PWM_PIN_B);
   } else {
     PORTB &= ~(1 << PWM_PIN_B);

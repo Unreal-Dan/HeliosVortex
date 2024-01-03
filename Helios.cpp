@@ -735,10 +735,10 @@ void Helios::handle_state_set_global_brightness()
         Led::setBrightness(255);
         break;
       case 1:
-        Led::setBrightness(200);
+        Led::setBrightness(170);
         break;
       case 2:
-        Led::setBrightness(50);
+        Led::setBrightness(85);
         break;
     }
     cur_state = STATE_MODES;
