@@ -405,6 +405,7 @@ void Helios::handle_on_menu(uint8_t mag, bool past)
       break;
     case 3:  // conjure mode
       cur_state = STATE_TOGGLE_CONJURE;
+      Led::clear();
       break;
     case 4:  // shift mode down
       cur_state = STATE_SHIFT_MODE;
