@@ -524,72 +524,6 @@ bool Helios::handle_state_col_select_slot()
   return true;
 }
 
-struct QuadMenuData {
-  uint8_t hue1;
-  uint8_t hue2;
-  uint16_t on_dur;
-  uint16_t off_dur;
-};
-
-QuadMenuData menu_data[4] = {
-  // hue1                hue2              on   off
-  // ===============================================================
-  {HSV_HUE_RED,          HSV_HUE_ORANGE,   60,  40},
-  {HSV_HUE_LIME_GREEN,   HSV_HUE_SEAFOAM,  5,   30},
-  {HSV_HUE_ICE_BLUE,     HSV_HUE_BLUE,     9,   0},
-  {HSV_HUE_PURPLE,       HSV_HUE_HOT_PINK, 500, 500}
-};
-
-bool Helios::handle_state_col_select_quadrant()
-{
-  uint8_t hue_quad = (menu_selection - 3) % 4;
-  HSVColor hcol(menu_data[hue_quad].hue1, 255, 255);
-  RGBColor color_values[3] = {RGB_RED_BRI_LOW, RGB_WHITE_BRI_LOWEST, RGB_WHITE};
-
-  if (Button::onLongClick()) {
-    // select hue/sat/val
-    switch (menu_selection) {
-      case 0:  // exit
-        cur_state = STATE_MODES;
-        return false;
-      case 1:  // selected blank
-        // add blank to set
-        pat.colorset().set(selected_slot, RGB_OFF);
-        // go to slot selection - 1 because we will increment outside here
-        cur_state = STATE_COLOR_SELECT_SLOT;
-        return false;
-      case 2:  // selected white
-        // adds white, skip hue/sat to brightness
-        selected_hue = 0;
-        selected_sat = 0;
-        cur_state = STATE_COLOR_SELECT_VAL;
-        return false;
-      default:  // 3-6
-        selected_base_quad = hue_quad;
-        break;
-    }
-  }
-
-  // default col1/col2 to off and white for the first two options
-  RGBColor col1 = RGB_OFF;
-  RGBColor col2;
-
-  uint16_t on_dur = menu_data[3].on_dur;
-  uint16_t off_dur = menu_data[3].off_dur;
-
-  if (menu_selection < 3) {
-    col2 = color_values[menu_selection];
-    on_dur = menu_data[menu_selection].on_dur;
-    off_dur = menu_data[menu_selection].off_dur;
-  } else {
-    col1 = HSVColor(menu_data[hue_quad].hue1, 255, 255);
-    col2 = HSVColor(menu_data[hue_quad].hue2, 255, 255);
-  }
-
-  Led::strobe(on_dur, off_dur, col1, col2);
-  return true;
-}
-
 struct ColorsMenuData {
   uint8_t hues[4];
 };
@@ -602,6 +536,57 @@ static const ColorsMenuData color_menu_data[4] = {
   { HSV_HUE_ICE_BLUE,   HSV_HUE_LIGHT_BLUE,   HSV_HUE_BLUE,     HSV_HUE_ROYAL_BLUE },
   { HSV_HUE_PURPLE,     HSV_HUE_PINK,         HSV_HUE_HOT_PINK, HSV_HUE_MAGENTA },
 };
+
+bool Helios::handle_state_col_select_quadrant()
+{
+  uint8_t hue_quad = (menu_selection - 2) % 4; // Adjusted to -2 to map menu_selection 2-5 to hue_quad 0-3
+
+  if (menu_selection > 5) { // If menu_selection is greater than 5, reset it to 0
+    menu_selection = 0;
+  }
+
+  if (Button::onLongClick()) {
+    // select hue/sat/val
+    switch (menu_selection) {
+      case 0:  // selected blank
+        // add blank to set
+        pat.colorset().set(selected_slot, RGB_OFF);
+        // go to slot selection - 1 because we will increment outside here
+        cur_state = STATE_COLOR_SELECT_SLOT;
+        return false;
+      case 1:  // selected white
+        // adds white, skip hue/sat to brightness
+        selected_hue = 0;
+        selected_sat = 0;
+        cur_state = STATE_COLOR_SELECT_VAL;
+        return false;
+      default:  // 2-5
+        selected_base_quad = hue_quad;
+        break;
+    }
+  }
+
+  // default col1/col2 to off and white for the first two options
+  RGBColor col1 = RGB_OFF;
+  RGBColor col2;
+  uint16_t on_dur, off_dur;
+
+  if (menu_selection < 2) { // Blank and White options
+    col2 = RGB_WHITE;
+    on_dur = (menu_selection == 0) ? 5 : 9; // Set default values for on_dur and off_dur
+    off_dur = (menu_selection == 0) ? 30 : 0;
+  } else { // Color options
+    col1 = HSVColor(color_menu_data[hue_quad].hues[0], 255, 255);
+    col2 = HSVColor(color_menu_data[hue_quad].hues[2], 255, 255);
+    on_dur = 500;
+    off_dur = 500;
+  }
+
+  Led::strobe(on_dur, off_dur, col1, col2);
+  return true;
+}
+
+
 
 bool Helios::handle_state_col_select_hue()
 {
