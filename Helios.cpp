@@ -124,8 +124,6 @@ void Helios::tick()
 
 void Helios::enter_sleep()
 {
-  // clear the led
-  Led::clear();
 #ifdef HELIOS_EMBEDDED
   // init the output pins to prevent any floating pins
   clear_output_pins();
@@ -144,7 +142,10 @@ void Helios::enter_sleep()
 
 #ifdef HELIOS_EMBEDDED
 void Helios::clear_output_pins() {
-  // TODO: turn off any peripherals and stop floating pins
+  // Set all pins to output
+  DDRB = 0xFF;
+  // Set all pins low
+  PORTB = 0x00;
 }
 #endif
 
@@ -203,7 +204,8 @@ void Helios::handle_state()
       handle_state_shift_mode();
       break;
     case STATE_RANDOMIZE:
-      handle_state_randomize();
+      // TODO: Commented out because for space
+      // handle_state_randomize();
       break;
 #ifdef HELIOS_CLI
     case STATE_SLEEP:
@@ -506,7 +508,11 @@ bool Helios::handle_state_col_select_slot()
   } else {
     // render current selection
     RGBColor col = set.get(menu_selection);
-    Led::set(col);
+    if (col == RGB_OFF) {
+      Led::strobe(5, 30, RGB_OFF, RGB_WHITE_BRI_LOWEST);
+    } else {
+      Led::set(col);
+    }
     uint16_t hold_dur = (uint16_t)Button::holdDuration();
     bool deleting = ((hold_dur > DELETE_COLOR_TIME) &&
                      ((hold_dur % (DELETE_COLOR_TIME * 2)) > DELETE_COLOR_TIME));
@@ -539,9 +545,9 @@ static const ColorsMenuData color_menu_data[4] = {
 
 bool Helios::handle_state_col_select_quadrant()
 {
-  uint8_t hue_quad = (menu_selection - 2) % 4; // Adjusted to -2 to map menu_selection 2-5 to hue_quad 0-3
+  uint8_t hue_quad = (menu_selection - 2) % 4;
 
-  if (menu_selection > 5) { // If menu_selection is greater than 5, reset it to 0
+  if (menu_selection > 5) { 
     menu_selection = 0;
   }
 
@@ -571,17 +577,24 @@ bool Helios::handle_state_col_select_quadrant()
   RGBColor col2;
   uint16_t on_dur, off_dur;
 
-  if (menu_selection < 2) { // Blank and White options
-    col2 = RGB_WHITE;
-    on_dur = (menu_selection == 0) ? 5 : 9; // Set default values for on_dur and off_dur
-    off_dur = (menu_selection == 0) ? 30 : 0;
-  } else { // Color options
-    col1 = HSVColor(color_menu_data[hue_quad].hues[0], 255, 255);
-    col2 = HSVColor(color_menu_data[hue_quad].hues[2], 255, 255);
-    on_dur = 500;
-    off_dur = 500;
+  switch (menu_selection) {
+    case 0: // Blank Option
+      col2 = RGB_WHITE_BRI_LOWEST;
+      on_dur = 5;
+      off_dur = 30;
+      break;
+    case 1: // White Option
+      col2 = RGB_WHITE;
+      on_dur = 9;
+      off_dur = 0;
+      break;
+    default: // Color options
+      col1 = HSVColor(color_menu_data[hue_quad].hues[0], 255, 255);
+      col2 = HSVColor(color_menu_data[hue_quad].hues[2], 255, 255);
+      on_dur = 500;
+      off_dur = 500;
+      break;
   }
-
   Led::strobe(on_dur, off_dur, col1, col2);
   return true;
 }
