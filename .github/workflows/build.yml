@@ -1,0 +1,51 @@
+name: Duo Build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch: # manual trigger
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout current repository
+      uses: actions/checkout@v3
+    - name: Update Package Lists
+      run: sudo apt-get update
+    - name: Install Dependencies
+      run: sudo apt-get install valgrind g++ make --fix-missing
+    - name: Build
+      run: make -j
+      working-directory: HeliosCLI
+    - name: Set execute permissions for test script
+      run: chmod +x ./runtests.sh
+      working-directory: tests
+    - name: Run general tests
+      run: ./runtests.sh
+      working-directory: tests
+
+  embedded:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+      - name: Install Dependencies
+        run: make install
+      - name: Build Binary
+        run: make build
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: embedded firmware
+          path: |
+            helios.bin
+            helios.elf
+            helios.map
+            helios.hex
