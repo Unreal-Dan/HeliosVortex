@@ -77,7 +77,7 @@ void Colorset::init(RGBColor c1, RGBColor c2, RGBColor c3, RGBColor c4,
 
 void Colorset::clear()
 {
-  memset(m_palette, 0, sizeof(m_palette));
+  memset((void *)m_palette, 0, sizeof(m_palette));
   m_numColors = 0;
   resetIndex();
 }
