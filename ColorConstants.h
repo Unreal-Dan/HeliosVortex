@@ -9,42 +9,25 @@
 // Engine
 
 // Pre-defined hue values
-#define HSV_HUE_RED 0
-#define HSV_HUE_CORAL_ORANGE 5
-#define HSV_HUE_ORANGE 10
-#define HSV_HUE_YELLOW 20
+#define HUE_RED 0
+#define HUE_CORAL_ORANGE 5
+#define HUE_ORANGE 10
+#define HUE_YELLOW 20
 
-#define HSV_HUE_LIME_GREEN 70
-#define HSV_HUE_GREEN 85
-#define HSV_HUE_SEAFOAM 95
-#define HSV_HUE_TURQUOISE 120
+#define HUE_LIME_GREEN 70
+#define HUE_GREEN 85
+#define HUE_SEAFOAM 95
+#define HUE_TURQUOISE 120
 
-#define HSV_HUE_ICE_BLUE 142
-#define HSV_HUE_LIGHT_BLUE 158
-#define HSV_HUE_BLUE 170
-#define HSV_HUE_ROYAL_BLUE 175
+#define HUE_ICE_BLUE 142
+#define HUE_LIGHT_BLUE 158
+#define HUE_BLUE 170
+#define HUE_ROYAL_BLUE 175
 
-#define HSV_HUE_PURPLE 192
-#define HSV_HUE_PINK 205
-#define HSV_HUE_HOT_PINK 225
-#define HSV_HUE_MAGENTA 245
-
-// if this bit is present it's an HSV constant
-#define HSV_BIT ((uint32_t)1 << 31)
-
-// produce a DWORD HSV constant
-#define HSV(h, s, v) (HSV_BIT | ((uint32_t)h << 16) | ((uint32_t)s << 8) | (uint32_t)v)
-
-// Pre defined hex HSV values
-#define HSV_WHITE HSV_BIT | (uint32_t)0x00006E  //   0   0 110
-#define HSV_BLUE HSV_BIT | (uint32_t)0xA0FF6E   // 160 255 110
-#define HSV_YELLOW HSV_BIT | (uint32_t)0x3CFF6E //  60 255 110
-#define HSV_RED HSV_BIT | (uint32_t)0x00FF6E    //   0 255 110
-#define HSV_GREEN HSV_BIT | (uint32_t)0x55FF6E  //  85 255 110
-#define HSV_CYAN HSV_BIT | (uint32_t)0x78FF6E   // 120 255 110
-#define HSV_PURPLE HSV_BIT | (uint32_t)0xD4FF6E // 212 255 110
-#define HSV_ORANGE HSV_BIT | (uint32_t)0x14FF6E //  20 255 110
-#define HSV_OFF HSV_BIT | (uint32_t)0x000000    //   0   0   0
+#define HUE_PURPLE 192
+#define HUE_PINK 205
+#define HUE_HOT_PINK 225
+#define HUE_MAGENTA 245
 
 // Helios Colors
 #define RGB_OFF (uint32_t)0x000000          //   0   0   0

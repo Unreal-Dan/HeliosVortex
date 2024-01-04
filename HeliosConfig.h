@@ -61,23 +61,21 @@
 
 // Brightness Options
 //
-// These are the four options available in the global brightness menu
-// There is only four options, be careful not to go too low
-#define BRIGHTNESS_HIGH 255
-#define BRIGHNESS_MEDIUM 170
-#define BRIGHNESS_LOW 85
+// There are three brightness options, the lowest is equal to this value,
+// the middle is 2x this value, and the highest is 3x this value
+#define BRIGHTNESS_STEP   85
 
 // Pre-defined saturation values
-#define HSV_SAT_HIGH 255
-#define HSV_SAT_MEDIUM 220
-#define HSV_SAT_LOW 190
-#define HSV_SAT_LOWEST 160
+#define HSV_SAT_HIGH      255
+#define HSV_SAT_MEDIUM    220
+#define HSV_SAT_LOW       190
+#define HSV_SAT_LOWEST    160
 
 // Pre-defined brightness values
-#define HSV_BRI_HIGH 255
-#define HSV_BRI_MEDIUM 120
-#define HSV_BRI_LOW 60
-#define HSV_BRI_LOWEST 10
+#define HSV_VAL_HIGH      255
+#define HSV_VAL_MEDIUM    120
+#define HSV_VAL_LOW       60
+#define HSV_VAL_LOWEST    10
 
 // ============================================================================
 //  Storage Constants
