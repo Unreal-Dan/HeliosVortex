@@ -77,7 +77,7 @@ void Colorset::init(RGBColor c1, RGBColor c2, RGBColor c3, RGBColor c4,
 
 void Colorset::clear()
 {
-  memset(m_palette, 0, sizeof(m_palette));
+  memset((void *)m_palette, 0, sizeof(m_palette));
   m_numColors = 0;
   resetIndex();
 }
@@ -179,9 +179,14 @@ void Colorset::randomize(Random &ctx, uint8_t numColors)
     numColors = ctx.next8(2, NUM_COLOR_SLOTS);
   }
   ValueStyle valStyle = (ValueStyle)ctx.next8(0, VAL_STYLE_COUNT);
-
   for (uint8_t i = 0; i < numColors; ++i) {
-    addColorWithValueStyle(ctx, ctx.next8(), ctx.next8(), valStyle, numColors, i);
+    // do not put the next8() calls inside arguments, the order functions in
+    // arguments are called is undefined behaviour and it's important that
+    // these are called in the right order otherwise different platforms will
+    // behave differently when performing this randomization
+    uint8_t sat = ctx.next8();
+    uint8_t hue = ctx.next8();
+    addColorWithValueStyle(ctx, hue, sat, valStyle, numColors, i);
   }
 }
 

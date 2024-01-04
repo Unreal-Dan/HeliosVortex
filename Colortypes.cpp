@@ -1,4 +1,4 @@
-#include "ColorTypes.h"
+#include "Colortypes.h"
 
 #if ALTERNATIVE_HSV_RGB == 1
 // global hsv to rgb algorithm selector
@@ -26,32 +26,9 @@ HSVColor::HSVColor(uint32_t dwVal) :
 // assignment from uint32_t
 HSVColor &HSVColor::operator=(const uint32_t &rhs)
 {
-  // check for the HSV bit!
-  if (!(rhs & HSV_BIT)) {
-    // IT'S NOT AN HSV DWORD!!
-    *this = RGBColor(rhs);
-    return *this;
-  }
   hue = ((rhs >> 16) & 0xFF);
   sat = ((rhs >> 8) & 0xFF);
   val = (rhs & 0xFF);
-  return *this;
-}
-
-// copy construction
-HSVColor::HSVColor(const HSVColor &rhs)
-{
-  hue = rhs.hue;
-  sat = rhs.sat;
-  val = rhs.val;
-}
-
-// assignment operator
-HSVColor &HSVColor::operator=(const HSVColor &rhs)
-{
-  hue = rhs.hue;
-  sat = rhs.sat;
-  val = rhs.val;
   return *this;
 }
 
@@ -114,33 +91,9 @@ RGBColor::RGBColor(uint32_t dwVal) :
 // assignment from uint32_t
 RGBColor &RGBColor::operator=(const uint32_t &rhs)
 {
-  // check for the HSV bit!
-  if ((rhs & HSV_BIT) != 0) {
-    // IT'S NOT AN RGB DWORD!!
-    *this = HSVColor(rhs);
-    return *this;
-  }
-
   red = ((rhs >> 16) & 0xFF);
   green = ((rhs >> 8) & 0xFF);
   blue = (rhs & 0xFF);
-  return *this;
-}
-
-// copy construction
-RGBColor::RGBColor(const RGBColor &rhs)
-{
-  red = rhs.red;
-  green = rhs.green;
-  blue = rhs.blue;
-}
-
-// assignment operator
-RGBColor &RGBColor::operator=(const RGBColor &rhs)
-{
-  red = rhs.red;
-  green = rhs.green;
-  blue = rhs.blue;
   return *this;
 }
 

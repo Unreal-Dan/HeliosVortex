@@ -204,8 +204,7 @@ void Helios::handle_state()
       handle_state_shift_mode();
       break;
     case STATE_RANDOMIZE:
-      // TODO: Commented out because for space
-      // handle_state_randomize();
+      handle_state_randomize();
       break;
 #ifdef HELIOS_CLI
     case STATE_SLEEP:
@@ -258,22 +257,34 @@ void Helios::handle_state_modes()
     return;
   }
 
-  // check for lock and go back to sleep
-  if (has_flag(FLAG_LOCKED) && hasReleased && !Button::onRelease()) {
-    enter_sleep();
-    return;
-  }
-
-  if (!has_flag(FLAG_LOCKED) && hasReleased) {
-    // just play the current mode
-    pat.play();
-  }
-
   // check how long the button is held
   uint16_t holdDur = (uint16_t)Button::holdDuration();
   // calculate a magnitude which corresponds to how many times past the MENU_HOLD_TIME
   // the user has held the button, so 0 means haven't held fully past one yet, etc
   uint8_t magnitude = (uint8_t)(holdDur / MENU_HOLD_TIME);
+
+  // check for lock and go back to sleep
+  if (has_flag(FLAG_LOCKED)) {
+    // if the button is released and it wasn't released this tick then go to sleep
+    // Wait for the button to not be released this tick because it's possible to
+    // pick up the button releasing and wakeup the device again instantly
+    if (hasReleased && !Button::onRelease()) {
+      enter_sleep();
+    } else if (magnitude == 5) {
+      // otherwise if they have held for 5 Seconds to Exit Lock
+      // then show a low red flash to show they have hit the threshold
+      Led::set(RGB_RED_BRI_LOW);
+    } else {
+      // otherwise the rest of the time just turn off the led
+      Led::clear();
+    }
+    return;
+  } else if (hasReleased) {
+    // otherwise if we're not locked, and we have released the led
+    // then just play the current mode
+    pat.play();
+  }
+
   // whether the user has held the button longer than a short click
   bool heldPast = (holdDur > SHORT_CLICK_THRESHOLD);
   // if the button is held for at least 1 second
@@ -281,60 +292,21 @@ void Helios::handle_state_modes()
     // if the button has been released before then show the on menu
     if (hasReleased) {
       switch (magnitude) {
-        case 0:
-          Led::clear();
-          break;
-        case 1: // Color Selection
-          Led::set(RGB_TURQUOISE_BRI_LOW);
-          break;
-        case 2: // Pattern Selection
-          Led::set(RGB_MAGENTA_BRI_LOW);
-          break;
-        case 3: // Conjure Mode
-          Led::set(RGB_YELLOW_BRI_LOW);
-          break;
-        case 4: // Shift Mode
-          Led::set(RGB_WHITE_BRI_LOW);
-          break;
-        case 5: // Randomizer
-          Led::set(HSVColor(Time::getCurtime(), 255, 180));
-          break;
-        default:
-          Led::clear();
-          break;
+        case 0: Led::clear(); break;                                      // Turn off
+        case 1: Led::set(RGB_TURQUOISE_BRI_LOW); break;                   // Color Selection
+        case 2: Led::set(RGB_MAGENTA_BRI_LOW); break;                     // Pattern Selection
+        case 3: Led::set(RGB_YELLOW_BRI_LOW); break;                      // Conjure Mode
+        case 4: Led::set(RGB_WHITE_BRI_LOW); break;                       // Shift Mode
+        case 5: Led::set(HSVColor(Time::getCurtime(), 255, 180)); break;  // Randomizer
+        default: Led::clear(); break;                                     // hold past
       }
     } else {
-      // Hold for 5 Seconds to Exit Lock
-      if (has_flag(FLAG_LOCKED)) {
-        switch (magnitude) {
-          case 0:
-            Led::clear();
-            break;
-          case 5:  // Exit Lock
-            Led::set(RGB_RED_BRI_LOW);
-            break;
-          default:
-            Led::clear();
-            break;
-        }
-      } else {
-        switch (magnitude) {
-          case 0:
-            Led::clear();
-            break;
-          case 1:  // Enter Glow Lock
-            Led::set(RGB_RED_BRI_LOW);
-            break;
-          case 2:  // Master Reset
-            Led::set(RGB_BLUE_BRI_LOW);
-            break;
-          case 3:  // Global Brightness
-            Led::set(RGB_GREEN_BRI_LOW);
-            break;
-          default:
-            Led::clear();
-            break;
-        }
+      switch (magnitude) {
+        case 0: Led::clear(); break;                // nothing
+        case 1: Led::set(RGB_RED_BRI_LOW); break;   // Enter Glow Lock
+        case 2: Led::set(RGB_BLUE_BRI_LOW); break;  // Master Reset
+        case 3: Led::set(RGB_GREEN_BRI_LOW); break; // Global Brightness
+        default: Led::clear(); break;               // hold past
       }
     }
   }
@@ -535,12 +507,12 @@ struct ColorsMenuData {
 };
 // array of hues for selection
 static const ColorsMenuData color_menu_data[4] = {
-  // hue0               hue1                  hue2              hue3
+  // hue0           hue1              hue2          hue3
   // ==================================================================================
-  { HSV_HUE_RED,        HSV_HUE_CORAL_ORANGE, HSV_HUE_ORANGE,   HSV_HUE_YELLOW },
-  { HSV_HUE_LIME_GREEN, HSV_HUE_GREEN,        HSV_HUE_SEAFOAM,  HSV_HUE_TURQUOISE },
-  { HSV_HUE_ICE_BLUE,   HSV_HUE_LIGHT_BLUE,   HSV_HUE_BLUE,     HSV_HUE_ROYAL_BLUE },
-  { HSV_HUE_PURPLE,     HSV_HUE_PINK,         HSV_HUE_HOT_PINK, HSV_HUE_MAGENTA },
+  { HUE_RED,        HUE_CORAL_ORANGE, HUE_ORANGE,   HUE_YELLOW },
+  { HUE_LIME_GREEN, HUE_GREEN,        HUE_SEAFOAM,  HUE_TURQUOISE },
+  { HUE_ICE_BLUE,   HUE_LIGHT_BLUE,   HUE_BLUE,     HUE_ROYAL_BLUE },
+  { HUE_PURPLE,     HUE_PINK,         HUE_HOT_PINK, HUE_MAGENTA },
 };
 
 bool Helios::handle_state_col_select_quadrant()
@@ -618,7 +590,7 @@ bool Helios::handle_state_col_select_sat()
   if (menu_selection > 3) {
     menu_selection = 3;
   }
-  uint8_t saturation_values[4] = {HSV_SAT_HIGH, HSV_SAT_MEDIUM, HSV_SAT_LOW, HSV_SAT_LOWEST};
+  static const uint8_t saturation_values[4] = {HSV_SAT_HIGH, HSV_SAT_MEDIUM, HSV_SAT_LOW, HSV_SAT_LOWEST};
   uint8_t sat = saturation_values[menu_selection];
 
   // use the nice hue to rgb rainbow
@@ -636,8 +608,8 @@ bool Helios::handle_state_col_select_val()
   if (menu_selection > 3) {
     menu_selection = 3;
   }
-  uint8_t brightness_values[4] = {HSV_BRI_HIGH, HSV_BRI_MEDIUM, HSV_BRI_LOW, HSV_BRI_LOWEST};
-  uint8_t val = brightness_values[menu_selection];
+  static const uint8_t hsv_values[4] = {HSV_VAL_HIGH, HSV_VAL_MEDIUM, HSV_VAL_LOW, HSV_VAL_LOWEST};
+  uint8_t val = hsv_values[menu_selection];
 
   RGBColor targetCol = HSVColor(selected_hue, selected_sat, val);
   // use the nice hue to rgb rainbow
@@ -728,18 +700,8 @@ void Helios::handle_state_set_global_brightness()
   }
   // when the user long clicks a selection
   if (Button::onLongClick()) {
-    // set the brightness based on the selection
-    switch (menu_selection) {
-      case 0:
-        Led::setBrightness(BRIGHTNESS_HIGH);
-        break;
-      case 1:
-        Led::setBrightness(BRIGHNESS_MEDIUM);
-        break;
-      case 2:
-        Led::setBrightness(BRIGHNESS_LOW);
-        break;
-    }
+    // set the brightness based on the selection * the brightness step amount
+    Led::setBrightness(menu_selection * BRIGHTNESS_STEP);
     cur_state = STATE_MODES;
   }
   show_selection(RGB_WHITE_BRI_LOW);

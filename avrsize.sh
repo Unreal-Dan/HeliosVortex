@@ -2,10 +2,17 @@
 
 # need megatinycore installed for this
 
-if [ "$(uname -o)" == "Msys" ]; then
+if [ "$OS" == "Windows_NT" ]; then
 	AVR_SIZE="C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-size.exe"
+elif [ "$(uname -s)" == "Linux" ]; then
+  AVR_SIZE="${HOME}/atmel_setup/avr8-gnu-toolchain-linux_x86_64/bin/avr-size"
 else
-	AVR_SIZE="${HOME}/atmel_setup/avr8-gnu-toolchain-linux_x86_64/bin/avr-size"
+	AVR_SIZE="/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin/avr-size"
+fi
+
+if [ ! -x $AVR_SIZE ]; then
+  echo "Could not find avr-size program"
+  exit 1
 fi
 
 # Replace this with the path to your .elf file

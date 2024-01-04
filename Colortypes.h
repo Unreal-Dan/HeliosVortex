@@ -31,10 +31,6 @@ public:
   HSVColor(uint32_t dwVal);
   HSVColor &operator=(const uint32_t &rhs);
 
-  // copy/assignment construction
-  HSVColor(const HSVColor &rhs);
-  HSVColor &operator=(const HSVColor &rhs);
-
   // construction/assignment from RGB
   HSVColor(const RGBColor &rhs);
   HSVColor &operator=(const RGBColor &rhs);
@@ -46,7 +42,7 @@ public:
   bool empty() const;
   void clear();
 
-  uint32_t raw() const { return HSV_BIT | ((uint32_t)hue << 16) | ((uint32_t)sat << 8) | (uint32_t)val; }
+  uint32_t raw() const { return ((uint32_t)hue << 16) | ((uint32_t)sat << 8) | (uint32_t)val; }
 
   // public members
   uint8_t hue;
@@ -64,11 +60,6 @@ public:
   RGBColor(uint32_t dwVal);
   RGBColor &operator=(const uint32_t &rhs);
 
-  // copy/assignment construction
-  RGBColor(const RGBColor &rhs);
-  RGBColor &operator=(const RGBColor &rhs);
-
-  // construction/assignment from HSV
   RGBColor(const HSVColor &rhs);
   RGBColor &operator=(const HSVColor &rhs);
 
@@ -80,8 +71,6 @@ public:
   void clear();
 
   RGBColor adjustBrightness(uint8_t fadeBy);
-  void serialize(ByteStream &buffer) const;
-  void unserialize(ByteStream &buffer);
 
   uint32_t raw() const { return ((uint32_t)red << 16) | ((uint32_t)green << 8) | (uint32_t)blue; }
 
