@@ -21,8 +21,11 @@
 #define PWM_PIN_G PB1 // Green channel (pin 6)
 #define PWM_PIN_B PB4 // Blue channel (pin 3)
 
+#define SCALE8(i, scale)  (((uint16_t)i * (uint16_t)(scale)) >> 8)
+
 // array of led color values
 RGBColor Led::m_ledColor = RGB_OFF;
+RGBColor Led::m_realColor = RGB_OFF;
 // global brightness
 uint8_t Led::m_brightness = DEFAULT_BRIGHTNESS;
 
@@ -53,11 +56,15 @@ bool Led::init()
 void Led::cleanup()
 {
   m_ledColor.clear();
+  m_realColor.clear();
 }
 
 void Led::set(RGBColor col)
 {
   m_ledColor = col;
+  m_realColor.red = SCALE8(m_ledColor.red, m_brightness);
+  m_realColor.green = SCALE8(m_ledColor.green, m_brightness);
+  m_realColor.blue = SCALE8(m_ledColor.blue, m_brightness);
 }
 
 void Led::adjustBrightness(uint8_t fadeBy)
@@ -105,25 +112,25 @@ void Led::update()
 #ifdef HELIOS_EMBEDDED
   // write out the rgb values to analog pins
 #ifdef HELIOS_ARDUINO
-  analogWrite(PWM_PIN_R, m_ledColor.red);
-  analogWrite(PWM_PIN_G, m_ledColor.green);
-  analogWrite(PWM_PIN_B, m_ledColor.blue);
+  analogWrite(PWM_PIN_R, m_realColor.red);
+  analogWrite(PWM_PIN_G, m_realColor.green);
+  analogWrite(PWM_PIN_B, m_realColor.blue);
 #else
   // a counter to keep track of milliseconds for the PWM
   static uint8_t counter = 0;
   counter++;
   // run the software PWM on each pin
-  if (counter < m_ledColor.red) {
+  if (counter < m_realColor.red) {
     PORTB |= (1 << PWM_PIN_R);
   } else {
     PORTB &= ~(1 << PWM_PIN_R);
   }
-  if (counter < m_ledColor.green) {
+  if (counter < m_realColor.green) {
     PORTB |= (1 << PWM_PIN_G);
   } else {
     PORTB &= ~(1 << PWM_PIN_G);
   }
-  if (counter < m_ledColor.blue) {
+  if (counter < m_realColor.blue) {
     PORTB |= (1 << PWM_PIN_B);
   } else {
     PORTB &= ~(1 << PWM_PIN_B);

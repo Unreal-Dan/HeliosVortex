@@ -90,43 +90,55 @@ uint32_t Time::microseconds()
 }
 
 #ifdef HELIOS_EMBEDDED
-__attribute__ ((noinline))
+__attribute__((noinline))
 #endif
-void Time::delayMicroseconds(uint32_t us)
+void
+Time::delayMicroseconds(uint32_t us)
 {
 #ifdef HELIOS_EMBEDDED
-#if F_CPU >= 20000000L
-  // for a one-microsecond delay, burn 4 clocks and then return
-  __asm__ __volatile__ (
-    "rjmp .+0" "\n\t"     // 2 cycles
-    "nop" );              // 1 cycle
-                          // wait 3 cycles with 2 words
-  if (us <= 1) return; //  = 3 cycles, (4 when true)
-  // the loop takes a 1/2 of a microsecond (10 cycles) per iteration
-  // so execute it twice for each microsecond of delay requested.
-  us = us << 1; // x2 us, = 2 cycles
-  // we just burned 21 (23) cycles above, remove 2
-  // us is at least 4 so we can subtract 2.
-  us -= 2; // 2 cycles
-#elif F_CPU >= 10000000L
-  // for a 1 microsecond delay, simply return.  the overhead
-  // of the function call takes 14 (16) cycles, which is 1.5us
-  if (us <= 2) return; //  = 3 cycles, (4 when true)
-  // we just burned 20 (22) cycles above, remove 4, (5*4=20)
-  // us is at least 6 so we can subtract 4
-  us -= 4; // 2 cycles
-#endif
+#if F_CPU >= 16000000L
+  // For the ATtiny85 running at 16MHz
+
+  // The loop takes 3 cycles per iteration
+  us *= 2; // 0.5us per iteration
+
+  // Subtract the overhead of the function call and loop setup
+  // Assuming approximately 5 cycles overhead
+  us -= 5; // Simplified subtraction
+
+  // Assembly loop for delay
   __asm__ __volatile__(
-    "1: sbiw %0, 1" "\n\t"            // 2 cycles
-    "rjmp .+0"      "\n\t"            // 2 cycles
-    "rjmp .+0"      "\n\t"            // 2 cycles
-    "rjmp .+0"      "\n\t"            // 2 cycles
-    "brne 1b" : "=w" (us) : "0" (us)  // 2 cycles
+      "1: sbiw %0, 1"
+      "\n\t" // 2 cycles
+      "nop"
+      "\n\t"                         // 1 cycle
+      "brne 1b" : "=w"(us) : "0"(us) // 2 cycles
   );
-  // return = 4 cycles
+
+#elif F_CPU >= 8000000L
+  // For the ATtiny85 running at 8MHz
+
+  // The loop takes 4 cycles per iteration
+  us <<= 1; // 1us per iteration
+
+  // Subtract the overhead of the function call and loop setup
+  // Assuming approximately 6 cycles overhead
+  us -= 6; // Simplified subtraction
+
+  // Assembly loop for delay
+  __asm__ __volatile__(
+      "1: sbiw %0, 1"
+      "\n\t" // 2 cycles
+      "rjmp .+0"
+      "\n\t"                         // 2 cycles
+      "brne 1b" : "=w"(us) : "0"(us) // 2 cycles
+  );
+#endif
+
 #else
   uint32_t newtime = microseconds() + us;
-  while (microseconds() < newtime) {
+  while (microseconds() < newtime)
+  {
     // busy loop
   }
 #endif

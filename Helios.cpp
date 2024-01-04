@@ -124,8 +124,6 @@ void Helios::tick()
 
 void Helios::enter_sleep()
 {
-  // clear the led
-  Led::clear();
 #ifdef HELIOS_EMBEDDED
   // init the output pins to prevent any floating pins
   clear_output_pins();
@@ -144,7 +142,10 @@ void Helios::enter_sleep()
 
 #ifdef HELIOS_EMBEDDED
 void Helios::clear_output_pins() {
-  // TODO: turn off any peripherals and stop floating pins
+  // Set all pins to output
+  DDRB = 0xFF;
+  // Set all pins low
+  PORTB = 0x00;
 }
 #endif
 
@@ -196,11 +197,15 @@ void Helios::handle_state()
     case STATE_SET_DEFAULTS:
       handle_state_set_defaults();
       break;
+    case STATE_SET_GLOBAL_BRIGHTNESS:
+      handle_state_set_global_brightness();
+      break;
     case STATE_SHIFT_MODE:
       handle_state_shift_mode();
       break;
     case STATE_RANDOMIZE:
-      handle_state_randomize();
+      // TODO: Commented out because for space
+      // handle_state_randomize();
       break;
 #ifdef HELIOS_CLI
     case STATE_SLEEP:
@@ -323,6 +328,9 @@ void Helios::handle_state_modes()
           case 2:  // Master Reset
             Led::set(RGB_BLUE_BRI_LOW);
             break;
+          case 3:  // Global Brightness
+            Led::set(RGB_GREEN_BRI_LOW);
+            break;
           default:
             Led::clear();
             break;
@@ -363,6 +371,9 @@ void Helios::handle_off_menu(uint8_t mag, bool past)
       case 2:  // blue reset defaults
         cur_state = STATE_SET_DEFAULTS;
         break;
+      case 3:  // green global brightness
+        cur_state = STATE_SET_GLOBAL_BRIGHTNESS;
+        break;
       default:
         // just go back to sleep in hold-paste off menu
         enter_sleep();
@@ -396,6 +407,7 @@ void Helios::handle_on_menu(uint8_t mag, bool past)
       break;
     case 3:  // conjure mode
       cur_state = STATE_TOGGLE_CONJURE;
+      Led::clear();
       break;
     case 4:  // shift mode down
       cur_state = STATE_SHIFT_MODE;
@@ -496,7 +508,11 @@ bool Helios::handle_state_col_select_slot()
   } else {
     // render current selection
     RGBColor col = set.get(menu_selection);
-    Led::set(col);
+    if (col == RGB_OFF) {
+      Led::strobe(1, 30, RGB_OFF, RGB_WHITE_BRI_LOW);
+    } else {
+      Led::set(col);
+    }
     uint16_t hold_dur = (uint16_t)Button::holdDuration();
     bool deleting = ((hold_dur > DELETE_COLOR_TIME) &&
                      ((hold_dur % (DELETE_COLOR_TIME * 2)) > DELETE_COLOR_TIME));
@@ -514,72 +530,6 @@ bool Helios::handle_state_col_select_slot()
   return true;
 }
 
-struct QuadMenuData {
-  uint8_t hue1;
-  uint8_t hue2;
-  uint16_t on_dur;
-  uint16_t off_dur;
-};
-
-QuadMenuData menu_data[4] = {
-  // hue1                hue2              on   off
-  // ===============================================================
-  {HSV_HUE_RED,          HSV_HUE_ORANGE,   60,  40},
-  {HSV_HUE_LIME_GREEN,   HSV_HUE_SEAFOAM,  5,   30},
-  {HSV_HUE_ICE_BLUE,     HSV_HUE_BLUE,     9,   0},
-  {HSV_HUE_PURPLE,       HSV_HUE_HOT_PINK, 500, 500}
-};
-
-bool Helios::handle_state_col_select_quadrant()
-{
-  uint8_t hue_quad = (menu_selection - 3) % 4;
-  HSVColor hcol(menu_data[hue_quad].hue1, 255, 255);
-  RGBColor color_values[3] = {RGB_RED_BRI_LOW, RGB_WHITE_BRI_LOWEST, RGB_WHITE};
-
-  if (Button::onLongClick()) {
-    // select hue/sat/val
-    switch (menu_selection) {
-      case 0:  // exit
-        cur_state = STATE_MODES;
-        return false;
-      case 1:  // selected blank
-        // add blank to set
-        pat.colorset().set(selected_slot, RGB_OFF);
-        // go to slot selection - 1 because we will increment outside here
-        cur_state = STATE_COLOR_SELECT_SLOT;
-        return false;
-      case 2:  // selected white
-        // adds white, skip hue/sat to brightness
-        selected_hue = 0;
-        selected_sat = 0;
-        cur_state = STATE_COLOR_SELECT_VAL;
-        return false;
-      default:  // 3-6
-        selected_base_quad = hue_quad;
-        break;
-    }
-  }
-
-  // default col1/col2 to off and white for the first two options
-  RGBColor col1 = RGB_OFF;
-  RGBColor col2;
-
-  uint16_t on_dur = menu_data[3].on_dur;
-  uint16_t off_dur = menu_data[3].off_dur;
-
-  if (menu_selection < 3) {
-    col2 = color_values[menu_selection];
-    on_dur = menu_data[menu_selection].on_dur;
-    off_dur = menu_data[menu_selection].off_dur;
-  } else {
-    col1 = HSVColor(menu_data[hue_quad].hue1, 255, 255);
-    col2 = HSVColor(menu_data[hue_quad].hue2, 255, 255);
-  }
-
-  Led::strobe(on_dur, off_dur, col1, col2);
-  return true;
-}
-
 struct ColorsMenuData {
   uint8_t hues[4];
 };
@@ -592,6 +542,64 @@ static const ColorsMenuData color_menu_data[4] = {
   { HSV_HUE_ICE_BLUE,   HSV_HUE_LIGHT_BLUE,   HSV_HUE_BLUE,     HSV_HUE_ROYAL_BLUE },
   { HSV_HUE_PURPLE,     HSV_HUE_PINK,         HSV_HUE_HOT_PINK, HSV_HUE_MAGENTA },
 };
+
+bool Helios::handle_state_col_select_quadrant()
+{
+  uint8_t hue_quad = (menu_selection - 2) % 4;
+
+  if (menu_selection > 5) { 
+    menu_selection = 0;
+  }
+
+  if (Button::onLongClick()) {
+    // select hue/sat/val
+    switch (menu_selection) {
+      case 0:  // selected blank
+        // add blank to set
+        pat.colorset().set(selected_slot, RGB_OFF);
+        // go to slot selection - 1 because we will increment outside here
+        cur_state = STATE_COLOR_SELECT_SLOT;
+        return false;
+      case 1:  // selected white
+        // adds white, skip hue/sat to brightness
+        selected_hue = 0;
+        selected_sat = 0;
+        cur_state = STATE_COLOR_SELECT_VAL;
+        return false;
+      default:  // 2-5
+        selected_base_quad = hue_quad;
+        break;
+    }
+  }
+
+  // default col1/col2 to off and white for the first two options
+  RGBColor col1 = RGB_OFF;
+  RGBColor col2;
+  uint16_t on_dur, off_dur;
+
+  switch (menu_selection) {
+    case 0: // Blank Option
+      col2 = RGB_WHITE_BRI_LOW;
+      on_dur = 1;
+      off_dur = 30;
+      break;
+    case 1: // White Option
+      col2 = RGB_WHITE;
+      on_dur = 9;
+      off_dur = 0;
+      break;
+    default: // Color options
+      col1 = HSVColor(color_menu_data[hue_quad].hues[0], 255, 255);
+      col2 = HSVColor(color_menu_data[hue_quad].hues[2], 255, 255);
+      on_dur = 500;
+      off_dur = 500;
+      break;
+  }
+  Led::strobe(on_dur, off_dur, col1, col2);
+  return true;
+}
+
+
 
 bool Helios::handle_state_col_select_hue()
 {
@@ -701,6 +709,42 @@ void Helios::handle_state_set_defaults()
   show_selection(RGB_WHITE_BRI_LOW);
 }
 
+void Helios::handle_state_set_global_brightness()
+{
+  if (Button::onShortClick()) {
+    menu_selection = (menu_selection + 1) % 3;
+  }
+  // show different levels of green for each selection
+  switch (menu_selection) {
+    case 0:
+      Led::set(RGB_GREEN);
+      break;
+    case 1:
+      Led::set(RGB_GREEN_BRI_MEDIUM);
+      break;
+    case 2:
+      Led::set(RGB_GREEN_BRI_LOW);
+      break;
+  }
+  // when the user long clicks a selection
+  if (Button::onLongClick()) {
+    // set the brightness based on the selection
+    switch (menu_selection) {
+      case 0:
+        Led::setBrightness(BRIGHTNESS_HIGH);
+        break;
+      case 1:
+        Led::setBrightness(BRIGHNESS_MEDIUM);
+        break;
+      case 2:
+        Led::setBrightness(BRIGHNESS_LOW);
+        break;
+    }
+    cur_state = STATE_MODES;
+  }
+  show_selection(RGB_WHITE_BRI_LOW);
+}
+
 inline uint32_t crc32(const uint8_t *data, uint8_t size)
 {
   uint32_t hash = 5381;
@@ -726,6 +770,7 @@ void Helios::handle_state_randomize()
     Colorset &cur_set = pat.colorset();
     uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
     cur_set.randomizeColors(ctx, num_cols, Colorset::THEORY);
+    Patterns::make_pattern((PatternID)(ctx.next8() % PATTERN_COUNT), pat);
     pat.init();
   }
   if (Button::onLongClick()) {
@@ -748,7 +793,7 @@ void Helios::show_selection(RGBColor color)
   if (!Button::isPressed()) {
     return;
   }
-  uint32_t holdDur = Button::holdDuration();
+  uint16_t holdDur = Button::holdDuration();
   // if the hold duration is outside the flashing range do nothing
   if (holdDur < SHORT_CLICK_THRESHOLD ||
       holdDur > (SHORT_CLICK_THRESHOLD + SELECTION_FLASH_DURATION)) {

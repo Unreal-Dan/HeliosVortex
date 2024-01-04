@@ -29,24 +29,11 @@
 #define HSV_HUE_HOT_PINK 225
 #define HSV_HUE_MAGENTA 245
 
-// Pre-defined saturation values
-#define HSV_SAT_HIGH 255
-#define HSV_SAT_MEDIUM 220
-#define HSV_SAT_LOW 170
-#define HSV_SAT_LOWEST 130
-
-// Pre-defined brightness values
-#define HSV_BRI_HIGH 255
-#define HSV_BRI_MEDIUM 120
-#define HSV_BRI_LOW 60
-#define HSV_BRI_LOWEST 10
-
 // if this bit is present it's an HSV constant
 #define HSV_BIT ((uint32_t)1 << 31)
 
 // produce a DWORD HSV constant
-#define HSV(h, s, v)                                                           \
-    (HSV_BIT | ((uint32_t)h << 16) | ((uint32_t)s << 8) | (uint32_t)v)
+#define HSV(h, s, v) (HSV_BIT | ((uint32_t)h << 16) | ((uint32_t)s << 8) | (uint32_t)v)
 
 // Pre defined hex HSV values
 #define HSV_WHITE HSV_BIT | (uint32_t)0x00006E  //   0   0 110
