@@ -109,7 +109,7 @@ DFILES = $(SRCS:.cpp=.d)
 TARGET = helios
 
 all: $(TARGET).hex
-	@echo Detected Operating System: $(detected_OS)
+	@echo Detected Operating System: $(OS)
 	$(OBJDUMP) --disassemble --source --line-numbers --demangle --section=.text $(TARGET).elf > $(TARGET).lst
 	$(NM) --numeric-sort --line-numbers --demangle --print-size --format=s $(TARGET).elf > $(TARGET).map
 	chmod +x avrsize.sh
