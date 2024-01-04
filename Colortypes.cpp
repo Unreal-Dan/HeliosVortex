@@ -1,4 +1,4 @@
-#include "ColorTypes.h"
+#include "Colortypes.h"
 
 #if ALTERNATIVE_HSV_RGB == 1
 // global hsv to rgb algorithm selector
