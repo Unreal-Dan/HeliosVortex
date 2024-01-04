@@ -1,7 +1,7 @@
 #ifndef COLORSET_H
 #define COLORSET_H
 
-#include "ColorTypes.h"
+#include "Colortypes.h"
 
 #include "HeliosConfig.h"
 
