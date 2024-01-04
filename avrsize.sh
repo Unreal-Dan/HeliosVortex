@@ -5,7 +5,7 @@
 if [ "$(uname -o)" == "Msys" ]; then
 	AVR_SIZE="C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/avr-size.exe"
 else
-	AVR_SIZE="${HOME}/atmel_setup/avr8-gnu-toolchain-linux_x86_64/bin/avr-size"
+	AVR_SIZE="/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin/avr-size"
 fi
 
 # Replace this with the path to your .elf file
