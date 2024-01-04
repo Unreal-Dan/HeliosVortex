@@ -509,7 +509,7 @@ bool Helios::handle_state_col_select_slot()
     // render current selection
     RGBColor col = set.get(menu_selection);
     if (col == RGB_OFF) {
-      Led::strobe(5, 30, RGB_OFF, RGB_WHITE_BRI_LOWEST);
+      Led::strobe(1, 30, RGB_OFF, RGB_WHITE_BRI_LOW);
     } else {
       Led::set(col);
     }
@@ -579,8 +579,8 @@ bool Helios::handle_state_col_select_quadrant()
 
   switch (menu_selection) {
     case 0: // Blank Option
-      col2 = RGB_WHITE_BRI_LOWEST;
-      on_dur = 5;
+      col2 = RGB_WHITE_BRI_LOW;
+      on_dur = 1;
       off_dur = 30;
       break;
     case 1: // White Option
