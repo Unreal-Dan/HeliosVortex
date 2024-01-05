@@ -394,11 +394,11 @@ void Helios::handle_on_menu(uint8_t mag, bool past)
 
 void Helios::handle_state_col_select()
 {
+  uint8_t num_cols = pat.colorset().numColors();
   if (Button::onShortClick()) {
     // next hue/sat/val selection
     uint8_t num_menus = 4;
     if (cur_state == STATE_COLOR_SELECT_SLOT) {
-      uint8_t num_cols = pat.colorset().numColors();
       // menus = all colors + exit
       num_menus = num_cols + 1;
       // but if the num cols is less than total color slots
@@ -411,12 +411,13 @@ void Helios::handle_state_col_select()
     }
     menu_selection = (menu_selection + 1) % num_menus;
   }
+  ColorSelectOption slot_option = OPTION_NONE;
   bool check_longclick = true;
   switch (cur_state) {
     default:
     case STATE_COLOR_SELECT_SLOT:
       // pick the target colorset slot
-      check_longclick = handle_state_col_select_slot();
+      check_longclick = handle_state_col_select_slot(slot_option);
       break;
     case STATE_COLOR_SELECT_QUADRANT:
       // pick the hue quadrant
@@ -448,11 +449,16 @@ void Helios::handle_state_col_select()
   cur.red /= 2;
   cur.green /= 2;
   cur.blue /= 2;
+  // this is a stupid override for when we're exiting color select
+  // show a white selection instead
+  if (slot_option != OPTION_NONE) {
+    cur = RGB_WHITE;
+  }
   // show selection in all of these menus
   show_selection(cur);
 }
 
-bool Helios::handle_state_col_select_slot()
+bool Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
 {
   Colorset &set = pat.colorset();
   uint8_t num_cols = set.numColors();
@@ -461,12 +467,14 @@ bool Helios::handle_state_col_select_slot()
 
   if (num_cols < NUM_COLOR_SLOTS && menu_selection == num_cols) {
     // add color
+    out_option = SELECTED_ADD;
     Led::strobe(100, 100, RGB_WHITE_BRI_LOW, RGB_OFF);
     if (long_click) {
       selected_slot = menu_selection;
     }
   } else if (menu_selection == num_cols + 1 || (num_cols == NUM_COLOR_SLOTS && menu_selection == num_cols)) {
     // exit
+    out_option = SELECTED_EXIT;
     Led::strobe(60, 40, RGB_RED_BRI_LOW, RGB_OFF);
     if (long_click) {
 #if ALTERNATIVE_HSV_RGB == 1
@@ -478,9 +486,11 @@ bool Helios::handle_state_col_select_slot()
       return false;
     }
   } else {
+    out_option = SELECTED_SLOT;
+    selected_slot = menu_selection;
     // render current selection
-    RGBColor col = set.get(menu_selection);
-    if (col == RGB_OFF) {
+    RGBColor col = set.get(selected_slot);
+    if (col.empty()) {
       Led::strobe(1, 30, RGB_OFF, RGB_WHITE_BRI_LOW);
     } else {
       Led::set(col);
@@ -494,7 +504,7 @@ bool Helios::handle_state_col_select_slot()
         Led::strobe(150, 150, RGB_RED_BRI_LOW, col);
       }
       if (long_click) {
-        set.removeColor(menu_selection);
+        set.removeColor(selected_slot);
         return false;
       }
     }
@@ -519,7 +529,7 @@ bool Helios::handle_state_col_select_quadrant()
 {
   uint8_t hue_quad = (menu_selection - 2) % 4;
 
-  if (menu_selection > 5) { 
+  if (menu_selection > 5) {
     menu_selection = 0;
   }
 
