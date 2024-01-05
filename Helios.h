@@ -36,10 +36,19 @@ private:
   static void handle_state();
   static void handle_state_modes();
 
+  // the slot selection returns this info for internal menu logic
+  enum ColorSelectOption {
+    OPTION_NONE = 0,
+
+    SELECTED_ADD,
+    SELECTED_EXIT,
+    SELECTED_SLOT
+  };
+
   static void handle_off_menu(uint8_t mag, bool past);
   static void handle_on_menu(uint8_t mag, bool past);
   static void handle_state_col_select();
-  static bool handle_state_col_select_slot();
+  static bool handle_state_col_select_slot(ColorSelectOption &out_option);
   static bool handle_state_col_select_quadrant();
   static bool handle_state_col_select_hue();
   static bool handle_state_col_select_sat();

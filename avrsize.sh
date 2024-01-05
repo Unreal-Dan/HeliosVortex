@@ -10,7 +10,7 @@ else
 	AVR_SIZE="/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin/avr-size"
 fi
 
-if [ ! -x $AVR_SIZE ]; then
+if [ ! -x "$AVR_SIZE" ]; then
   echo "Could not find avr-size program"
   exit 1
 fi
