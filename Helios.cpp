@@ -127,16 +127,38 @@ void Helios::enter_sleep()
 #ifdef HELIOS_EMBEDDED
   // init the output pins to prevent any floating pins
   clear_output_pins();
-  // Enable wake on interrupt for the button
-  Button::enableWake();
-  // Set sleep mode to POWER DOWN mode
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  // Disable BOD just before sleep
-  MCUCR |= (1<<BODS) | (1<<BODSE);
-  MCUCR = (MCUCR & ~(1<<BODSE)) | (1<<BODS);
-  Helios::terminate();
-  // enter sleep
-  sleep_mode();
+
+    // Disable ADC to save power
+    ADCSRA &= ~(1 << ADEN);
+
+    // Disable analog comparator to reduce power consumption
+    ACSR |= (1 << ACD);
+
+    // Enable wake on interrupt for the button
+    Button::enableWake();
+
+    // Disable unnecessary peripherals here
+
+    // Set sleep mode to POWER DOWN mode
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+
+    // Disable brown-out detection during sleep (if not required for your application)
+    // Note: This might need changing fuses or using BOD disable sleep sequence
+
+    // Turn off the watch dog timer to save power
+    MCUSR &= ~(1 << WDRF);
+    WDTCR |= (1 << WDCE) | (1 << WDE);
+    WDTCR = 0x00;
+
+    // Enter sleep mode
+    sleep_enable();
+    sleep_bod_disable(); // Call immediately before sleep_cpu
+    sleep_cpu();
+
+    // Wake up here
+    sleep_disable();
+
+    // Re-enable peripherals and ADC if needed after waking up
 #else
   cur_state = STATE_SLEEP;
   // enable the sleep bool
@@ -146,66 +168,15 @@ void Helios::enter_sleep()
 
 #ifdef HELIOS_EMBEDDED
 void Helios::clear_output_pins() {
-  // Reduce clock speed to 1 MHz (prescaler to divide by 16)
-  CLKPR = 0x80;  // Enable change of the prescaler
-  CLKPR = 0x04;  // Set the prescaler to divide by 16 (for 1 MHz clock)
   // Set all pins to output
   DDRB = 0xFF;
   // Set all pins low
   PORTB = 0x00;
-
-  // Disable ADC
-  ADCSRA &= ~(1<<ADEN);
-
-  // Disable Analog Comparator
-  ACSR |= (1<<ACD);
-
-  // Disable Digital Input Buffers on all unused pins
-  DIDR0 = 0xFF; // Modify as per your application's requirements
-
-  // Disable all peripherals using PRR
-  PRR = 0xFF; // Modify as per your application's requirements
-
-  // Disable Watchdog Timer if not used
-  MCUSR &= ~(1<<WDRF);
-  WDTCR |= (1<<WDCE) | (1<<WDE);
-  WDTCR = 0x00;
-  
-  //Turn off the Analog Comparator
-  ACSR |= _BV(ACD);
-
-  // Disable Digital Input Buffers
-  DIDR0 = 0xFF;
-
-  // Disable the Watchdog Timer
-  MCUSR = 0;
-  WDTCR |= _BV(WDCE) | _BV(WDE);
-  WDTCR = 0;
-
-  // Disable the Timer/Counter0
-  TCCR0B = 0;
-
-  // Disable the USI
-  USICR = 0;
 }
 #endif
 
 void Helios::wakeup() {
 #ifdef HELIOS_EMBEDDED
-  // Restore clock speed to 16 MHz (prescaler to divide by 1)
-  CLKPR = 0x80;  // Enable change of the prescaler
-  CLKPR = 0x00;         // Set the prescaler to divide by 1
-  // Turn on the Analog Comparator:
-  ACSR &= ~_BV(ACD);
-  // Enable Digital Input Buffers:
-  DIDR0 = 0x00;
-  // Enable the Watchdog Timer: 
-  WDTCR |= _BV(WDCE) | _BV(WDE);
-  WDTCR = _BV(WDE);
-  // Enable the Timer/Counter0:
-  TCCR0B = _BV(CS00);
-  // Enable the USI:
-  USICR = _BV(USIWM0) | _BV(USICS1);
   // re-initialize helios
   // TODO: should CLI do this too?
   init();
