@@ -439,10 +439,13 @@ void Helios::handle_state_col_select()
   if (check_longclick && Button::onLongClick()) {
     if (cur_state == STATE_COLOR_SELECT_VAL) {
       cur_state = STATE_COLOR_SELECT_SLOT;
+      // Return to the slot you were editing
+      menu_selection = selected_slot;
     } else {
       cur_state = (State)(cur_state + 1);
+      // reset the menu selection
+      menu_selection = 0;
     }
-    menu_selection = 0;
   }
   // get the current color
   RGBColor cur = Led::get();
@@ -539,6 +542,8 @@ bool Helios::handle_state_col_select_quadrant()
       case 0:  // selected blank
         // add blank to set
         pat.colorset().set(selected_slot, RGB_OFF);
+        // Return to the slot you were editing
+        menu_selection = selected_slot;
         // go to slot selection - 1 because we will increment outside here
         cur_state = STATE_COLOR_SELECT_SLOT;
         return false;
