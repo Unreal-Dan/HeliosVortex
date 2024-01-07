@@ -257,34 +257,21 @@ void Helios::handle_state_modes()
     return;
   }
 
+  // check for lock and go back to sleep
+  if (has_flag(FLAG_LOCKED) && hasReleased && !Button::onRelease()) {
+    enter_sleep();
+    return;
+  }
+
+  if (!has_flag(FLAG_LOCKED) && hasReleased) {
+    // just play the current mode
+    pat.play();
+  }
   // check how long the button is held
   uint16_t holdDur = (uint16_t)Button::holdDuration();
   // calculate a magnitude which corresponds to how many times past the MENU_HOLD_TIME
   // the user has held the button, so 0 means haven't held fully past one yet, etc
   uint8_t magnitude = (uint8_t)(holdDur / MENU_HOLD_TIME);
-
-  // check for lock and go back to sleep
-  if (has_flag(FLAG_LOCKED)) {
-    // if the button is released and it wasn't released this tick then go to sleep
-    // Wait for the button to not be released this tick because it's possible to
-    // pick up the button releasing and wakeup the device again instantly
-    if (hasReleased && !Button::onRelease()) {
-      enter_sleep();
-    } else if (magnitude == 5) {
-      // otherwise if they have held for 5 Seconds to Exit Lock
-      // then show a low red flash to show they have hit the threshold
-      Led::set(RGB_RED_BRI_LOW);
-    } else {
-      // otherwise the rest of the time just turn off the led
-      Led::clear();
-    }
-    return;
-  } else if (hasReleased) {
-    // otherwise if we're not locked, and we have released the led
-    // then just play the current mode
-    pat.play();
-  }
-
   // whether the user has held the button longer than a short click
   bool heldPast = (holdDur > SHORT_CLICK_THRESHOLD);
   // if the button is held for at least 1 second
@@ -292,21 +279,29 @@ void Helios::handle_state_modes()
     // if the button has been released before then show the on menu
     if (hasReleased) {
       switch (magnitude) {
+        default:
         case 0: Led::clear(); break;                                      // Turn off
         case 1: Led::set(RGB_TURQUOISE_BRI_LOW); break;                   // Color Selection
         case 2: Led::set(RGB_MAGENTA_BRI_LOW); break;                     // Pattern Selection
         case 3: Led::set(RGB_YELLOW_BRI_LOW); break;                      // Conjure Mode
         case 4: Led::set(RGB_WHITE_BRI_LOW); break;                       // Shift Mode
         case 5: Led::set(HSVColor(Time::getCurtime(), 255, 180)); break;  // Randomizer
-        default: Led::clear(); break;                                     // hold past
       }
     } else {
-      switch (magnitude) {
-        case 0: Led::clear(); break;                // nothing
-        case 1: Led::set(RGB_RED_BRI_LOW); break;   // Enter Glow Lock
-        case 2: Led::set(RGB_BLUE_BRI_LOW); break;  // Master Reset
-        case 3: Led::set(RGB_GREEN_BRI_LOW); break; // Global Brightness
-        default: Led::clear(); break;               // hold past
+      if (has_flag(FLAG_LOCKED)) {
+        switch (magnitude) {
+          default:
+          case 0: Led::clear(); break;
+          case 5: Led::set(RGB_RED_BRI_LOW); break; // Exit Lock
+        }
+      } else {
+        switch (magnitude) {
+          default:
+          case 0: Led::clear(); break;                // nothing
+          case 1: Led::set(RGB_RED_BRI_LOW); break;   // Enter Glow Lock
+          case 2: Led::set(RGB_BLUE_BRI_LOW); break;  // Master Reset
+          case 3: Led::set(RGB_GREEN_BRI_LOW); break; // Global Brightness
+        }
       }
     }
   }
