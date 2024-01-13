@@ -133,6 +133,9 @@ void Helios::enter_sleep()
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   // enter sleep
   sleep_mode();
+  // ... interrupt will make us wake here
+  // wakeup here, re-init
+  init();
 #else
   cur_state = STATE_SLEEP;
   // enable the sleep bool
@@ -151,10 +154,11 @@ void Helios::clear_output_pins() {
 
 void Helios::wakeup() {
 #ifdef HELIOS_EMBEDDED
-  // re-initialize helios
-  // TODO: should CLI do this too?
-  init();
+  // nothing needed here, this interrupt firing will make the mainthread resume
 #else
+  // re-initialize helios?
+  //init();
+  // turn off the sleeping flag that only CLI has
   sleeping = false;
 #endif
 }
@@ -166,6 +170,8 @@ void Helios::handle_state()
     // when released the device will just sleep
     if (Button::onRelease()) {
       enter_sleep();
+      // ALWAYS RETURN AFTER SLEEP! WE WILL WAKE HERE!
+      return;
     }
     // but as long as it's held past the sleep time it just turns off the led
     if (Button::isPressed()) {
@@ -260,6 +266,7 @@ void Helios::handle_state_modes()
   // check for lock and go back to sleep
   if (has_flag(FLAG_LOCKED) && hasReleased && !Button::onRelease()) {
     enter_sleep();
+    // ALWAYS RETURN AFTER SLEEP! WE WILL WAKE HERE!
     return;
   }
 
@@ -318,34 +325,37 @@ void Helios::handle_state_modes()
 
 void Helios::handle_off_menu(uint8_t mag, bool past)
 {
-  // if we have not released the button yet we're in the 'off' menu
+  // if still locked then handle the unlocking menu which is just if mag == 5
   if (has_flag(FLAG_LOCKED)) {
     switch (mag) {
       case 5:  // red lock
         cur_state = STATE_TOGGLE_LOCK;
-        break;
       default:
-        // just go back to sleep in hold-paste off menu
+        // just go back to sleep in hold-past off menu
         enter_sleep();
-        break;
+        // ALWAYS RETURN AFTER SLEEP! WE WILL WAKE HERE!
     }
-  } else {
-    switch (mag) {
-      case 1:  // red lock
-        cur_state = STATE_TOGGLE_LOCK;
-        Led::clear();
-        break;
-      case 2:  // blue reset defaults
-        cur_state = STATE_SET_DEFAULTS;
-        break;
-      case 3:  // green global brightness
-        cur_state = STATE_SET_GLOBAL_BRIGHTNESS;
-        break;
-      default:
-        // just go back to sleep in hold-paste off menu
-        enter_sleep();
-        break;
-    }
+    // in this case we return either way, since we're locked
+    return;
+  }
+
+  // otherwise if not locked handle the off menu
+  switch (mag) {
+    case 1:  // red lock
+      cur_state = STATE_TOGGLE_LOCK;
+      Led::clear();
+      return; // RETURN HERE
+    case 2:  // blue reset defaults
+      cur_state = STATE_SET_DEFAULTS;
+      return; // RETURN HERE
+    case 3:  // green global brightness
+      cur_state = STATE_SET_GLOBAL_BRIGHTNESS;
+      return; // RETURN HERE
+    default:
+      // just go back to sleep in hold-past off menu
+      enter_sleep();
+      // ALWAYS RETURN AFTER SLEEP! WE WILL WAKE HERE!
+      return;
   }
 }
 
@@ -356,6 +366,8 @@ void Helios::handle_on_menu(uint8_t mag, bool past)
       // but only if we held for more than a short click
       if (past) {
         enter_sleep();
+        // ALWAYS RETURN AFTER SLEEP! WE WILL WAKE HERE!
+        return;
       }
       break;
     case 1:  // color select
