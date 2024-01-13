@@ -330,6 +330,7 @@ void Helios::handle_off_menu(uint8_t mag, bool past)
     switch (mag) {
       case 5:  // red lock
         cur_state = STATE_TOGGLE_LOCK;
+        break;
       default:
         // just go back to sleep in hold-past off menu
         enter_sleep();
