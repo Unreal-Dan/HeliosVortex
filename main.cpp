@@ -52,6 +52,7 @@ int main()
 
     // Put the device to sleep
     sleep_mode();
+    sleep_cpu();
 
     // The program will continue from here after wakeup
 
