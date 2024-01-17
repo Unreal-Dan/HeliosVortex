@@ -153,6 +153,9 @@ void Helios::enter_sleep()
   // Disable sleep mode
   sleep_disable();
 
+  // ... interrupt will make us wake here
+  // wakeup here, re-init
+  init();
 #else
   cur_state = STATE_SLEEP;
   // enable the sleep bool
@@ -162,10 +165,11 @@ void Helios::enter_sleep()
 
 void Helios::wakeup() {
 #ifdef HELIOS_EMBEDDED
-  // re-initialize helios
-  // TODO: should CLI do this too?
-  init();
+  // nothing needed here, this interrupt firing will make the mainthread resume
 #else
+  // re-initialize helios?
+  //init();
+  // turn off the sleeping flag that only CLI has
   sleeping = false;
 #endif
 }
@@ -177,6 +181,8 @@ void Helios::handle_state()
     // when released the device will just sleep
     if (Button::onRelease()) {
       enter_sleep();
+      // ALWAYS RETURN AFTER SLEEP! WE WILL WAKE HERE!
+      return;
     }
     // but as long as it's held past the sleep time it just turns off the led
     if (Button::isPressed()) {
@@ -268,34 +274,22 @@ void Helios::handle_state_modes()
     return;
   }
 
+  // check for lock and go back to sleep
+  if (has_flag(FLAG_LOCKED) && hasReleased && !Button::onRelease()) {
+    enter_sleep();
+    // ALWAYS RETURN AFTER SLEEP! WE WILL WAKE HERE!
+    return;
+  }
+
+  if (!has_flag(FLAG_LOCKED) && hasReleased) {
+    // just play the current mode
+    pat.play();
+  }
   // check how long the button is held
   uint16_t holdDur = (uint16_t)Button::holdDuration();
   // calculate a magnitude which corresponds to how many times past the MENU_HOLD_TIME
   // the user has held the button, so 0 means haven't held fully past one yet, etc
   uint8_t magnitude = (uint8_t)(holdDur / MENU_HOLD_TIME);
-
-  // check for lock and go back to sleep
-  if (has_flag(FLAG_LOCKED)) {
-    // if the button is released and it wasn't released this tick then go to sleep
-    // Wait for the button to not be released this tick because it's possible to
-    // pick up the button releasing and wakeup the device again instantly
-    if (hasReleased && !Button::onRelease()) {
-      enter_sleep();
-    } else if (magnitude == 5) {
-      // otherwise if they have held for 5 Seconds to Exit Lock
-      // then show a low red flash to show they have hit the threshold
-      Led::set(RGB_RED_BRI_LOW);
-    } else {
-      // otherwise the rest of the time just turn off the led
-      Led::clear();
-    }
-    return;
-  } else if (hasReleased) {
-    // otherwise if we're not locked, and we have released the led
-    // then just play the current mode
-    pat.play();
-  }
-
   // whether the user has held the button longer than a short click
   bool heldPast = (holdDur > SHORT_CLICK_THRESHOLD);
   // if the button is held for at least 1 second
@@ -303,21 +297,29 @@ void Helios::handle_state_modes()
     // if the button has been released before then show the on menu
     if (hasReleased) {
       switch (magnitude) {
+        default:
         case 0: Led::clear(); break;                                      // Turn off
         case 1: Led::set(RGB_TURQUOISE_BRI_LOW); break;                   // Color Selection
         case 2: Led::set(RGB_MAGENTA_BRI_LOW); break;                     // Pattern Selection
         case 3: Led::set(RGB_YELLOW_BRI_LOW); break;                      // Conjure Mode
         case 4: Led::set(RGB_WHITE_BRI_LOW); break;                       // Shift Mode
         case 5: Led::set(HSVColor(Time::getCurtime(), 255, 180)); break;  // Randomizer
-        default: Led::clear(); break;                                     // hold past
       }
     } else {
-      switch (magnitude) {
-        case 0: Led::clear(); break;                // nothing
-        case 1: Led::set(RGB_RED_BRI_LOW); break;   // Enter Glow Lock
-        case 2: Led::set(RGB_BLUE_BRI_LOW); break;  // Master Reset
-        case 3: Led::set(RGB_GREEN_BRI_LOW); break; // Global Brightness
-        default: Led::clear(); break;               // hold past
+      if (has_flag(FLAG_LOCKED)) {
+        switch (magnitude) {
+          default:
+          case 0: Led::clear(); break;
+          case 5: Led::set(RGB_RED_BRI_LOW); break; // Exit Lock
+        }
+      } else {
+        switch (magnitude) {
+          default:
+          case 0: Led::clear(); break;                // nothing
+          case 1: Led::set(RGB_RED_BRI_LOW); break;   // Enter Glow Lock
+          case 2: Led::set(RGB_BLUE_BRI_LOW); break;  // Master Reset
+          case 3: Led::set(RGB_GREEN_BRI_LOW); break; // Global Brightness
+        }
       }
     }
   }
@@ -334,34 +336,38 @@ void Helios::handle_state_modes()
 
 void Helios::handle_off_menu(uint8_t mag, bool past)
 {
-  // if we have not released the button yet we're in the 'off' menu
+  // if still locked then handle the unlocking menu which is just if mag == 5
   if (has_flag(FLAG_LOCKED)) {
     switch (mag) {
       case 5:  // red lock
         cur_state = STATE_TOGGLE_LOCK;
         break;
       default:
-        // just go back to sleep in hold-paste off menu
+        // just go back to sleep in hold-past off menu
         enter_sleep();
-        break;
+        // ALWAYS RETURN AFTER SLEEP! WE WILL WAKE HERE!
     }
-  } else {
-    switch (mag) {
-      case 1:  // red lock
-        cur_state = STATE_TOGGLE_LOCK;
-        Led::clear();
-        break;
-      case 2:  // blue reset defaults
-        cur_state = STATE_SET_DEFAULTS;
-        break;
-      case 3:  // green global brightness
-        cur_state = STATE_SET_GLOBAL_BRIGHTNESS;
-        break;
-      default:
-        // just go back to sleep in hold-paste off menu
-        enter_sleep();
-        break;
-    }
+    // in this case we return either way, since we're locked
+    return;
+  }
+
+  // otherwise if not locked handle the off menu
+  switch (mag) {
+    case 1:  // red lock
+      cur_state = STATE_TOGGLE_LOCK;
+      Led::clear();
+      return; // RETURN HERE
+    case 2:  // blue reset defaults
+      cur_state = STATE_SET_DEFAULTS;
+      return; // RETURN HERE
+    case 3:  // green global brightness
+      cur_state = STATE_SET_GLOBAL_BRIGHTNESS;
+      return; // RETURN HERE
+    default:
+      // just go back to sleep in hold-past off menu
+      enter_sleep();
+      // ALWAYS RETURN AFTER SLEEP! WE WILL WAKE HERE!
+      return;
   }
 }
 
@@ -372,6 +378,8 @@ void Helios::handle_on_menu(uint8_t mag, bool past)
       // but only if we held for more than a short click
       if (past) {
         enter_sleep();
+        // ALWAYS RETURN AFTER SLEEP! WE WILL WAKE HERE!
+        return;
       }
       break;
     case 1:  // color select
@@ -757,7 +765,8 @@ void Helios::handle_state_randomize()
     Random ctx(seed);
     Colorset &cur_set = pat.colorset();
     uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
-    cur_set.randomizeColors(ctx, num_cols, Colorset::THEORY);
+    
+    cur_set.randomizeColors(ctx, num_cols);
     Patterns::make_pattern((PatternID)(ctx.next8() % PATTERN_COUNT), pat);
     pat.init();
   }
@@ -777,7 +786,7 @@ void Helios::save_global_flags()
 
 void Helios::show_selection(RGBColor color)
 {
-  // only show seletion while pressing the button
+  // only show selection while pressing the button
   if (!Button::isPressed()) {
     return;
   }

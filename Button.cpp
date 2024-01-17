@@ -34,7 +34,6 @@ std::queue<char> Button::m_inputQueue;
 bool Button::m_pinState = false;
 #endif
 
-
 // initialize a new button object with a pin number
 bool Button::init()
 {

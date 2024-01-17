@@ -31,6 +31,9 @@ uint8_t Led::m_brightness = DEFAULT_BRIGHTNESS;
 
 bool Led::init()
 {
+  // clear the led colors
+  m_ledColor = RGB_OFF;
+  m_realColor = RGB_OFF;
 #ifdef HELIOS_EMBEDDED
 #ifdef HELIOS_ARDUINO
   pinMode(0, OUTPUT);
@@ -55,8 +58,6 @@ bool Led::init()
 
 void Led::cleanup()
 {
-  m_ledColor.clear();
-  m_realColor.clear();
 }
 
 void Led::set(RGBColor col)
