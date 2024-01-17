@@ -33,7 +33,6 @@ uint32_t Time::m_prevTime = 0;
 bool Time::m_enableTimestep = true;
 #endif
 
-
 bool Time::init()
 {
   m_prevTime = microseconds();
