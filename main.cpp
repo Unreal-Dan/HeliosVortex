@@ -11,11 +11,8 @@ void setupClockPrescaler() {
 
 int main()
 {
-  // // Disable ADC
-  // ADCSRA &= ~(1 << ADEN);
-
   // Disable ADC
-  PRR |= (1 << PRADC);
+  ADCSRA &= ~(1 << ADEN);
 
   // Disable Timer/Counter0
   PRR |= (1 << PRTIM1) | (1 << PRTIM0) | (1 << PRUSI) | (1 << PRADC);
