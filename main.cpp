@@ -1,7 +1,9 @@
 #include <avr/sleep.h>
 #include <avr/power.h>
-#include <avr/wdt.h> // Include Watchdog Timer library
+#include <avr/wdt.h>
 #include <avr/io.h>
+#include <avr/interrupt.h>  // Include this for sei()
+
 
 void setupClockPrescaler() {
   // Set the clock prescaler to divide by 8
@@ -14,7 +16,7 @@ int main()
   // Disable ADC
   ADCSRA &= ~(1 << ADEN);
 
-  // Disable Timer/Counter0
+  // Activate PRR (Power Reduction Register)
   PRR |= (1 << PRTIM1) | (1 << PRTIM0) | (1 << PRUSI) | (1 << PRADC);
 
   // Configure all I/O pins as input with pull-up enabled
@@ -42,16 +44,19 @@ int main()
 
   while (1)
   {
-      // Enable sleep mode
-      sleep_enable();
+    // Disable the BOD
+    sleep_bod_disable();
 
-      // Put the device to sleep
-      sleep_mode();
+    // Enable global interrupts
+    sei();
 
-      // The program will continue from here after wakeup
+    // Put the device to sleep
+    sleep_mode();
 
-      // Disable sleep mode
-      sleep_disable();
+    // The program will continue from here after wakeup
+
+    // Disable sleep mode
+    sleep_disable();
   }
   return 0;
 }
