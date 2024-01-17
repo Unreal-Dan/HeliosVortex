@@ -275,7 +275,7 @@ void Helios::handle_state_modes()
     pat.play();
   }
   // check how long the button is held
-  uint16_t holdDur = (uint16_t)Button::holdDuration();
+  uint32_t holdDur = Button::holdDuration();
   // calculate a magnitude which corresponds to how many times past the MENU_HOLD_TIME
   // the user has held the button, so 0 means haven't held fully past one yet, etc
   uint8_t magnitude = (uint8_t)(holdDur / MENU_HOLD_TIME);
@@ -506,9 +506,8 @@ bool Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
     } else {
       Led::set(col);
     }
-    uint16_t hold_dur = (uint16_t)Button::holdDuration();
-    bool deleting = ((hold_dur > DELETE_COLOR_TIME) &&
-                     ((hold_dur % (DELETE_COLOR_TIME * 2)) > DELETE_COLOR_TIME));
+    uint16_t mod_dur = (uint16_t)((Button::holdDuration() % (DELETE_COLOR_TIME * 2));
+    bool deleting = (mod_dur > DELETE_COLOR_TIME);
     if (deleting) {
       if (Button::isPressed()) {
         // flash red
