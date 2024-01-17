@@ -171,27 +171,12 @@ void Colorset::removeColor(uint8_t index)
   m_palette[--m_numColors].clear();
 }
 
-// create a set of truely random colors
-void Colorset::randomize(Random &ctx, uint8_t numColors)
-{
-  clear();
-  if (!numColors) {
-    numColors = ctx.next8(2, NUM_COLOR_SLOTS);
-  }
-  ValueStyle valStyle = (ValueStyle)ctx.next8(0, VAL_STYLE_COUNT);
-  for (uint8_t i = 0; i < numColors; ++i) {
-    // do not put the next8() calls inside arguments, the order functions in
-    // arguments are called is undefined behaviour and it's important that
-    // these are called in the right order otherwise different platforms will
-    // behave differently when performing this randomization
-    uint8_t sat = ctx.next8();
-    uint8_t hue = ctx.next8();
-    addColorWithValueStyle(ctx, hue, sat, valStyle, numColors, i);
-  }
-}
+uint8_t current_color_mode = Colorset::THEORY;
 
-void Colorset::randomizeColors(Random &ctx, uint8_t numColors, ColorMode mode)
+void Colorset::randomizeColors(Random &ctx, uint8_t numColors)
 {
+  current_color_mode = (current_color_mode + 1) % COLOR_MODE_COUNT;
+  ColorMode mode = (ColorMode)current_color_mode;
   clear();
   if (!numColors) {
     numColors = ctx.next8(mode == MONOCHROMATIC ? 2 : 1, 9);
@@ -226,28 +211,6 @@ void Colorset::randomizeColors(Random &ctx, uint8_t numColors, ColorMode mode)
     if (doubleStyle == 2 || (doubleStyle == 1 && !i)) {
       addColorWithValueStyle(ctx, hueToUse, valueToUse, valStyle, numColors, i);
     }
-  }
-}
-
-void Colorset::randomizeColors2(Random &ctx, ColorMode2 mode)
-{
-  clear();
-  uint8_t primaryHue = ctx.next8();
-  if (mode == DOUBLE_SPLIT_COMPLIMENTARY) {
-    uint8_t splitGap = ctx.next8(1, 64);
-    ValueStyle valStyle = (ValueStyle)ctx.next8(0, VAL_STYLE_COUNT);
-    addColorWithValueStyle(ctx, (primaryHue + splitGap + 128), 255, valStyle, 5, 0);
-    addColorWithValueStyle(ctx, (primaryHue - splitGap), 255, valStyle, 5, 1);
-    addColorWithValueStyle(ctx, primaryHue, 255, valStyle, 5, 2);
-    addColorWithValueStyle(ctx, (primaryHue + splitGap), 255, valStyle, 5, 3);
-    addColorWithValueStyle(ctx, (primaryHue - splitGap + 128), 255, valStyle, 5, 4);
-  } else if (mode == TETRADIC) {
-    uint8_t secondaryHue = ctx.next8();
-    ValueStyle valStyle = (ValueStyle)ctx.next8(0, VAL_STYLE_COUNT);
-    addColorWithValueStyle(ctx, primaryHue, 255, valStyle, 4, 0);
-    addColorWithValueStyle(ctx, secondaryHue, 255, valStyle, 4, 1);
-    addColorWithValueStyle(ctx, (primaryHue + 128), 255, valStyle, 4, 2);
-    addColorWithValueStyle(ctx, (secondaryHue + 128), 255, valStyle, 4, 3);
   }
 }
 

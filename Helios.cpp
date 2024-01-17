@@ -754,7 +754,8 @@ void Helios::handle_state_randomize()
     Random ctx(seed);
     Colorset &cur_set = pat.colorset();
     uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
-    cur_set.randomizeColors(ctx, num_cols, Colorset::THEORY);
+    
+    cur_set.randomizeColors(ctx, num_cols);
     Patterns::make_pattern((PatternID)(ctx.next8() % PATTERN_COUNT), pat);
     pat.init();
   }
@@ -774,7 +775,7 @@ void Helios::save_global_flags()
 
 void Helios::show_selection(RGBColor color)
 {
-  // only show seletion while pressing the button
+  // only show selection while pressing the button
   if (!Button::isPressed()) {
     return;
   }
