@@ -22,7 +22,7 @@ struct default_colorset {
 // the array of colorset entries, make sure the number on the left reflects
 // the number of colors in the array on the right
 static const default_colorset default_colorsets[] = {
-  { 6, color_codes0 },  // 0 Lightside
+  { 5, color_codes0 },  // 0 Lightside
   { 4, color_codes1 },  // 1 Sauna
   { 4, color_codes2 },  // 2 UltraViolet
   { 6, color_codes3 },  // 3 Space Carnival
