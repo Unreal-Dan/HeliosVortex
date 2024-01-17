@@ -506,7 +506,7 @@ bool Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
     } else {
       Led::set(col);
     }
-    uint16_t mod_dur = (uint16_t)((Button::holdDuration() % (DELETE_COLOR_TIME * 2));
+    uint16_t mod_dur = (uint16_t)(Button::holdDuration() % (DELETE_COLOR_TIME * 2));
     bool deleting = (mod_dur > DELETE_COLOR_TIME);
     if (deleting) {
       if (Button::isPressed()) {
