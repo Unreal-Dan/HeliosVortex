@@ -50,8 +50,8 @@ int main(int argc, char *argv[])
   set_terminal_nonblocking();
   // toggle timestep in the engine based on the cli input
   Time::enableTimestep(timestep);
-	// toggle storage in the engine based on cli input
-	Storage::enableStorage(storage);
+  // toggle storage in the engine based on cli input
+  Storage::enableStorage(storage);
   // run the arduino setup routine
   Helios::init();
   // just generate eeprom?
