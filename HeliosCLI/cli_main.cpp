@@ -9,6 +9,8 @@
 #include <string>
 
 #include "Helios.h"
+#include "TimeControl.h"
+#include "Storage.h"
 #include "Button.h"
 #include "Led.h"
 
@@ -26,6 +28,7 @@ OutputType output_type = OUTPUT_TYPE_COLOR;
 bool in_place = false;
 bool lockstep = false;
 bool storage = false;
+bool timestep = true;
 bool eeprom = false;
 
 // used to switch terminal to non-blocking and back
@@ -45,6 +48,10 @@ int main(int argc, char *argv[])
   parse_options(argc, argv);
   // set the terminal to instantly receive key presses
   set_terminal_nonblocking();
+  // toggle timestep in the engine based on the cli input
+  Time::enableTimestep(timestep);
+	// toggle storage in the engine based on cli input
+	Storage::enableStorage(storage);
   // run the arduino setup routine
   Helios::init();
   // just generate eeprom?
@@ -82,8 +89,9 @@ static void parse_options(int argc, char *argv[])
     {"color", no_argument, nullptr, 'c'},
     {"quiet", no_argument, nullptr, 'q'},
     {"lockstep", no_argument, nullptr, 'l'},
+    {"no-timestep", no_argument, nullptr, 't'},
     {"in-place", no_argument, nullptr, 'i'},
-    {"storage", optional_argument, nullptr, 's'},
+    {"no-storage", no_argument, nullptr, 's'},
     {"eeprom", no_argument, nullptr, 'E'},
     {"help", no_argument, nullptr, 'h'},
     {nullptr, 0, nullptr, 0}
@@ -105,13 +113,17 @@ static void parse_options(int argc, char *argv[])
       // if the user wants to step in lockstep with the engine
       lockstep = true;
       break;
+    case 't':
+      // turn off timestep
+      timestep = false;
+      break;
     case 'i':
       // if the user wants to print in-place (on one line)
       in_place = true;
       break;
     case 's':
-      // TODO: enable persistent storage to file?
-      storage = true;
+      // TODO: implement storage filename
+      storage = false;
       break;
     case 'E':
       eeprom = true;
@@ -243,8 +255,9 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "\n");
   fprintf(stderr, "Engine Control Flags (optional):\n");
   fprintf(stderr, "  -l, --lockstep           Only step once each time an input is received\n");
+  fprintf(stderr, "  -t, --no-timestep        Run as fast as possible without managing timestep\n");
   fprintf(stderr, "  -i, --in-place           Print the output in-place (interactive mode)\n");
-  fprintf(stderr, "  -s, --storage [file]     Persistent storage to file (default file: FlashStorage.flash)\n");
+  fprintf(stderr, "  -s, --no-storage         Disable persistent storage to file (FlashStorage.flash)\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Other Options:\n");
   fprintf(stderr, "  -E, --eeprom             Generate an eeprom file for flashing\n");

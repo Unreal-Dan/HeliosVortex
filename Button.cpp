@@ -197,11 +197,13 @@ bool Button::processPostInput()
 void Button::doShortClick()
 {
   m_shortClick = true;
+  m_releaseCount++;
 }
 
 void Button::doLongClick()
 {
   m_longClick = true;
+  m_releaseCount++;
 }
 
 // this will actually press down the button, it's your responsibility to wait

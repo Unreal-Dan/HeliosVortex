@@ -20,6 +20,10 @@ public:
   static uint8_t read_config(uint8_t index);
   static void write_config(uint8_t index, uint8_t val);
 
+#ifdef HELIOS_CLI
+  // toggle storage on/off
+  static void enableStorage(bool enabled) { m_enableStorage = enabled; }
+#endif
 private:
   static uint8_t crc8(uint8_t pos, uint8_t size);
   static uint8_t crc_pos(uint8_t pos);
@@ -28,6 +32,11 @@ private:
   static void write_crc(uint8_t pos);
   static void write_byte(uint8_t address, uint8_t data);
   static uint8_t read_byte(uint8_t address);
+
+#ifdef HELIOS_CLI
+  // whether storage is enabled
+  static bool m_enableStorage;
+#endif
 };
 
 #endif
