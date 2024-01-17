@@ -16,8 +16,8 @@ TODO=
 for arg in "$@"
 do
   if [ "$arg" == "-i" ]; then
-		echo "Interactive mode not implemented yet"
-		exit 1
+    echo "Interactive mode not implemented yet"
+    exit 1
     #INTERACTIVE=1
   fi
   if [ "$arg" == "-n" ]; then
@@ -93,7 +93,7 @@ while true; do
 
   if [ $INTERACTIVE -eq 1 ]; then
     # Run the Helios program
-		# TODO: implement --record in helios to get interactive mode
+    # TODO: implement --record in helios to get interactive mode
     $HELIOS $ARGS --no-storage --color --in-place --record
 
     # Check if the output file exists and read the result from it
@@ -121,7 +121,7 @@ while true; do
     echo -n "${YELLOW}Use injected waits [${WHITE}$NEW_INPUT${YELLOW}]? (y/N): ${WHITE}"
     read -e CONFIRM
     if [[ $CONFIRM != [yY] && $CONFIRM != [yY][eE][sS] ]]; then
-    	NEW_INPUT="$RESULT"
+      NEW_INPUT="$RESULT"
     fi
   fi
 
