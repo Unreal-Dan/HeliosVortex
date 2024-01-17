@@ -68,32 +68,15 @@ public:
     ValueStyle valStyle, uint8_t numColors, uint8_t colorPos);
   void removeColor(uint8_t index);
 
-  // randomize a colorset with a specific number of colors with
-  // various different randomization techniques
-  void randomize(Random &ctx, uint8_t numColors = 0);
 
   // function to randomize the colors with various different modes of randomization
   enum ColorMode {
     THEORY,
     MONOCHROMATIC,
-    EVENLY_SPACED
+    EVENLY_SPACED,
+    COLOR_MODE_COUNT
   };
-  void randomizeColors(Random &ctx, uint8_t numColors, ColorMode mode);
-
-  // similar function but with some different modes
-  enum ColorMode2 {
-    DOUBLE_SPLIT_COMPLIMENTARY,
-    TETRADIC
-  };
-  void randomizeColors2(Random &ctx, ColorMode2 mode);
-
-  // wrappers for various spacings
-  void randomizeSolid(Random &ctx) { randomizeColors(ctx, 1, EVENLY_SPACED); }
-  void randomizeComplimentary(Random &ctx) { randomizeColors(ctx, 2, EVENLY_SPACED); }
-  void randomizeTriadic(Random &ctx) { randomizeColors(ctx, 3, EVENLY_SPACED); }
-  void randomizeSquare(Random &ctx) { randomizeColors(ctx, 4, EVENLY_SPACED); }
-  void randomizePentadic(Random &ctx) { randomizeColors(ctx, 5, EVENLY_SPACED); }
-  void randomizeRainbow(Random &ctx) { randomizeColors(ctx, 8, EVENLY_SPACED); }
+  void randomizeColors(Random &ctx, uint8_t numColors);
 
   // fade all of the colors in the set
   void adjustBrightness(uint8_t fadeby);
