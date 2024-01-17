@@ -40,14 +40,6 @@ int main()
   // Set up the clock prescaler
   setupClockPrescaler();
 
-  // Disable ADC
-  PRR |= (1 << PRADC);
-
-  // // Disable Timer/Counter0
-  // PRR |= (1 << PRTIM0);
-
-  
-
   while (1)
   {
       // Enable sleep mode
