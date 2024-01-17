@@ -49,7 +49,7 @@ public:
     VAL_STYLE_LOW_FIRST_COLOR,
     // First color high value, the rest are low
     VAL_STYLE_HIGH_FIRST_COLOR,
-    // Alternat between high and low value
+    // Alternate between high and low value
     VAL_STYLE_ALTERNATING,
     // Ascending values from low to high
     VAL_STYLE_ASCENDING,
@@ -64,8 +64,6 @@ public:
   // add a single color
   bool addColor(RGBColor col);
   bool addColorHSV(uint8_t hue, uint8_t sat, uint8_t val);
-  void addColorWithValueStyle(Random &ctx, uint8_t hue, uint8_t sat,
-    ValueStyle valStyle, uint8_t numColors, uint8_t colorPos);
   void removeColor(uint8_t index);
 
   // randomize a colorset with a specific number of colors with
@@ -76,27 +74,14 @@ public:
   enum ColorMode {
     THEORY,
     MONOCHROMATIC,
-    EVENLY_SPACED
+    EVENLY_SPACED,
+    COLOR_MODE_COUNT
   };
-  void randomizeColors(Random &ctx, uint8_t numColors, ColorMode mode);
+  void randomizeColors(Random &ctx, uint8_t numColors);
 
-  // similar function but with some different modes
-  enum ColorMode2 {
-    DOUBLE_SPLIT_COMPLIMENTARY,
-    TETRADIC
-  };
-  void randomizeColors2(Random &ctx, ColorMode2 mode);
-
-  // wrappers for various spacings
-  void randomizeSolid(Random &ctx) { randomizeColors(ctx, 1, EVENLY_SPACED); }
-  void randomizeComplimentary(Random &ctx) { randomizeColors(ctx, 2, EVENLY_SPACED); }
-  void randomizeTriadic(Random &ctx) { randomizeColors(ctx, 3, EVENLY_SPACED); }
-  void randomizeSquare(Random &ctx) { randomizeColors(ctx, 4, EVENLY_SPACED); }
-  void randomizePentadic(Random &ctx) { randomizeColors(ctx, 5, EVENLY_SPACED); }
-  void randomizeRainbow(Random &ctx) { randomizeColors(ctx, 8, EVENLY_SPACED); }
 
   // fade all of the colors in the set
-  void adjustBrightness(uint8_t fadeby);
+  void adjustBrightness(uint8_t fadeBy);
 
   // get a color from the colorset
   RGBColor get(uint8_t index = 0) const;

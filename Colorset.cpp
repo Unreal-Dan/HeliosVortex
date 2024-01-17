@@ -117,49 +117,6 @@ bool Colorset::addColorHSV(uint8_t hue, uint8_t sat, uint8_t val)
   return addColor(HSVColor(hue, sat, val));
 }
 
-void Colorset::addColorWithValueStyle(Random &ctx, uint8_t hue, uint8_t sat, ValueStyle valStyle, uint8_t numColors, uint8_t colorPos)
-{
-  if (numColors == 1) {
-    addColorHSV(hue, sat, ctx.next8(16, 255));
-    return;
-  }
-  switch (valStyle) {
-  default:
-  case VAL_STYLE_RANDOM:
-    addColorHSV(hue, sat, 85 * ctx.next8(1, 4));
-    break;
-  case VAL_STYLE_LOW_FIRST_COLOR:
-    if (m_numColors == 0) {
-      addColorHSV(hue, sat, ctx.next8(0, 86));
-    } else {
-      addColorHSV(hue, sat, 85 * ctx.next8(1, 4));
-    }
-    break;
-  case VAL_STYLE_HIGH_FIRST_COLOR:
-    if (m_numColors == 0) {
-      addColorHSV(hue, sat, 255);
-    } else {
-      addColorHSV(hue, sat, ctx.next8(0, 86));
-    }
-    break;
-  case VAL_STYLE_ALTERNATING:
-    if (m_numColors % 2 == 0) {
-      addColorHSV(hue, sat, 255);
-    } else {
-      addColorHSV(hue, sat, 85);
-    }
-    break;
-  case VAL_STYLE_ASCENDING:
-    addColorHSV(hue, sat, (colorPos + 1) * (255 / numColors));
-    break;
-  case VAL_STYLE_DESCENDING:
-    addColorHSV(hue, sat, 255 - (colorPos * (255 / numColors)));
-    break;
-  case VAL_STYLE_CONSTANT:
-    addColorHSV(hue, sat, 255);
-  }
-}
-
 void Colorset::removeColor(uint8_t index)
 {
   if (index >= m_numColors) {
@@ -171,90 +128,50 @@ void Colorset::removeColor(uint8_t index)
   m_palette[--m_numColors].clear();
 }
 
-// create a set of truely random colors
-void Colorset::randomize(Random &ctx, uint8_t numColors)
-{
-  clear();
-  if (!numColors) {
-    numColors = ctx.next8(2, NUM_COLOR_SLOTS);
-  }
-  ValueStyle valStyle = (ValueStyle)ctx.next8(0, VAL_STYLE_COUNT);
-  for (uint8_t i = 0; i < numColors; ++i) {
-    // do not put the next8() calls inside arguments, the order functions in
-    // arguments are called is undefined behaviour and it's important that
-    // these are called in the right order otherwise different platforms will
-    // behave differently when performing this randomization
-    uint8_t sat = ctx.next8();
-    uint8_t hue = ctx.next8();
-    addColorWithValueStyle(ctx, hue, sat, valStyle, numColors, i);
-  }
-}
 
-void Colorset::randomizeColors(Random &ctx, uint8_t numColors, ColorMode mode)
+void Colorset::randomizeColors(Random &ctx, uint8_t numColors)
 {
-  clear();
-  if (!numColors) {
-    numColors = ctx.next8(mode == MONOCHROMATIC ? 2 : 1, 9);
+  ColorMode mode = (ColorMode)ctx.next8(0, COLOR_MODE_COUNT);
+  clear(); // Clear the colorset
+  if (!numColors) { // If no number of colors is specified
+    numColors = ctx.next8(mode == MONOCHROMATIC ? 2 : 1, 9); // Randomize the number of colors
   }
-  uint8_t randomizedHue = ctx.next8();
-  uint8_t colorGap = 0;
-  if (mode == THEORY && numColors > 1) {
-    colorGap = ctx.next8(16, 256 / (numColors - 1));
-  }
-  ValueStyle valStyle = (ValueStyle)ctx.next8(0, VAL_STYLE_COUNT);
-  // the doubleStyle decides if some colors are added to the set twice
-  uint8_t doubleStyle = 0;
-  if (numColors <= 7) {
-    doubleStyle = (ctx.next8(0, 1));
-  }
-  if (numColors <= 4) {
-    doubleStyle = (ctx.next8(0, 2));
+  uint8_t randomizedHue = ctx.next8(); // Randomize the hue
+  uint8_t randomizedSaturation = ctx.next8(); // Randomize the hue
+  uint8_t randomizedValue = ctx.next8(); // Randomize the hue
+  uint8_t colorGap = 0; // Initialize the color gap
+  if (mode == THEORY && numColors > 1) { // If the mode is THEORY and there are more than 1 colors
+    colorGap = ctx.next8(16, 256 / (numColors - 1)); // Randomize the color gap
   }
   for (uint8_t i = 0; i < numColors; i++) {
     uint8_t hueToUse;
+    uint8_t saturationToUse = 255;
     uint8_t valueToUse = 255;
-    if (mode == THEORY) {
-      hueToUse = (randomizedHue + (i * colorGap));
-    } else if (mode == MONOCHROMATIC) {
-      hueToUse = randomizedHue;
-      valueToUse = 255 - (i * (256 / numColors));
-    } else { // EVENLY_SPACED
-      hueToUse = (randomizedHue + (256 / numColors) * i);
+    switch (mode) {
+      case THEORY:
+        hueToUse = (randomizedHue + (i * colorGap));
+        saturationToUse = (randomizedSaturation + (i * colorGap));
+        valueToUse = ctx.next8();;
+        break;
+      case MONOCHROMATIC:
+        hueToUse = randomizedHue;
+        saturationToUse = 255 - (i * (256 / numColors));
+        valueToUse = ctx.next8();;
+        break;
+      case EVENLY_SPACED:
+        hueToUse = (randomizedHue + (256 / numColors) * i);
+        saturationToUse = (randomizedSaturation + (i * colorGap));
+        valueToUse = ctx.next8();;
+        break;
     }
-    addColorWithValueStyle(ctx, hueToUse, valueToUse, valStyle, numColors, i);
-    // double all colors or only first color
-    if (doubleStyle == 2 || (doubleStyle == 1 && !i)) {
-      addColorWithValueStyle(ctx, hueToUse, valueToUse, valStyle, numColors, i);
-    }
+    addColorHSV(hueToUse, saturationToUse, valueToUse);
   }
 }
 
-void Colorset::randomizeColors2(Random &ctx, ColorMode2 mode)
-{
-  clear();
-  uint8_t primaryHue = ctx.next8();
-  if (mode == DOUBLE_SPLIT_COMPLIMENTARY) {
-    uint8_t splitGap = ctx.next8(1, 64);
-    ValueStyle valStyle = (ValueStyle)ctx.next8(0, VAL_STYLE_COUNT);
-    addColorWithValueStyle(ctx, (primaryHue + splitGap + 128), 255, valStyle, 5, 0);
-    addColorWithValueStyle(ctx, (primaryHue - splitGap), 255, valStyle, 5, 1);
-    addColorWithValueStyle(ctx, primaryHue, 255, valStyle, 5, 2);
-    addColorWithValueStyle(ctx, (primaryHue + splitGap), 255, valStyle, 5, 3);
-    addColorWithValueStyle(ctx, (primaryHue - splitGap + 128), 255, valStyle, 5, 4);
-  } else if (mode == TETRADIC) {
-    uint8_t secondaryHue = ctx.next8();
-    ValueStyle valStyle = (ValueStyle)ctx.next8(0, VAL_STYLE_COUNT);
-    addColorWithValueStyle(ctx, primaryHue, 255, valStyle, 4, 0);
-    addColorWithValueStyle(ctx, secondaryHue, 255, valStyle, 4, 1);
-    addColorWithValueStyle(ctx, (primaryHue + 128), 255, valStyle, 4, 2);
-    addColorWithValueStyle(ctx, (secondaryHue + 128), 255, valStyle, 4, 3);
-  }
-}
-
-void Colorset::adjustBrightness(uint8_t fadeby)
+void Colorset::adjustBrightness(uint8_t fadeBy)
 {
   for (uint8_t i = 0; i < m_numColors; ++i) {
-    m_palette[i].adjustBrightness(fadeby);
+    m_palette[i].adjustBrightness(fadeBy);
   }
 }
 
