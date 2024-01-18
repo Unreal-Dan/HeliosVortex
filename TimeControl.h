@@ -38,11 +38,21 @@ public:
   static void delayMicroseconds(uint32_t us);
   static void delayMilliseconds(uint32_t ms);
 
+#ifdef HELIOS_CLI
+  // toggle timestep on/off
+  static void enableTimestep(bool enabled) { m_enableTimestep = enabled; }
+#endif
+
 private:
   // global tick counter
   static uint32_t m_curTick;
   // the last frame timestamp
   static uint32_t m_prevTime;
+
+#ifdef HELIOS_CLI
+  // whether timestep is enabled
+  static bool m_enableTimestep;
+#endif
 };
 
 #endif

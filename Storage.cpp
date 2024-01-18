@@ -20,6 +20,11 @@
 // the index of the last config byte (or first counting down)
 #define CONFIG_START_INDEX 254
 
+#ifdef HELIOS_CLI
+// whether storage is enabled, default enabled
+bool Storage::m_enableStorage = true;
+#endif
+
 bool Storage::init()
 {
 #ifdef HELIOS_CLI
@@ -127,6 +132,9 @@ void Storage::write_byte(uint8_t address, uint8_t data)
   /* Start eeprom write by setting EEPE */
   EECR |= (1<<EEPE);
 #else // HELIOS_CLI
+  if (!m_enableStorage) {
+    return;
+  }
   FILE *f = fopen(STORAGE_FILENAME, "r+b");
   if (!f) {
     if (errno != ENOENT) {
@@ -166,6 +174,9 @@ uint8_t Storage::read_byte(uint8_t address)
   /* Return data from data register */
   return EEDR;
 #else
+  if (!m_enableStorage) {
+    return 0;
+  }
   uint8_t val = 0;
   if (!access(STORAGE_FILENAME, O_RDONLY)) {
     return val;

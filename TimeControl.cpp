@@ -28,6 +28,11 @@ uint32_t Time::m_curTick = 0;
 // the last frame timestamp
 uint32_t Time::m_prevTime = 0;
 
+#ifdef HELIOS_CLI
+// whether timestep is enabled, default enabled
+bool Time::m_enableTimestep = true;
+#endif
+
 bool Time::init()
 {
   m_prevTime = microseconds();
@@ -45,6 +50,9 @@ void Time::tickClock()
   m_curTick++;
 
 #ifdef HELIOS_CLI
+  if (!m_enableTimestep) {
+    return;
+  }
   // the rest of this only runs inside vortexlib because on the duo the tick runs in the
   // tcb timer callback instead of in a busy loop constantly checking microseconds()
   // perform timestep
