@@ -85,6 +85,9 @@ bool Helios::init()
 #elif F_CPU == 8000000L
   // 1ms at 8mhz clock with prescaler of 64
   OCR0A = 124;
+#elif F_CPU == 1000000L
+  // 1ms at 1mhz clock with prescaler of 64
+  OCR0A = 15; // Adjusted value for 1 MHz clock
 #endif
   TIMSK |= (1 << OCIE0A);
   // Start timer with prescaler of 64
@@ -92,6 +95,7 @@ bool Helios::init()
   // enable interrupts
   sei();
 #endif
+
   return true;
 }
 
@@ -125,14 +129,40 @@ void Helios::tick()
 void Helios::enter_sleep()
 {
 #ifdef HELIOS_EMBEDDED
-  // init the output pins to prevent any floating pins
-  clear_output_pins();
   // Enable wake on interrupt for the button
   Button::enableWake();
-  // Set sleep mode to POWER DOWN mode
+  // Disable the Watchdog Timer
+  MCUSR &= ~(1 << WDRF);
+  wdt_disable();
+  // Configure all I/O pins as input with pull-up enabled
+  DDRB = 0x00;  // Set all pins on Port B as input
+  // PORTB = 0xFF; // Enable pull-up resistors on all Port B pins
+
+  // Disable digital input buffers
+  DIDR0 = 0xFF;
+
+  // Set the sleep mode to Power-down
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-  // enter sleep
+
+  // // Disable ADC
+  // ADCSRA &= ~(1 << ADEN);
+
+  // Activate PRR (Power Reduction Register)
+  PRR |= (1 << PRTIM1) | (1 << PRTIM0) | (1 << PRUSI) | (1 << PRADC);
+
+  // Disable the BOD
+  sleep_bod_disable();
+
+  // Enable global interrupts
+  sei();
+
+  // Put the device to sleep
   sleep_mode();
+
+  // The program will continue from here after wakeup
+
+  // Disable sleep mode
+  sleep_disable();
   // ... interrupt will make us wake here
   // wakeup here, re-init
   init();
