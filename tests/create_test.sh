@@ -67,7 +67,8 @@ mkdir -p $TESTDIR
 
 if [ $NOMAKE -eq 0 ]; then
   echo -e -n "\e[33mBuilding Helios...\e[0m"
-  make -C ../HeliosCLI &> /dev/null
+  make -C ../HeliosCLI clean &> /dev/null
+  make -j -C ../HeliosCLI &> /dev/null
   if [ $? -ne 0 ]; then
     echo -e "\e[31mFailed to build Helios!\e[0m"
     exit
@@ -122,6 +123,7 @@ while true; do
     read -e CONFIRM
     if [[ $CONFIRM != [yY] && $CONFIRM != [yY][eE][sS] ]]; then
       NEW_INPUT="$RESULT"
+      echo "Using provided input: $RESULT"
     fi
   fi
 
