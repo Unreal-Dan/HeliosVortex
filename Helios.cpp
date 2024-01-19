@@ -85,6 +85,9 @@ bool Helios::init()
 #elif F_CPU == 8000000L
   // 1ms at 8mhz clock with prescaler of 64
   OCR0A = 124;
+#elif F_CPU == 1000000L
+  // 1ms at 1mhz clock with prescaler of 64
+  OCR0A = 15; // Adjusted value for 1 MHz clock
 #endif
   TIMSK |= (1 << OCIE0A);
   // Start timer with prescaler of 64
@@ -92,6 +95,7 @@ bool Helios::init()
   // enable interrupts
   sei();
 #endif
+
   return true;
 }
 
@@ -125,8 +129,6 @@ void Helios::tick()
 void Helios::enter_sleep()
 {
 #ifdef HELIOS_EMBEDDED
-  // init the output pins to prevent any floating pins
-  clear_output_pins();
   // Enable wake on interrupt for the button
   Button::enableWake();
   // Set sleep mode to POWER DOWN mode
@@ -142,15 +144,6 @@ void Helios::enter_sleep()
   sleeping = true;
 #endif
 }
-
-#ifdef HELIOS_EMBEDDED
-void Helios::clear_output_pins() {
-  // Set all pins to output
-  DDRB = 0xFF;
-  // Set all pins low
-  PORTB = 0x00;
-}
-#endif
 
 void Helios::wakeup() {
 #ifdef HELIOS_EMBEDDED
