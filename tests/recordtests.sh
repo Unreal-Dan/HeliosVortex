@@ -28,6 +28,7 @@ colored() {
 }
 
 echo -e -n "\e[33mBuilding Vortex...\e[0m"
+make -C ../HeliosCLI clean &> /dev/null
 make -j -C ../HeliosCLI &> /dev/null
 if [ $? -ne 0 ]; then
   echo -e "\e[31mFailed to build Vortex!\e[0m"

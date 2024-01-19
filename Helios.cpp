@@ -150,7 +150,7 @@ void Helios::wakeup() {
   // nothing needed here, this interrupt firing will make the mainthread resume
 #else
   // re-initialize helios?
-  //init();
+  init();
   // turn off the sleeping flag that only CLI has
   sleeping = false;
 #endif
