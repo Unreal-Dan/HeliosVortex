@@ -9,9 +9,9 @@ volatile bool sleepEnabled = false; // Flag to control sleep mode
 // Interrupt Service Routine for Pin Change Interrupt
 ISR(PCINT0_vect) {
   // Toggle sleep mode on button press
-  if ((PINB & (1 << 3)) != 0) { // Check if button is pressed (low state)
-    sleepEnabled = !sleepEnabled; // Toggle the flag
-  }
+  // if ((PINB & (1 << 3)) != 0) { // Check if button is pressed (low state)
+  sleepEnabled = !sleepEnabled; // Toggle the flag
+  // }
 }
 
 int main() {
@@ -52,8 +52,6 @@ int main() {
     // Activate PRR (Power Reduction Register)
     PRR |= (1 << PRTIM1) | (1 << PRTIM0) | (1 << PRUSI) | (1 << PRADC);
 
-
-
     // Disable the BOD
     sleep_bod_disable();
 
@@ -68,6 +66,12 @@ int main() {
     // Disable sleep mode
     sleep_disable();
     } else {
+    // Re-enable Pin Change Interrupt for PB3
+    GIMSK |= (1 << PCIE);  // Enable Pin Change Interrupts
+    PCMSK |= (1 << PCINT3); // Enable interrupt for PB3
+
+    // Reconfigure PB0 as output for the LED
+    DDRB |= (1 << PB0);  // Set PB0 as output
       // Set PB0 (LED) to high when not sleeping
       PORTB |= (1 << PB0);
     }
