@@ -129,8 +129,7 @@ void Helios::tick()
 void Helios::enter_sleep()
 {
 #ifdef HELIOS_EMBEDDED
-  // Enable wake on interrupt for the button
-  Button::enableWake();
+  
   // Disable the Watchdog Timer
   MCUSR &= ~(1 << WDRF);
   wdt_disable();
@@ -156,8 +155,13 @@ void Helios::enter_sleep()
   // Enable global interrupts
   sei();
 
+    // Enable wake on interrupt for the button
+  Button::enableWake();
+
   // Put the device to sleep
   sleep_mode();
+
+
 
   // The program will continue from here after wakeup
 
