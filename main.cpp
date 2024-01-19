@@ -25,8 +25,7 @@ int main() {
 
   sei(); // Enable global interrupts
 
-  while (1) {
-    // Turn off LED
+   // Turn off LED
     PORTB &= ~(1 << PB0);
     // Disable the Watchdog Timer
     MCUSR &= ~(1 << WDRF);
@@ -60,6 +59,9 @@ int main() {
 
     // Disable sleep mode
     sleep_disable();
+
+  while (1) {
+   
     // Re-enable Pin Change Interrupt for PB3
     GIMSK |= (1 << PCIE);  // Enable Pin Change Interrupts
     PCMSK |= (1 << PCINT3); // Enable interrupt for PB3
