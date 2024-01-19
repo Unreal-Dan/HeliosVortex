@@ -8,10 +8,7 @@ volatile bool sleepEnabled = false; // Flag to control sleep mode
 
 // Interrupt Service Routine for Pin Change Interrupt
 ISR(PCINT0_vect) {
-  // Toggle sleep mode on button press
-  // if ((PINB & (1 << 3)) != 0) { // Check if button is pressed (low state)
-  sleepEnabled = !sleepEnabled; // Toggle the flag
-  // }
+
 }
 
 int main() {
@@ -29,8 +26,6 @@ int main() {
   sei(); // Enable global interrupts
 
   while (1) {
-    // Check the sleep flag
-    if (sleepEnabled) {
     // Turn off LED
     PORTB &= ~(1 << PB0);
     // Disable the Watchdog Timer
@@ -65,16 +60,14 @@ int main() {
 
     // Disable sleep mode
     sleep_disable();
-    } else {
     // Re-enable Pin Change Interrupt for PB3
     GIMSK |= (1 << PCIE);  // Enable Pin Change Interrupts
     PCMSK |= (1 << PCINT3); // Enable interrupt for PB3
 
     // Reconfigure PB0 as output for the LED
     DDRB |= (1 << PB0);  // Set PB0 as output
-      // Set PB0 (LED) to high when not sleeping
-      PORTB |= (1 << PB0);
-    }
+    // Set PB0 (LED) to high when not sleeping
+    PORTB |= (1 << PB0);
   }
   return 0;
 }
