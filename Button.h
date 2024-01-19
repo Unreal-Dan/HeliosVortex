@@ -105,5 +105,7 @@ private:
   static std::queue<char> m_inputQueue;
   // the virtual pin state that is polled instead of a digital pin
   static bool m_pinState;
+  // whether the button is waiting to wake the device
+  static bool m_enableWake;
 #endif
 };

@@ -32,6 +32,8 @@ bool Button::m_longClick = false;
 std::queue<char> Button::m_inputQueue;
 // the virtual pin state
 bool Button::m_pinState = false;
+// whether the button is waiting to wake the device
+bool Button::m_enableWake = false;
 #endif
 
 // initialize a new button object with a pin number
@@ -50,6 +52,7 @@ bool Button::init()
   m_isPressed = m_buttonState;
 #ifdef HELIOS_CLI
   m_pinState = false;
+  m_enableWake = false;
 #endif
 #ifdef HELIOS_EMBEDDED
 #ifdef HELIOS_ARDUINO
@@ -71,6 +74,8 @@ void Button::enableWake()
   PCMSK |= (1 << PCINT3);
   GIMSK |= (1 << PCIE);
   sei();
+#else // HELIOS_CLI
+  m_enableWake = false;
 #endif
 }
 
@@ -134,6 +139,12 @@ void Button::update()
   // to ensure there is only one event per tick processed
   if (!processed_pre) {
     processPostInput();
+  }
+
+  if (m_enableWake) {
+    if (m_isPressed || m_shortClick || m_longClick) {
+      Helios::wakeup();
+    }
   }
 #endif
 }
