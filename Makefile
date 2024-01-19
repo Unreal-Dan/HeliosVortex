@@ -129,7 +129,7 @@ $(TARGET).elf: $(OBJS)
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
-upload: $(TARGET).hex
+upload: set_fuses $(TARGET).hex
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -Uflash:w:$(TARGET).hex:i
 
 upload_eeprom: $(TARGET).eep
@@ -155,17 +155,11 @@ install:
 	@echo "Download and extraction complete. You'll find the toolchain and pack files in $(INSTALL_DIR)"
 endif
 
-set_16mhz_fuses:
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe1:m -U hfuse:w:0xdd:m -U efuse:w:0xff:m
+set_fuses:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe1:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 
 set_default_fuses:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe2:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
-
-set_no_bod_fuses:
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
-	
-set_no_bod_fuses_16mhz:
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe1:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 
 clean:
 	rm -f $(OBJS) $(TARGET).elf $(TARGET).hex $(DFILES) $(TARGET).bin $(TARGET).eep $(TARGET).lst $(TARGET).map
