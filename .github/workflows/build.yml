@@ -38,8 +38,10 @@ jobs:
           python-version: '3.x'
       - name: Install Dependencies
         run: make install
+        working-directory: HeliosEmbedded
       - name: Build Binary
         run: make build
+        working-directory: HeliosEmbedded
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
