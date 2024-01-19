@@ -65,10 +65,6 @@ private:
   static void save_global_flags();
   static void show_selection(RGBColor color);
 
-#ifdef HELIOS_EMBEDDED
-  static void clear_output_pins();
-#endif
-
   enum State : uint8_t {
     STATE_MODES,
     STATE_COLOR_SELECT_SLOT,
