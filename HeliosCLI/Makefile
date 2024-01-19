@@ -20,7 +20,7 @@ DEFINES=\
 
 # compiler include paths
 INCLUDES=\
-	-I ../ \
+	-I ../Helios \
 
 # only set them if they're not empty to prevent unnecessary whitespace
 ifneq ($(DEFINES),)
@@ -48,9 +48,9 @@ LIBS=\
 # source files
 # local source files first, other sources after
 ifeq ($(OS),Windows_NT)
-    SRC = $(shell find ../ -type f -name \\*.cpp) 
+    SRC = $(shell find ../Helios -type f -name \\*.cpp) cli_main.cpp
 else
-    SRC = $(shell find ../ -type f -name '*.cpp') 
+    SRC = $(shell find ../Helios -type f -name '*.cpp') cli_main.cpp
 endif
 
 # object files are source files with .c replaced with .o
