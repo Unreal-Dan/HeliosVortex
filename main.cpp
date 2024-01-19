@@ -9,31 +9,31 @@ volatile bool sleepEnabled = false; // Flag to control sleep mode
 // Interrupt Service Routine for Pin Change Interrupt
 ISR(PCINT0_vect) {
   // Toggle sleep mode on button press
-  if (bit_is_clear(PINB, PB2)) { // Check if button is pressed (low state)
+  if ((PINB & (1 << 3)) != 0) { // Check if button is pressed (low state)
     sleepEnabled = !sleepEnabled; // Toggle the flag
   }
 }
 
 int main() {
-  // ... [rest of your setup code]
-
   // Button setup
-  DDRB &= ~(1 << PB2); // Set PB2 as input
-  PORTB |= (1 << PB2); // Enable pull-up resistor on PB2
+  DDRB &= ~(1 << PB3); // Set PB3 as input
+  PORTB |= (1 << PB3); // Enable pull-up resistor on PB3
 
   // Configure PB0 as output for the LED
   DDRB |= (1 << PB0);  // Set PB0 as output
 
-  // Enable Pin Change Interrupt for PB2
+  // Enable Pin Change Interrupt for PB3
   GIMSK |= (1 << PCIE);  // Enable Pin Change Interrupts
-  PCMSK |= (1 << PCINT2); // Enable interrupt for PB2
+  PCMSK |= (1 << PCINT3); // Enable interrupt for PB3
 
   sei(); // Enable global interrupts
 
   while (1) {
     // Check the sleep flag
     if (sleepEnabled) {
-       // Disable the Watchdog Timer
+    // Turn off LED
+    PORTB &= ~(1 << PB0);
+    // Disable the Watchdog Timer
     MCUSR &= ~(1 << WDRF);
     wdt_disable();
     // Configure all I/O pins as input with pull-up enabled
@@ -51,6 +51,8 @@ int main() {
 
     // Activate PRR (Power Reduction Register)
     PRR |= (1 << PRTIM1) | (1 << PRTIM0) | (1 << PRUSI) | (1 << PRADC);
+
+
 
     // Disable the BOD
     sleep_bod_disable();
