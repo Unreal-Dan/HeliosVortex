@@ -161,8 +161,6 @@ void Helios::enter_sleep()
   // Put the device to sleep
   sleep_mode();
 
-
-
   // The program will continue from here after wakeup
 
   // Disable sleep mode
