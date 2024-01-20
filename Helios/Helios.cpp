@@ -497,7 +497,7 @@ bool Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
     if (col.empty()) {
       Led::strobe(1, 30, RGB_OFF, RGB_WHITE_BRI_LOW);
     } else {
-      Led::set(col);
+      Led::strobe(3, 20, RGB_OFF, col);
     }
     uint16_t mod_dur = (uint16_t)(Button::holdDuration() % (DELETE_COLOR_TIME * 2));
     bool deleting = (mod_dur > DELETE_COLOR_TIME);
