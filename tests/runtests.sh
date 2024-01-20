@@ -139,7 +139,8 @@ function run_tests() {
 
 if [ $NOMAKE -eq 0 ]; then
   echo -e -n "\e[33mBuilding Helios...\e[0m"
-  make -C ../HeliosCLI &> /dev/null
+  make -C ../HeliosCLI clean &> /dev/null
+  make -j -C ../HeliosCLI &> /dev/null
   if [ $? -ne 0 ]; then
     echo -e "\e[31mFailed to build Helios!\e[0m"
     exit
