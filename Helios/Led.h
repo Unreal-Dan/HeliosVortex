@@ -19,7 +19,7 @@ public:
   // control individual LED, these are appropriate to use in internal pattern logic
   static void set(RGBColor col);
 
-  static void set2(uint8_t r, uint8_t g, uint8_t b);
+  static void set(uint8_t r, uint8_t g, uint8_t b);
 
   // Turn off individual LEDs, these are appropriate to use in internal pattern logic
   static void clear() { set(RGB_OFF); }

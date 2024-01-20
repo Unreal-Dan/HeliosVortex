@@ -281,10 +281,10 @@ void Helios::handle_state_modes()
       switch (magnitude) {
         default:
         case 0: Led::clear(); break;                                      // Turn off
-        case 1: Led::set2(0, 0x3c, 0x31); break;                   // Color Selection
-        case 2: Led::set2(0x3c, 0, 0x0e); break;                     // Pattern Selection
-        case 3: Led::set2(0x3c, 0x1c, 0); break;                      // Conjure Mode
-        case 4: Led::set2(0x3c, 0x3c, 0x3c); break;                       // Shift Mode
+        case 1: Led::set(0, 0x3c, 0x31); break;                   // Color Selection
+        case 2: Led::set(0x3c, 0, 0x0e); break;                     // Pattern Selection
+        case 3: Led::set(0x3c, 0x1c, 0); break;                      // Conjure Mode
+        case 4: Led::set(0x3c, 0x3c, 0x3c); break;                       // Shift Mode
         case 5: Led::set(HSVColor(Time::getCurtime(), 255, 180)); break;  // Randomizer
       }
     } else {
@@ -292,15 +292,15 @@ void Helios::handle_state_modes()
         switch (magnitude) {
           default:
           case 0: Led::clear(); break;
-          case 5: Led::set2(0x3c, 0, 0); break; // Exit Lock
+          case 5: Led::set(0x3c, 0, 0); break; // Exit Lock
         }
       } else {
         switch (magnitude) {
           default:
           case 0: Led::clear(); break;                // nothing
-          case 1: Led::set2(0x3c, 0, 0); break;   // Enter Glow Lock
-          case 2: Led::set2(0, 0, 0x3c); break;  // Master Reset
-          case 3: Led::set2(0, 0x3c, 0); break; // Global Brightness
+          case 1: Led::set(0x3c, 0, 0); break;   // Enter Glow Lock
+          case 2: Led::set(0, 0, 0x3c); break;  // Master Reset
+          case 3: Led::set(0, 0x3c, 0); break; // Global Brightness
         }
       }
     }
@@ -718,13 +718,13 @@ void Helios::handle_state_set_global_brightness()
   // show different levels of green for each selection
   switch (menu_selection) {
     case 0:
-      Led::set2(0, 0xFF, 0);
+      Led::set(0, 0xFF, 0);
       break;
     case 1:
-      Led::set2(0, 0x78, 0);
+      Led::set(0, 0x78, 0);
       break;
     case 2:
-      Led::set2(0, 0x3c, 0);
+      Led::set(0, 0x3c, 0);
       break;
   }
   // when the user long clicks a selection
