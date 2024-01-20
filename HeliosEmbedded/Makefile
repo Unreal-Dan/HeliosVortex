@@ -89,7 +89,7 @@ endif
 
 INCLUDES= \
 	-I $(INCLUDE_DIR) \
-  -I ../Helios
+	-I ../Helios
 
 CFLAGS+=$(INCLUDES)
 
