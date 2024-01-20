@@ -285,7 +285,7 @@ void Helios::handle_state_modes()
         case 2: Led::set(0x3c, 0, 0x0e); break;                          // Pattern Selection
         case 3: Led::set(0x3c, 0x1c, 0); break;                          // Conjure Mode
         case 4: Led::set(0x3c, 0x3c, 0x3c); break;                       // Shift Mode
-        case 5: Led::set(HSVColor(Time::getCurtime(), 255, 180)); break; // Randomizer
+        case 5: Led::set(HSVColor(Time::getCurtime(), 255, 100)); break; // Randomizer
       }
     } else {
       if (has_flag(FLAG_LOCKED)) {
@@ -602,7 +602,7 @@ bool Helios::handle_state_col_select_hue()
     pat.updateColor(selected_slot, targetCol);
     save_cur_mode();
     // render current selection
-    Led::set(0x3c, 0x1c, 0);
+    Led::set(0xFF, 0x7F, 0);
     return true;
   }
 }
@@ -628,7 +628,7 @@ bool Helios::handle_state_col_select_sat()
     pat.updateColor(selected_slot, targetCol);
     save_cur_mode();
     // render current selection
-    Led::set(0x3c, 0x1c, 0);
+    Led::set(0xFF, 0x7F, 0);
     return true;
   }
 }
