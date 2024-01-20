@@ -68,6 +68,11 @@ void Led::set(RGBColor col)
   m_realColor.blue = SCALE8(m_ledColor.blue, m_brightness);
 }
 
+void Led::set2(uint8_t r, uint8_t g, uint8_t b)
+{
+  set(RGBColor(r,g,b));
+}
+
 void Led::adjustBrightness(uint8_t fadeBy)
 {
   m_ledColor.adjustBrightness(fadeBy);

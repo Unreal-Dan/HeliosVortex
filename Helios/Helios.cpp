@@ -281,10 +281,10 @@ void Helios::handle_state_modes()
       switch (magnitude) {
         default:
         case 0: Led::clear(); break;                                      // Turn off
-        case 1: Led::set(RGB_TURQUOISE_BRI_LOW); break;                   // Color Selection
-        case 2: Led::set(RGB_MAGENTA_BRI_LOW); break;                     // Pattern Selection
-        case 3: Led::set(RGB_YELLOW_BRI_LOW); break;                      // Conjure Mode
-        case 4: Led::set(RGB_WHITE_BRI_LOW); break;                       // Shift Mode
+        case 1: Led::set2(0, 0x3c, 0x31); break;                   // Color Selection
+        case 2: Led::set2(0x3c, 0, 0x0e); break;                     // Pattern Selection
+        case 3: Led::set2(0x3c, 0x1c, 0); break;                      // Conjure Mode
+        case 4: Led::set2(0x3c, 0x3c, 0x3c); break;                       // Shift Mode
         case 5: Led::set(HSVColor(Time::getCurtime(), 255, 180)); break;  // Randomizer
       }
     } else {
@@ -292,15 +292,15 @@ void Helios::handle_state_modes()
         switch (magnitude) {
           default:
           case 0: Led::clear(); break;
-          case 5: Led::set(RGB_RED_BRI_LOW); break; // Exit Lock
+          case 5: Led::set2(0x3c, 0, 0); break; // Exit Lock
         }
       } else {
         switch (magnitude) {
           default:
           case 0: Led::clear(); break;                // nothing
-          case 1: Led::set(RGB_RED_BRI_LOW); break;   // Enter Glow Lock
-          case 2: Led::set(RGB_BLUE_BRI_LOW); break;  // Master Reset
-          case 3: Led::set(RGB_GREEN_BRI_LOW); break; // Global Brightness
+          case 1: Led::set2(0x3c, 0, 0); break;   // Enter Glow Lock
+          case 2: Led::set2(0, 0, 0x3c); break;  // Master Reset
+          case 3: Led::set2(0, 0x3c, 0); break; // Global Brightness
         }
       }
     }
@@ -586,22 +586,17 @@ bool Helios::handle_state_col_select_quadrant()
   return true;
 }
 
-
-
 bool Helios::handle_state_col_select_hue()
 {
   uint8_t hue = color_menu_data[selected_base_quad].hues[menu_selection];
-  // check how long the button is held
-  uint16_t holdDur = (uint16_t)Button::holdDuration();
   if (Button::onLongClick()) {
     // select hue/sat/val
     selected_hue = hue;
   }
-  else if (holdDur >= 200){
+  else if (Button::holdDuration() >= 200){
     // Save current hue with full saturation and value
     RGBColor targetCol = HSVColor(selected_hue, 255, 255);
-    pat.colorset().set(selected_slot, targetCol);
-    pat.init();
+    pat.updateColor(selected_slot, targetCol);
     save_cur_mode();
     // render current selection
     Led::set(targetCol);
@@ -619,18 +614,15 @@ bool Helios::handle_state_col_select_sat()
   }
   static const uint8_t saturation_values[4] = {HSV_SAT_HIGH, HSV_SAT_MEDIUM, HSV_SAT_LOW, HSV_SAT_LOWEST};
   uint8_t sat = saturation_values[menu_selection];
-  // check how long the button is held
-  uint16_t holdDur = (uint16_t)Button::holdDuration();
   // use the nice hue to rgb rainbow
   if (Button::onLongClick()) {
     // select hue/sat/val
     selected_sat = sat;
   }
-  else if (holdDur >= 200){
+  else if (Button::holdDuration() >= 200){
     // Save current saturation with full value
     RGBColor targetCol = HSVColor(selected_hue, selected_sat, 255);
-    pat.colorset().set(selected_slot, targetCol);
-    pat.init();
+    pat.updateColor(selected_slot, targetCol);
     save_cur_mode();
     // render current selection
     Led::set(targetCol);
@@ -653,8 +645,7 @@ bool Helios::handle_state_col_select_val()
   // use the nice hue to rgb rainbow
   if (Button::onLongClick()) {
     // change the current patterns color
-    pat.colorset().set(selected_slot, targetCol);
-    pat.init();
+    pat.updateColor(selected_slot, targetCol);
     save_cur_mode();
   }
   // render current selection
@@ -727,13 +718,13 @@ void Helios::handle_state_set_global_brightness()
   // show different levels of green for each selection
   switch (menu_selection) {
     case 0:
-      Led::set(RGB_GREEN);
+      Led::set2(0, 0xFF, 0);
       break;
     case 1:
-      Led::set(RGB_GREEN_BRI_MEDIUM);
+      Led::set2(0, 0x78, 0);
       break;
     case 2:
-      Led::set(RGB_GREEN_BRI_LOW);
+      Led::set2(0, 0x3c, 0);
       break;
   }
   // when the user long clicks a selection
@@ -794,7 +785,7 @@ void Helios::show_selection(RGBColor color)
   if (!Button::isPressed()) {
     return;
   }
-  uint16_t holdDur = Button::holdDuration();
+  uint16_t holdDur = (uint16_t)Button::holdDuration();
   // if the hold duration is outside the flashing range do nothing
   if (holdDur < SHORT_CLICK_THRESHOLD ||
       holdDur > (SHORT_CLICK_THRESHOLD + SELECTION_FLASH_DURATION)) {
