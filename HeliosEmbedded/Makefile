@@ -15,6 +15,7 @@ else ifeq ($(OS),Linux)
     INCLUDE_DIR=~/atmel_setup/include/
 else ifeq ($(OS),Darwin)
     BINDIR=/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin/
+		INCLUDE_DIR=""
 else
     # ??? unknown OS
 endif
@@ -86,7 +87,7 @@ ifeq ($(OS),Windows_NT) # Windows
     LDFLAGS+=-B $(DEVICE_DIR)
 endif
 
-INCLUDES=\
+INCLUDES= \
 	-I $(INCLUDE_DIR) \
 	-I ../Helios
 
