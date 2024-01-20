@@ -52,6 +52,9 @@ public:
   void setColorset(const Colorset &set);
   void clearColorset();
 
+  // set a color in the colorset and re-initialize
+  void updateColor(uint8_t index, const RGBColor &col);
+
   // get the pattern flags
   uint32_t getFlags() const { return m_patternFlags; }
   bool hasFlags(uint32_t flags) const { return (m_patternFlags & flags) != 0; }

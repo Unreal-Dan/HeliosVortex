@@ -254,6 +254,12 @@ void Pattern::clearColorset()
   m_colorset.clear();
 }
 
+void Pattern::updateColor(uint8_t index, const RGBColor &col)
+{
+  m_colorset.set(index, col);
+  init();
+}
+
 void Pattern::blendBlinkOn()
 {
   if (m_cur == m_next) {
