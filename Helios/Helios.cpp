@@ -592,19 +592,19 @@ bool Helios::handle_state_col_select_hue()
   if (Button::onLongClick()) {
     // select hue/sat/val
     selected_hue = hue;
+    // render current selection
+    Led::set(HSVColor(hue, 255, 255));
+    return true;
   }
-  else if (Button::holdDuration() >= 200){
+  else if (Button::holdDuration() >= 2000){
     // Save current hue with full saturation and value
     RGBColor targetCol = HSVColor(selected_hue, 255, 255);
     pat.updateColor(selected_slot, targetCol);
     save_cur_mode();
     // render current selection
-    Led::set(targetCol);
+    Led::set(0x3c, 0x1c, 0);
     return true;
   }
-  // render current selection
-  Led::set(HSVColor(hue, 255, 255));
-  return true;
 }
 
 bool Helios::handle_state_col_select_sat()
@@ -618,19 +618,19 @@ bool Helios::handle_state_col_select_sat()
   if (Button::onLongClick()) {
     // select hue/sat/val
     selected_sat = sat;
+    // render current selection
+    Led::set(HSVColor(selected_hue, sat, 255));
+    return true;
   }
-  else if (Button::holdDuration() >= 200){
+  else if (Button::holdDuration() >= 2000){
     // Save current saturation with full value
     RGBColor targetCol = HSVColor(selected_hue, selected_sat, 255);
     pat.updateColor(selected_slot, targetCol);
     save_cur_mode();
     // render current selection
-    Led::set(targetCol);
+    Led::set(0x3c, 0x1c, 0);
     return true;
   }
-  // render current selection
-  Led::set(HSVColor(selected_hue, sat, 255));
-  return true;
 }
 
 bool Helios::handle_state_col_select_val()
