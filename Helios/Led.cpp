@@ -70,7 +70,7 @@ void Led::set(RGBColor col)
 
 void Led::set(uint8_t r, uint8_t g, uint8_t b)
 {
-  set(RGBColor(r,g,b));
+  set(RGBColor(r, g, b));
 }
 
 void Led::adjustBrightness(uint8_t fadeBy)
