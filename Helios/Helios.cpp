@@ -591,9 +591,21 @@ bool Helios::handle_state_col_select_quadrant()
 bool Helios::handle_state_col_select_hue()
 {
   uint8_t hue = color_menu_data[selected_base_quad].hues[menu_selection];
+  // check how long the button is held
+  uint16_t holdDur = (uint16_t)Button::holdDuration();
   if (Button::onLongClick()) {
     // select hue/sat/val
     selected_hue = hue;
+  }
+  else if (holdDur >= 200){
+    // Save current hue with full saturation and value
+    RGBColor targetCol = HSVColor(selected_hue, 255, 255);
+    pat.colorset().set(selected_slot, targetCol);
+    pat.init();
+    save_cur_mode();
+    // render current selection
+    Led::set(targetCol);
+    return true;
   }
   // render current selection
   Led::set(HSVColor(hue, 255, 255));
@@ -607,11 +619,22 @@ bool Helios::handle_state_col_select_sat()
   }
   static const uint8_t saturation_values[4] = {HSV_SAT_HIGH, HSV_SAT_MEDIUM, HSV_SAT_LOW, HSV_SAT_LOWEST};
   uint8_t sat = saturation_values[menu_selection];
-
+  // check how long the button is held
+  uint16_t holdDur = (uint16_t)Button::holdDuration();
   // use the nice hue to rgb rainbow
   if (Button::onLongClick()) {
     // select hue/sat/val
     selected_sat = sat;
+  }
+  else if (holdDur >= 200){
+    // Save current saturation with full value
+    RGBColor targetCol = HSVColor(selected_hue, selected_sat, 255);
+    pat.colorset().set(selected_slot, targetCol);
+    pat.init();
+    save_cur_mode();
+    // render current selection
+    Led::set(targetCol);
+    return true;
   }
   // render current selection
   Led::set(HSVColor(selected_hue, sat, 255));
