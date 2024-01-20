@@ -88,17 +88,17 @@ endif
 
 INCLUDES=\
 	-I $(INCLUDE_DIR) \
-	-I ./
+	-I ../Helios
 
 CFLAGS+=$(INCLUDES)
 
 # Source files
 ifeq ($(OS),Windows_NT) # Windows
 SRCS = \
-       $(shell find . -maxdepth 1 -type f -name '\*.cpp')
+       $(shell find ../Helios -maxdepth 1 -type f -name '\*.cpp') main.cpp
 else # linux
 SRCS = \
-       $(shell find . -maxdepth 1 -type f -name \*.cpp)
+       $(shell find ../Helios -maxdepth 1 -type f -name \*.cpp) main.cpp
 endif
 
 OBJS = $(SRCS:.cpp=.o)
