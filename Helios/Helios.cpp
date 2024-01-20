@@ -634,7 +634,7 @@ bool Helios::handle_state_col_select_hue()
     save_cur_mode();
     // render current selection
     Led::set(0xFF, 0x7F, 0);
-    cur_state = STATE_COLOR_SELECT_SLOT;
+    cur_state = STATE_MODES;
     // Return to the slot you were editing
     menu_selection = selected_slot;
     return false;
@@ -663,7 +663,7 @@ bool Helios::handle_state_col_select_sat()
     save_cur_mode();
     // render current selection
     Led::set(0xFF, 0x7F, 0);
-    cur_state = STATE_COLOR_SELECT_SLOT;
+    cur_state = STATE_MODES;
     // Return to the slot you were editing
     menu_selection = selected_slot;
     return false;
