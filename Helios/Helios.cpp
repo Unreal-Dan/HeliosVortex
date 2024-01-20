@@ -280,12 +280,12 @@ void Helios::handle_state_modes()
     if (hasReleased) {
       switch (magnitude) {
         default:
-        case 0: Led::clear(); break;                                      // Turn off
-        case 1: Led::set(0, 0x3c, 0x31); break;                   // Color Selection
-        case 2: Led::set(0x3c, 0, 0x0e); break;                     // Pattern Selection
-        case 3: Led::set(0x3c, 0x1c, 0); break;                      // Conjure Mode
+        case 0: Led::clear(); break;                                     // Turn off
+        case 1: Led::set(0, 0x3c, 0x31); break;                          // Color Selection
+        case 2: Led::set(0x3c, 0, 0x0e); break;                          // Pattern Selection
+        case 3: Led::set(0x3c, 0x1c, 0); break;                          // Conjure Mode
         case 4: Led::set(0x3c, 0x3c, 0x3c); break;                       // Shift Mode
-        case 5: Led::set(HSVColor(Time::getCurtime(), 255, 180)); break;  // Randomizer
+        case 5: Led::set(HSVColor(Time::getCurtime(), 255, 180)); break; // Randomizer
       }
     } else {
       if (has_flag(FLAG_LOCKED)) {
@@ -297,9 +297,9 @@ void Helios::handle_state_modes()
       } else {
         switch (magnitude) {
           default:
-          case 0: Led::clear(); break;                // nothing
-          case 1: Led::set(0x3c, 0, 0); break;   // Enter Glow Lock
-          case 2: Led::set(0, 0, 0x3c); break;  // Master Reset
+          case 0: Led::clear(); break;         // nothing
+          case 1: Led::set(0x3c, 0, 0); break; // Enter Glow Lock
+          case 2: Led::set(0, 0, 0x3c); break; // Master Reset
           case 3: Led::set(0, 0x3c, 0); break; // Global Brightness
         }
       }
