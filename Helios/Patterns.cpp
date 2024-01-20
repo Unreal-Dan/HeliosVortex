@@ -9,7 +9,7 @@
 static const uint32_t color_codes0[] = {RGB_RED, RGB_ORANGE, RGB_YELLOW, RGB_TURQUOISE, RGB_BLUE, RGB_PINK};
 static const uint32_t color_codes1[] = {RGB_RED, RGB_CORAL_ORANGE_SAT_MEDIUM, RGB_ORANGE, RGB_YELLOW_SAT_LOW};
 static const uint32_t color_codes2[] = {RGB_PURPLE_SAT_MEDIUM, RGB_RED_BRI_LOWEST, RGB_MAGENTA_BRI_LOWEST, RGB_BLUE_BRI_LOWEST};
-static const uint32_t color_codes3[] = {RGB_MAGENTA, RGB_YELLOW, RGB_TURQUOISE, RGB_PINK_SAT_LOW, RGB_RED, RGB_YELLOW};
+static const uint32_t color_codes3[] = {RGB_BLUE_BRI_LOWEST, RGB_TURQUOISE, RGB_SEAFOAM_BRI_MEDIUM, RGB_ICE_BLUE_BRI_LOW};
 static const uint32_t color_codes4[] = {RGB_MAGENTA_BRI_LOWEST, RGB_ROYAL_BLUE_BRI_LOW, RGB_TURQUOISE, RGB_ROYAL_BLUE_BRI_LOW, RGB_MAGENTA_BRI_LOWEST, RGB_OFF};
 static const uint32_t color_codes5[] = {RGB_RED, RGB_HOT_PINK, RGB_ROYAL_BLUE, RGB_BLUE, RGB_GREEN, RGB_YELLOW};
 
@@ -25,7 +25,7 @@ static const default_colorset default_colorsets[] = {
   { 6, color_codes0 },  // 0 Lightside
   { 4, color_codes1 },  // 1 Sauna
   { 4, color_codes2 },  // 2 UltraViolet
-  { 6, color_codes3 },  // 3 Space Carnival
+  { 4, color_codes3 },  // 3 Freezer Burn
   { 6, color_codes4 },  // 4 Ice Blade
   { 6, color_codes5 },  // 5 Rainbow Glitter
 };
@@ -48,9 +48,11 @@ void Patterns::make_default(uint8_t index, Pattern &pat)
     case 2:  // UltraViolet
       args.on_dur = 9;
       break;
-    case 3:  // Space Carnival
-      args.on_dur = 3;
-      args.off_dur = 23;
+    case 3:  // Freezer Burn
+      args.on_dur = 1;
+      args.off_dur = 10;
+      args.gap_dur = 10;
+      args.dash_dur = 18;
       break;
     case 4:  // Ice Blade
       args.on_dur = 3;
