@@ -102,6 +102,10 @@ void Patterns::make_pattern(PatternID id, Pattern &pat)
       args.on_dur = 16;
       args.off_dur = 20;
       break;
+    case PATTERN_HYPNOSTROBE:
+      args.on_dur = 14;
+      args.off_dur = 10;
+      break;
     case PATTERN_ULTRA_DOPS:
       args.on_dur = 3;
       args.off_dur = 1;
