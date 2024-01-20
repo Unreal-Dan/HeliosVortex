@@ -9,7 +9,7 @@
 static const uint32_t color_codes0[] = {RGB_RED, RGB_ORANGE, RGB_YELLOW, RGB_TURQUOISE, RGB_BLUE, RGB_PINK};
 static const uint32_t color_codes1[] = {RGB_RED, RGB_CORAL_ORANGE_SAT_MEDIUM, RGB_ORANGE, RGB_YELLOW_SAT_LOW};
 static const uint32_t color_codes2[] = {RGB_PURPLE_SAT_MEDIUM, RGB_RED_BRI_LOWEST, RGB_MAGENTA_BRI_LOWEST, RGB_BLUE_BRI_LOWEST};
-static const uint32_t color_codes3[] = {RGB_MAGENTA, RGB_YELLOW, RGB_TURQUOISE, RGB_PINK_SAT_LOW, RGB_RED, RGB_YELLOW};
+static const uint32_t color_codes3[] = {RGB_BLUE, RGB_SEAFOAM_BRI_LOWEST, RGB_TURQUOISE, RGB_SEAFOAM_BRI_LOWEST, RGB_ROYAL_BLUE_SAT_MEDIUM, RGB_SEAFOAM_BRI_LOWEST};
 static const uint32_t color_codes4[] = {RGB_MAGENTA_BRI_LOWEST, RGB_ROYAL_BLUE_BRI_LOW, RGB_TURQUOISE, RGB_ROYAL_BLUE_BRI_LOW, RGB_MAGENTA_BRI_LOWEST, RGB_OFF};
 static const uint32_t color_codes5[] = {RGB_RED, RGB_HOT_PINK, RGB_ROYAL_BLUE, RGB_BLUE, RGB_GREEN, RGB_YELLOW};
 
@@ -49,8 +49,8 @@ void Patterns::make_default(uint8_t index, Pattern &pat)
       args.on_dur = 9;
       break;
     case 3:  // Space Carnival
-      args.on_dur = 3;
-      args.off_dur = 23;
+      args.on_dur = 5;
+      args.off_dur = 8;
       break;
     case 4:  // Ice Blade
       args.on_dur = 3;
