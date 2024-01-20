@@ -716,17 +716,19 @@ void Helios::handle_state_set_global_brightness()
     menu_selection = (menu_selection + 1) % 3;
   }
   // show different levels of green for each selection
+  uint8_t col = 0;
   switch (menu_selection) {
     case 0:
-      Led::set(0, 0xFF, 0);
+      col = 0xFF;
       break;
     case 1:
-      Led::set(0, 0x78, 0);
+      col = 0x78;
       break;
     case 2:
-      Led::set(0, 0x3c, 0);
+      col = 0x3c;
       break;
   }
+  Led::set(0, col, 0);
   // when the user long clicks a selection
   if (Button::onLongClick()) {
     // set the brightness based on the selection * the brightness step amount
