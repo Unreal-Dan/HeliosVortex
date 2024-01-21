@@ -1,14 +1,10 @@
 #!/bin/bash
-
-# Function to parse CSV
 parse_csv() {
-    while IFS=, read -r input brief file_name; do
-        # Skipping empty lines
-        [[ -z "$input" || -z "$brief" || -z "$file_name" ]] && continue
-
-        echo "Creating test for $file_name"
-        create_test "$input" "$brief" "$file_name"
-    done < "$1"
+  tail -n +2 "$1" | while IFS=, read -r input brief file_name
+do
+    echo "Creating test for $file_name"
+    create_test "$input" "$brief" "$file_name"
+done
 }
 
 # Function to create test file
@@ -28,6 +24,7 @@ create_test() {
 
     echo "Input=${input}" > "$test_file"
     echo "Brief=${brief}" >> "$test_file"
+    echo "Args="
     echo "--------------------------------------------------------------------------------" >> "$test_file"
 
     # Append history to the test file
