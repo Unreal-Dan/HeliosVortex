@@ -551,6 +551,7 @@ bool Helios::handle_state_col_select_quadrant()
         // adds white, skip hue/sat to brightness
         selected_hue = 0;
         selected_sat = 0;
+        menu_selection = 0;
         cur_state = STATE_COLOR_SELECT_VAL;
         return false;
       default:  // 2-5
