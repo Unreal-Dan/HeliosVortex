@@ -593,15 +593,6 @@ bool Helios::handle_state_col_select_hue()
     // select hue/sat/val
     selected_hue = hue;
   }
-  else if (Button::holdDuration() >= 200){
-    // Save current hue with full saturation and value
-    RGBColor targetCol = HSVColor(selected_hue, 255, 255);
-    pat.updateColor(selected_slot, targetCol);
-    save_cur_mode();
-    // render current selection
-    Led::set(targetCol);
-    return true;
-  }
   // render current selection
   Led::set(HSVColor(hue, 255, 255));
   return true;
@@ -614,29 +605,22 @@ bool Helios::handle_state_col_select_sat()
   }
   static const uint8_t saturation_values[4] = {HSV_SAT_HIGH, HSV_SAT_MEDIUM, HSV_SAT_LOW, HSV_SAT_LOWEST};
   uint8_t sat = saturation_values[menu_selection];
+
   // use the nice hue to rgb rainbow
   if (Button::onLongClick()) {
     // select hue/sat/val
     selected_sat = sat;
-  }
-  else if (Button::holdDuration() >= 200){
-    // Save current saturation with full value
-    RGBColor targetCol = HSVColor(selected_hue, selected_sat, 255);
-    pat.updateColor(selected_slot, targetCol);
-    save_cur_mode();
-    // render current selection
-    Led::set(targetCol);
-    return true;
   }
   // render current selection
   Led::set(HSVColor(selected_hue, sat, 255));
   return true;
 }
 
+
 bool Helios::handle_state_col_select_val()
 {
   if (menu_selection > 3) {
-    menu_selection = 3;
+    menu_selection = 0;
   }
   static const uint8_t hsv_values[4] = {HSV_VAL_HIGH, HSV_VAL_MEDIUM, HSV_VAL_LOW, HSV_VAL_LOWEST};
   uint8_t val = hsv_values[menu_selection];
