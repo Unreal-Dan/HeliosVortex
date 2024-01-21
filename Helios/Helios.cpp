@@ -620,7 +620,7 @@ bool Helios::handle_state_col_select_sat()
 bool Helios::handle_state_col_select_val()
 {
   if (menu_selection > 3) {
-    menu_selection = 0;
+    menu_selection = 3;
   }
   static const uint8_t hsv_values[4] = {HSV_VAL_HIGH, HSV_VAL_MEDIUM, HSV_VAL_LOW, HSV_VAL_LOWEST};
   uint8_t val = hsv_values[menu_selection];
