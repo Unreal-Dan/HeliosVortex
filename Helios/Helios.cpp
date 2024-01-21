@@ -149,8 +149,17 @@ void Helios::wakeup() {
 #ifdef HELIOS_EMBEDDED
   // nothing needed here, this interrupt firing will make the mainthread resume
 #else
-  // re-initialize helios?
-  init();
+  // if the button was held down then they are entering off-menus
+  // but if we re-initialize the button it will clear this state
+  bool pressed = Button::isPressed();
+  // re-initialize some stuff
+  Time::init();
+  Button::init();
+  // so just re-press it
+  if (pressed) {
+    Button::doPress();
+  }
+  cur_state = STATE_MODES;
   // turn off the sleeping flag that only CLI has
   sleeping = false;
 #endif
@@ -208,7 +217,7 @@ void Helios::handle_state()
 #ifdef HELIOS_CLI
     case STATE_SLEEP:
       // simulate sleep in helios CLI
-      if (Button::onPress()) {
+      if (Button::onPress() || Button::onShortClick() || Button::onLongClick()) {
         wakeup();
       }
       break;
