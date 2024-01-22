@@ -578,6 +578,10 @@ bool Helios::handle_state_col_select_quadrant()
         cur_state = STATE_COLOR_SELECT_VAL;
         return false;
       default:  // 2-5
+        // reset color menu selections
+        selected_hue = 0;
+        selected_sat = 255;
+        selected_val = 255;
         selected_base_quad = hue_quad;
         break;
     }
