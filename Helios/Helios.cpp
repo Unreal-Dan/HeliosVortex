@@ -379,6 +379,10 @@ void Helios::handle_on_menu(uint8_t mag, bool past)
       cur_state = STATE_COLOR_SELECT_SLOT;
       // reset the menu selection
       menu_selection = 0;
+      // reset color menu selections
+      selected_hue = 0;
+      selected_sat = 255;
+      selected_val = 255;
 #if ALTERNATIVE_HSV_RGB == 1
       // use the nice hue to rgb rainbow
       g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
