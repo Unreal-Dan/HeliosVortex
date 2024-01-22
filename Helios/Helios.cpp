@@ -30,6 +30,7 @@ uint8_t Helios::selected_slot;
 uint8_t Helios::selected_base_quad;
 uint8_t Helios::selected_hue;
 uint8_t Helios::selected_sat;
+uint8_t Helios::selected_val;
 Pattern Helios::pat;
 bool Helios::keepgoing;
 
@@ -60,7 +61,8 @@ bool Helios::init()
   selected_slot = 0;
   selected_base_quad = 0;
   selected_hue = 0;
-  selected_sat = 0;
+  selected_sat = 255;
+  selected_val = 255;
   keepgoing = true;
 #ifdef HELIOS_CLI
   sleeping = false;
@@ -445,6 +447,10 @@ void Helios::handle_state_col_select()
       // target val for changes
       check_longclick = handle_state_col_select_val();
       break;
+    case STATE_SAVE_COLOR:
+      // target val for changes
+      check_longclick = handle_state_col_save();
+      break;
   }
   if (check_longclick && Button::onLongClick()) {
     if (cur_state == STATE_COLOR_SELECT_VAL) {
@@ -534,7 +540,7 @@ static const ColorsMenuData color_menu_data[4] = {
   { HUE_RED,        HUE_CORAL_ORANGE, HUE_ORANGE,   HUE_YELLOW },
   { HUE_LIME_GREEN, HUE_GREEN,        HUE_SEAFOAM,  HUE_TURQUOISE },
   { HUE_ICE_BLUE,   HUE_LIGHT_BLUE,   HUE_BLUE,     HUE_ROYAL_BLUE },
-  { HUE_PURPLE,     HUE_PINK,         HUE_HOT_PINK, HUE_MAGENTA },
+  { HUE_PURPLE,     HUE_PINK,         HUE_MAGENTA, HUE_MAGENTA },
 };
 
 bool Helios::handle_state_col_select_quadrant()
@@ -603,24 +609,8 @@ bool Helios::handle_state_col_select_hue()
     // select hue/sat/val
     selected_hue = hue;
   }
-  uint16_t mod_dur = (uint16_t)(Button::holdDuration() % (DELETE_COLOR_TIME * 2));
-  bool deleting = (mod_dur > DELETE_COLOR_TIME);
-  if (deleting) {
-    if (Button::isPressed()) {
-      // flash red
-      Led::strobe(150, 150, RGB_RED_BRI_LOW, RGB_OFF);
-    }
-    if (Button::onLongClick()) {
-      // Save current hue with full saturation and value
-      RGBColor targetCol = HSVColor(selected_hue, 255, 255);
-      pat.updateColor(selected_slot, targetCol);
-      save_cur_mode();
-      // render current selection
-      Led::set(0xFF, 0x7F, 0);
-      cur_state = STATE_COLOR_SELECT_SLOT;
-      // Return to the slot you were editing
-      menu_selection = selected_slot;
-    }
+  else if (Button::holdDuration() >= 2000) {
+    cur_state = STATE_SAVE_COLOR;
   }
   // render current selection
   Led::set(HSVColor(hue, 255, 255));
@@ -640,6 +630,9 @@ bool Helios::handle_state_col_select_sat()
     // select hue/sat/val
     selected_sat = sat;
   }
+  else if (Button::holdDuration() >= 2000) {
+    cur_state = STATE_SAVE_COLOR;
+  }
   // render current selection
   Led::set(HSVColor(selected_hue, sat, 255));
   return true;
@@ -652,17 +645,21 @@ bool Helios::handle_state_col_select_val()
     menu_selection = 3;
   }
   static const uint8_t hsv_values[4] = {HSV_VAL_HIGH, HSV_VAL_MEDIUM, HSV_VAL_LOW, HSV_VAL_LOWEST};
-  uint8_t val = hsv_values[menu_selection];
-
-  RGBColor targetCol = HSVColor(selected_hue, selected_sat, val);
+  selected_val = hsv_values[menu_selection];
   // use the nice hue to rgb rainbow
   if (Button::onLongClick()) {
-    // change the current patterns color
-    pat.updateColor(selected_slot, targetCol);
-    save_cur_mode();
+    cur_state = STATE_SAVE_COLOR;
   }
+  return true;
+}
+
+bool Helios::handle_state_col_save()
+{
+  RGBColor targetCol = HSVColor(selected_hue, selected_sat, selected_val);
+  pat.updateColor(selected_slot, targetCol);
+  save_cur_mode();
   // render current selection
-  Led::set(targetCol);
+  Led::set(HSVColor(selected_hue, selected_sat, selected_val));
   return true;
 }
 
