@@ -776,6 +776,15 @@ void Helios::show_selection(RGBColor color)
       holdDur > (SHORT_CLICK_THRESHOLD + SELECTION_FLASH_DURATION)) {
     return;
   }
-  // set the selection color
-  Led::set(color);
+
+  if (cur_state == STATE_COLOR_SELECT_SAT || cur_state == STATE_COLOR_SELECT_HUE) {
+    if ((Button::holdDuration() % 1000) > 500) {
+      Led::set(0xFF, 0x7F, 0);
+      // Led::strobe(150, 150, RGB_RED_BRI_LOW, RGB_OFF);
+    }
+  }
+  else {
+    // set the selection color
+    Led::set(color);
+  }
 }
