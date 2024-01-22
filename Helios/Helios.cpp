@@ -534,7 +534,7 @@ static const ColorsMenuData color_menu_data[4] = {
   { HUE_RED,        HUE_CORAL_ORANGE, HUE_ORANGE,   HUE_YELLOW },
   { HUE_LIME_GREEN, HUE_GREEN,        HUE_SEAFOAM,  HUE_TURQUOISE },
   { HUE_ICE_BLUE,   HUE_LIGHT_BLUE,   HUE_BLUE,     HUE_ROYAL_BLUE },
-  { HUE_PURPLE,     HUE_PINK,         HUE_HOT_PINK, HUE_MAGENTA },
+  { HUE_PURPLE,     HUE_PINK,         HUE_MAGENTA, HUE_MAGENTA },
 };
 
 bool Helios::handle_state_col_select_quadrant()
