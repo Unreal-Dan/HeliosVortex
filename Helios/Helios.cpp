@@ -603,25 +603,6 @@ bool Helios::handle_state_col_select_hue()
     // select hue/sat/val
     selected_hue = hue;
   }
-  uint16_t mod_dur = (uint16_t)(Button::holdDuration() % (DELETE_COLOR_TIME * 2));
-  bool deleting = (mod_dur > DELETE_COLOR_TIME);
-  if (deleting) {
-    if (Button::isPressed()) {
-      // flash red
-      Led::strobe(150, 150, RGB_RED_BRI_LOW, RGB_OFF);
-    }
-    if (Button::onLongClick()) {
-      // Save current hue with full saturation and value
-      RGBColor targetCol = HSVColor(selected_hue, 255, 255);
-      pat.updateColor(selected_slot, targetCol);
-      save_cur_mode();
-      // render current selection
-      Led::set(0xFF, 0x7F, 0);
-      cur_state = STATE_COLOR_SELECT_SLOT;
-      // Return to the slot you were editing
-      menu_selection = selected_slot;
-    }
-  }
   // render current selection
   Led::set(HSVColor(hue, 255, 255));
   return true;
