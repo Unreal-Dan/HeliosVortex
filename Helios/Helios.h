@@ -50,8 +50,8 @@ private:
   static void handle_state_col_select();
   static bool handle_state_col_select_slot(ColorSelectOption &out_option);
   static bool handle_state_col_select_quadrant();
-  static bool handle_state_col_select_hue();
   static void col_select_sat_val_inner(uint8_t &arg, uint8_t val);
+  static void handle_state_col_select_hue();
   static void handle_state_col_select_sat();
   static void handle_state_col_select_val();
   static void handle_state_pat_select();

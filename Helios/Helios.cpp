@@ -437,7 +437,7 @@ void Helios::handle_state_col_select()
       break;
     case STATE_COLOR_SELECT_HUE:
       // target hue for changes
-      check_longclick = handle_state_col_select_hue();
+      handle_state_col_select_hue();
       break;
     case STATE_COLOR_SELECT_SAT:
       // target sat for changes
@@ -451,6 +451,8 @@ void Helios::handle_state_col_select()
   if (check_longclick && Button::onLongClick()) {
     if (cur_state == STATE_COLOR_SELECT_VAL) {
       cur_state = STATE_COLOR_SELECT_SLOT;
+      pat.updateColor(selected_slot, HSVColor(selected_hue, selected_sat, selected_val));
+      save_cur_mode();
       // Return to the slot you were editing
       menu_selection = selected_slot;
     } else {
@@ -598,18 +600,6 @@ bool Helios::handle_state_col_select_quadrant()
   return true;
 }
 
-bool Helios::handle_state_col_select_hue()
-{
-  uint8_t hue = color_menu_data[selected_base_quad].hues[menu_selection];
-  if (Button::onLongClick()) {
-    // select hue/sat/val
-    selected_hue = hue;
-  }
-  // render current selection
-  Led::set(HSVColor(hue, 255, 255));
-  return true;
-}
-
 void Helios::col_select_sat_val_inner(uint8_t &arg, uint8_t val)
 {
   // use the nice hue to rgb rainbow
@@ -621,14 +611,28 @@ void Helios::col_select_sat_val_inner(uint8_t &arg, uint8_t val)
   Led::set(HSVColor(selected_hue, selected_sat, selected_val));
 }
 
+void Helios::handle_state_col_select_hue()
+{
+  if (menu_selection > 3) {
+    menu_selection = 3;
+  }
+  col_select_sat_val_inner(selected_hue, color_menu_data[selected_base_quad].hues[menu_selection]);
+}
+
 void Helios::handle_state_col_select_sat()
 {
+  if (menu_selection > 3) {
+    menu_selection = 3;
+  }
   static const uint8_t saturation_values[4] = {HSV_SAT_HIGH, HSV_SAT_MEDIUM, HSV_SAT_LOW, HSV_SAT_LOWEST};
   col_select_sat_val_inner(selected_sat, saturation_values[menu_selection]);
 }
 
 void Helios::handle_state_col_select_val()
 {
+  if (menu_selection > 3) {
+    menu_selection = 3;
+  }
   static const uint8_t hsv_values[4] = {HSV_VAL_HIGH, HSV_VAL_MEDIUM, HSV_VAL_LOW, HSV_VAL_LOWEST};
   col_select_sat_val_inner(selected_val, hsv_values[menu_selection]);
 }
