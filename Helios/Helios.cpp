@@ -600,41 +600,30 @@ bool Helios::handle_state_col_select_quadrant()
   return true;
 }
 
-void Helios::col_select_sat_val_inner(uint8_t &arg, uint8_t val)
+void Helios::col_select_sat_val_inner()
 {
-  // use the nice hue to rgb rainbow
-  if (Button::onLongClick()) {
-    // select hue/sat/val
-    arg = val;
-  }
   // render current selection
   Led::set(HSVColor(selected_hue, selected_sat, selected_val));
 }
 
 void Helios::handle_state_col_select_hue()
 {
-  if (menu_selection > 3) {
-    menu_selection = 3;
-  }
-  col_select_sat_val_inner(selected_hue, color_menu_data[selected_base_quad].hues[menu_selection]);
+  selected_hue = color_menu_data[selected_base_quad].hues[menu_selection];
+  col_select_sat_val_inner();
 }
 
 void Helios::handle_state_col_select_sat()
 {
-  if (menu_selection > 3) {
-    menu_selection = 3;
-  }
   static const uint8_t saturation_values[4] = {HSV_SAT_HIGH, HSV_SAT_MEDIUM, HSV_SAT_LOW, HSV_SAT_LOWEST};
-  col_select_sat_val_inner(selected_sat, saturation_values[menu_selection]);
+  selected_sat = saturation_values[menu_selection];
+  col_select_sat_val_inner();
 }
 
 void Helios::handle_state_col_select_val()
 {
-  if (menu_selection > 3) {
-    menu_selection = 3;
-  }
   static const uint8_t hsv_values[4] = {HSV_VAL_HIGH, HSV_VAL_MEDIUM, HSV_VAL_LOW, HSV_VAL_LOWEST};
-  col_select_sat_val_inner(selected_val, hsv_values[menu_selection]);
+  selected_val = hsv_values[menu_selection];
+  col_select_sat_val_inner();
 }
 
 void Helios::handle_state_pat_select()
