@@ -465,7 +465,7 @@ void Helios::handle_state_col_select()
   // this is a stupid override for when we're exiting color select
   // show a white selection instead
   if (slot_option != OPTION_NONE) {
-    cur = RGB_WHITE;
+    cur = RGB_WHITE_BRI_LOW;
   }
   // show selection in all of these menus
   show_selection(cur);
