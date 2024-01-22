@@ -453,7 +453,13 @@ void Helios::handle_state_col_select()
       break;
   }
   if (check_longclick && Button::onLongClick()) {
-    if (cur_state == STATE_COLOR_SELECT_VAL) {
+    bool save = false;
+    if (cur_state == STATE_COLOR_SELECT_SAT || cur_state == STATE_COLOR_SELECT_HUE) {
+      if ((Button::holdDuration() % 1000) > 500) {
+        save = true;
+      }
+    }
+    if (save || cur_state == STATE_COLOR_SELECT_VAL) {
       cur_state = STATE_COLOR_SELECT_SLOT;
       pat.updateColor(selected_slot, HSVColor(selected_hue, selected_sat, selected_val));
       save_cur_mode();
