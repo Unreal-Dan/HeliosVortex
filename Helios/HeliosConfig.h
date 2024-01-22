@@ -53,6 +53,14 @@
 // the color before it cycles back
 #define DELETE_COLOR_TIME 1500
 
+// Save Skip Sat Val Color Time
+//
+// How long to hold button on a hue or sat color to skip the sat/val color flash
+// begins and starts flashes. Also how long the cycling flash is for the
+// skip sat/val color selection, ie how long the user has to release to skip
+// the sat/val color before it cycles back
+#define SAVE_SKIP_SAT_VAL_COLOR_TIME 1500
+
 // Alternative HSV to RGB
 //
 // This enabled the alternative HSV to RGB algorithm to be used in the

@@ -605,12 +605,23 @@ bool Helios::handle_state_col_select_quadrant()
 bool Helios::handle_state_col_select_hue()
 {
   uint8_t hue = color_menu_data[selected_base_quad].hues[menu_selection];
-  if (Button::onLongClick()) {
+  bool long_click = Button::onLongClick();
+  if (long_click) {
     // select hue/sat/val
     selected_hue = hue;
   }
-  else if (Button::holdDuration() >= 2000) {
-    cur_state = STATE_SAVE_COLOR;
+  uint16_t mod_dur = (uint16_t)(Button::holdDuration() % (SAVE_SKIP_SAT_VAL_COLOR_TIME * 2));
+  bool save_full_hue = (mod_dur > SAVE_SKIP_SAT_VAL_COLOR_TIME);
+  if (save_full_hue) {
+    if (Button::isPressed()) {
+      // flash red
+      Led::strobe(150, 150, RGB_RED_BRI_LOW, RGB_OFF);
+    }
+    if (long_click) {
+      selected_hue = hue;
+      cur_state = STATE_SAVE_COLOR;
+      return false;
+    }
   }
   // render current selection
   Led::set(HSVColor(hue, 255, 255));
@@ -625,14 +636,27 @@ bool Helios::handle_state_col_select_sat()
   static const uint8_t saturation_values[4] = {HSV_SAT_HIGH, HSV_SAT_MEDIUM, HSV_SAT_LOW, HSV_SAT_LOWEST};
   uint8_t sat = saturation_values[menu_selection];
 
+  bool long_click = Button::onLongClick();
+
   // use the nice hue to rgb rainbow
-  if (Button::onLongClick()) {
+  if (long_click) {
     // select hue/sat/val
     selected_sat = sat;
   }
-  else if (Button::holdDuration() >= 2000) {
-    cur_state = STATE_SAVE_COLOR;
+  uint16_t mod_dur = (uint16_t)(Button::holdDuration() % (SAVE_SKIP_SAT_VAL_COLOR_TIME * 2));
+  bool save_full_hue_sat = (mod_dur > SAVE_SKIP_SAT_VAL_COLOR_TIME);
+  if (save_full_hue_sat) {
+    if (Button::isPressed()) {
+      // flash red
+      Led::strobe(150, 150, RGB_RED_BRI_LOW, RGB_OFF);
+    }
+    if (long_click) {
+      selected_sat = sat;
+      cur_state = STATE_SAVE_COLOR;
+      return false;
+    }
   }
+  
   // render current selection
   Led::set(HSVColor(selected_hue, sat, 255));
   return true;
