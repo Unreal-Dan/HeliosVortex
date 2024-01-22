@@ -51,8 +51,9 @@ private:
   static bool handle_state_col_select_slot(ColorSelectOption &out_option);
   static bool handle_state_col_select_quadrant();
   static bool handle_state_col_select_hue();
-  static bool handle_state_col_select_sat();
-  static bool handle_state_col_select_val();
+  static void col_select_sat_val_inner(uint8_t &arg, uint8_t val);
+  static void handle_state_col_select_sat();
+  static void handle_state_col_select_val();
   static void handle_state_pat_select();
   static void handle_state_toggle_flag(Flags flag);
   static void handle_state_set_defaults();
@@ -95,6 +96,7 @@ private:
   static uint8_t selected_base_quad;
   static uint8_t selected_hue;
   static uint8_t selected_sat;
+  static uint8_t selected_val;
   static PatternArgs default_args[6];
   static Colorset default_colorsets[6];
   static Pattern pat;
