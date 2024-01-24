@@ -448,7 +448,7 @@ void Helios::handle_state_col_select()
   if (check_longclick && Button::onLongClick()) {
     bool save = false;
     if (cur_state == STATE_COLOR_SELECT_HUE || cur_state == STATE_COLOR_SELECT_SAT) {
-      if ((Button::holdDuration() % 2000) > 1000) {
+      if ((Button::holdDuration() % (LONG_FLASH_DURATION * 2)) > LONG_FLASH_DURATION) {
         save = true;
       }
     }
@@ -778,7 +778,7 @@ void Helios::save_global_flags()
 void Helios::show_long_selection()
 {
   uint16_t holdDur = (uint16_t)Button::holdDuration();
-  if ((holdDur % 2000) > 1000) {
+  if ((holdDur % (LONG_FLASH_DURATION * 2)) > LONG_FLASH_DURATION) {
     Led::strobe(150, 150, RGBColor(0xFF, 0x7F, 0), RGB_OFF);
   }
 }

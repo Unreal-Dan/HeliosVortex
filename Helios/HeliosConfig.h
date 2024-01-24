@@ -7,11 +7,16 @@
 // be considered either a short or long click
 #define SHORT_CLICK_THRESHOLD 400
 
+
 // Selection Flash Duration
 //
 // How long the led flashes when selecting something
 #define SELECTION_FLASH_DURATION 500
 
+// Secondary Selection Flash Duration
+//
+// How long the led flashes when selecting the second option
+#define LONG_FLASH_DURATION (SHORT_CLICK_THRESHOLD + SELECTION_FLASH_DURATION)
 // Max Color Slots
 //
 // The number of slots in a colorset
