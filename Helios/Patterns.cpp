@@ -8,8 +8,8 @@
 // of colors in each set but you can absolutely list a lesser amount
 static const uint32_t color_codes0[] = {RGB_RED, RGB_ORANGE, RGB_YELLOW, RGB_TURQUOISE, RGB_BLUE, RGB_PINK};
 static const uint32_t color_codes1[] = {RGB_RED, RGB_CORAL_ORANGE_SAT_MEDIUM, RGB_ORANGE, RGB_YELLOW_SAT_LOW};
-static const uint32_t color_codes2[] = {RGB_PURPLE_SAT_MEDIUM, RGB_RED_BRI_LOWEST, RGB_MAGENTA_BRI_LOWEST, RGB_BLUE_BRI_LOWEST};
-static const uint32_t color_codes3[] = {RGB_BLUE_BRI_LOWEST, RGB_TURQUOISE, RGB_SEAFOAM_BRI_MEDIUM, RGB_ICE_BLUE_BRI_LOW};
+static const uint32_t color_codes2[] = {RGB_PURPLE, RGB_RED, RGB_MAGENTA, RGB_BLUE};
+static const uint32_t color_codes3[] = {RGB_WHITE, RGB_BLUE_BRI_LOWEST, RGB_BLUE_BRI_LOWEST, RGB_BLUE_BRI_LOWEST, RGB_BLUE_BRI_LOWEST, RGB_BLUE_BRI_LOWEST};
 static const uint32_t color_codes4[] = {RGB_MAGENTA_BRI_LOWEST, RGB_ROYAL_BLUE_BRI_LOW, RGB_TURQUOISE, RGB_ROYAL_BLUE_BRI_LOW, RGB_MAGENTA_BRI_LOWEST, RGB_OFF};
 static const uint32_t color_codes5[] = {RGB_RED, RGB_HOT_PINK, RGB_ROYAL_BLUE, RGB_BLUE, RGB_GREEN, RGB_YELLOW};
 
@@ -25,7 +25,7 @@ static const default_colorset default_colorsets[] = {
   { 6, color_codes0 },  // 0 Lightside
   { 4, color_codes1 },  // 1 Sauna
   { 4, color_codes2 },  // 2 UltraViolet
-  { 4, color_codes3 },  // 3 Freezer Burn
+  { 6, color_codes3 },  // 3 Freezer Burn
   { 6, color_codes4 },  // 4 Ice Blade
   { 6, color_codes5 },  // 5 Rainbow Glitter
 };
@@ -46,17 +46,20 @@ void Patterns::make_default(uint8_t index, Pattern &pat)
       args.off_dur = 9;
       break;
     case 2:  // UltraViolet
-      args.on_dur = 9;
+      args.on_dur = 1;
+      args.off_dur = 3;
+      args.gap_dur = 40;
+      args.blend_speed = 30;
       break;
     case 3:  // Freezer Burn
       args.on_dur = 1;
-      args.off_dur = 10;
-      args.gap_dur = 10;
-      args.dash_dur = 18;
+      args.off_dur = 9;
+      args.dash_dur = 5;
       break;
     case 4:  // Ice Blade
       args.on_dur = 3;
       args.off_dur = 1;
+      args.gap_dur = 23;
       break;
     case 5:  // Rainbow Glitter
       args.on_dur = 1;
@@ -97,14 +100,20 @@ void Patterns::make_pattern(PatternID id, Pattern &pat)
     args.off_dur = 8;
     break;
 
+  case PATTERN_HYPNOSTROBE:
+    args.on_dur = 14;
+    args.off_dur = 10;
+    break;
+
   case PATTERN_STROBIE:
     args.on_dur = 3;
     args.off_dur = 23;
     break;
 
-  case PATTERN_HYPNOSTROBE:
-    args.on_dur = 14;
-    args.off_dur = 10;
+  case PATTERN_RAZOR:
+    args.on_dur = 3;
+    args.off_dur = 1;
+    args.gap_dur = 30;
     break;
 
   case PATTERN_FLARE:
@@ -125,12 +134,6 @@ void Patterns::make_pattern(PatternID id, Pattern &pat)
   case PATTERN_FLICKER:
     args.on_dur = 1;
     args.off_dur = 50;
-    break;
-
-  case PATTERN_BLINKIE:
-    args.on_dur = 3;
-    args.off_dur = 1;
-    args.gap_dur = 150;
     break;
 
   case PATTERN_FLASH:
@@ -176,9 +179,9 @@ void Patterns::make_pattern(PatternID id, Pattern &pat)
     break;
 
   case PATTERN_WAVE_PARTICLE:
-    args.on_dur = 5;
-    args.off_dur = 23;
-    args.dash_dur = 30;
+    args.on_dur = 1;
+    args.off_dur = 9;
+    args.dash_dur = 5;
     break;
 
   case PATTERN_LIGHTSPEED:
