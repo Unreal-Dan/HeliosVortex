@@ -576,10 +576,6 @@ bool Helios::handle_state_col_select_quadrant()
         cur_state = STATE_COLOR_SELECT_VAL;
         return false;
       default:  // 2-5
-        // reset color menu selections
-        selected_hue = 0;
-        selected_sat = 255;
-        selected_val = 255;
         selected_base_quad = hue_quad;
         break;
     }
@@ -609,17 +605,17 @@ bool Helios::handle_state_col_select_quadrant()
       break;
   }
   Led::strobe(on_dur, off_dur, col1, col2);
-  // show a white flash for the first two menus
-  if (menu_selection <= 1) {
-    show_selection(RGB_WHITE_BRI_LOW);
-  } else{
-    // dim the color for the quad menus
-    RGBColor cur = Led::get();
-    cur.red /= 2;
-    cur.green /= 2;
-    cur.blue /= 2;
-    show_selection(RGB_WHITE_BRI_LOW);
-  }
+  //// show a white flash for the first two menus
+  //if (menu_selection <= 1) {
+  //  show_selection(RGB_WHITE_BRI_LOW);
+  //} else{
+  //  // dim the color for the quad menus
+  //  RGBColor cur = Led::get();
+  //  cur.red /= 2;
+  //  cur.green /= 2;
+  //  cur.blue /= 2;
+  //  show_selection(RGB_WHITE_BRI_LOW);
+  //}
   return true;
 }
 
