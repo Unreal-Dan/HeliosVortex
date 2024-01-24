@@ -38,7 +38,7 @@ static void printState(PatternState state)
 #endif
 
 Pattern::Pattern(uint8_t onDur, uint8_t offDur, uint8_t gap,
-          uint8_t dash, uint8_t group, uint8_t blend, uint8_t flips) :
+          uint8_t dash, uint8_t group, uint8_t blend, uint8_t flips, uint8_t colorRepeat) :
   m_onDuration(onDur),
   m_offDuration(offDur),
   m_gapDuration(gap),
@@ -46,6 +46,8 @@ Pattern::Pattern(uint8_t onDur, uint8_t offDur, uint8_t gap,
   m_groupSize(group),
   m_blendSpeed(blend),
   m_numFlips(flips),
+  m_colorRepeat(colorRepeat), // Initialize color repeat
+  m_colorRepeatCounter(0),    // Initialize color repeat counter
   m_patternFlags(0),
   m_colorset(),
   m_groupCounter(0),
@@ -59,7 +61,7 @@ Pattern::Pattern(uint8_t onDur, uint8_t offDur, uint8_t gap,
 
 Pattern::Pattern(const PatternArgs &args) :
   Pattern(args.on_dur, args.off_dur, args.gap_dur,
-      args.dash_dur, args.group_size, args.blend_speed, args.num_flips)
+      args.dash_dur, args.group_size, args.blend_speed, args.num_flips, args.color_repeat)
 {
 }
 
@@ -182,17 +184,30 @@ replay:
 // set args
 void Pattern::setArgs(const PatternArgs &args)
 {
-  memcpy(&m_onDuration, &(args.on_dur), 7);
+  memcpy(&m_onDuration, &(args.on_dur), 8);
 }
 
 void Pattern::onBlinkOn()
 {
   PRINT_STATE(STATE_ON);
-  if (isBlend()) {
+  if (isBlend())
+  {
     blendBlinkOn();
     return;
   }
-  Led::set(m_colorset.getNext());
+  if (m_colorRepeatCounter < m_colorRepeat)
+  {
+    // If still repeating, don't fetch the next color
+    Led::set(m_cur);
+    m_colorRepeatCounter++;
+  }
+  else
+  {
+    // Fetch the next color after repeats are done
+    m_cur = m_colorset.getNext();
+    Led::set(m_cur);
+    m_colorRepeatCounter = 1; // Reset counter
+  }
 }
 
 void Pattern::onBlinkOff()

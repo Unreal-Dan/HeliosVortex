@@ -9,7 +9,7 @@
 // for specifying things like default args
 struct PatternArgs {
   PatternArgs() : on_dur(0), off_dur(0), gap_dur(0), dash_dur(0),
-    group_size(0), blend_speed(0), num_flips(0)
+    group_size(0), blend_speed(0), num_flips(0), color_repeat(0)
   {}
   uint8_t on_dur;
   uint8_t off_dur;
@@ -18,6 +18,7 @@ struct PatternArgs {
   uint8_t group_size;
   uint8_t blend_speed;
   uint8_t num_flips;
+  uint8_t color_repeat;
 };
 
 class Pattern
@@ -26,7 +27,7 @@ public:
   // try to not set on duration to 0
   Pattern(uint8_t onDur = 1, uint8_t offDur = 0, uint8_t gap = 0,
           uint8_t dash = 0, uint8_t group = 0, uint8_t blend = 0,
-          uint8_t flips = 0);
+          uint8_t flips = 0, uint8_t colorRepeat = 0);
   Pattern(const PatternArgs &args);
   ~Pattern();
 
@@ -72,6 +73,8 @@ protected:
   uint8_t m_groupSize;
   uint8_t m_blendSpeed;
   uint8_t m_numFlips;
+  uint8_t m_colorRepeat;
+  uint8_t m_colorRepeatCounter;
 
   // ==================================
   //  Pattern Members
