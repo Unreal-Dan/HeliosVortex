@@ -1,3 +1,5 @@
+.PHONY: all upload set_fuses set_default_fuses
+
 ifneq ($(OS),Windows_NT)
     OS = $(shell uname -s)
 endif

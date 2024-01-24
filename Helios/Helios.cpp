@@ -448,7 +448,7 @@ void Helios::handle_state_col_select()
   if (check_longclick && Button::onLongClick()) {
     bool save = false;
     if (cur_state == STATE_COLOR_SELECT_SAT || cur_state == STATE_COLOR_SELECT_HUE) {
-      if ((Button::holdDuration() % 1000) > 500) {
+      if ((Button::holdDuration() % 2000) > 1000) {
         save = true;
       }
     }
@@ -609,6 +609,17 @@ bool Helios::handle_state_col_select_quadrant()
       break;
   }
   Led::strobe(on_dur, off_dur, col1, col2);
+  // show a white flash for the first two menus
+  if (menu_selection <= 1) {
+    show_selection(RGB_WHITE_BRI_LOW);
+  } else{
+    // dim the color for the quad menus
+    RGBColor cur = Led::get();
+    cur.red /= 2;
+    cur.green /= 2;
+    cur.blue /= 2;
+    show_selection(RGB_WHITE_BRI_LOW);
+  }
   return true;
 }
 
@@ -622,6 +633,7 @@ void Helios::handle_state_col_select_hue()
 {
   selected_hue = color_menu_data[selected_base_quad].hues[menu_selection];
   handle_col_select_show_hue_sat_val();
+  show_long_selection();
 }
 
 void Helios::handle_state_col_select_sat()
@@ -629,6 +641,7 @@ void Helios::handle_state_col_select_sat()
   static const uint8_t saturation_values[4] = {HSV_SAT_HIGH, HSV_SAT_MEDIUM, HSV_SAT_LOW, HSV_SAT_LOWEST};
   selected_sat = saturation_values[menu_selection];
   handle_col_select_show_hue_sat_val();
+  show_long_selection();
 }
 
 void Helios::handle_state_col_select_val()
@@ -636,6 +649,7 @@ void Helios::handle_state_col_select_val()
   static const uint8_t hsv_values[4] = {HSV_VAL_HIGH, HSV_VAL_MEDIUM, HSV_VAL_LOW, HSV_VAL_LOWEST};
   selected_val = hsv_values[menu_selection];
   handle_col_select_show_hue_sat_val();
+  show_long_selection();
 }
 
 void Helios::handle_state_pat_select()
@@ -766,6 +780,14 @@ void Helios::save_global_flags()
   Storage::write_config(1, cur_mode);
 }
 
+void Helios::show_long_selection()
+{
+  uint16_t holdDur = (uint16_t)Button::holdDuration();
+  if ((holdDur % 2000) > 1000) {
+    Led::strobe(150, 150, RGBColor(0xFF, 0x7F, 0), RGB_OFF);
+  }
+}
+
 void Helios::show_selection(RGBColor color)
 {
   // only show selection while pressing the button
@@ -778,15 +800,5 @@ void Helios::show_selection(RGBColor color)
       holdDur > (SHORT_CLICK_THRESHOLD + SELECTION_FLASH_DURATION)) {
     return;
   }
-
-  if (cur_state == STATE_COLOR_SELECT_SAT || cur_state == STATE_COLOR_SELECT_HUE) {
-    if ((Button::holdDuration() % 1000) > 500) {
-      Led::set(0xFF, 0x7F, 0);
-      // Led::strobe(150, 150, RGB_RED_BRI_LOW, RGB_OFF);
-    }
-  }
-  else {
-    // set the selection color
-    Led::set(color);
-  }
+  Led::set(color);
 }
