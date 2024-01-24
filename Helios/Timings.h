@@ -36,8 +36,8 @@
 #define SIGNAL_OFF_DURATION         296
 
 // A blink speed good for blends
-#define BLEND_ON_DURATION           2
-#define BLEND_OFF_DURATION          13
+#define MORPH_ON_DURATION           2
+#define MORPH_OFF_DURATION          13
 
 // Ribbon
 #define RIBBON_DURATION             6
