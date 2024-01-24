@@ -14,8 +14,7 @@ static const uint32_t color_codes4[] = {RGB_MAGENTA_BRI_LOWEST, RGB_ROYAL_BLUE_B
 static const uint32_t color_codes5[] = {RGB_RED, RGB_HOT_PINK, RGB_ROYAL_BLUE, RGB_BLUE, RGB_GREEN, RGB_YELLOW};
 
 // Define Colorset configurations for each slot
-struct default_colorset
-{
+struct default_colorset {
   uint8_t num_cols;
   const uint32_t *cols;
 };
@@ -23,48 +22,46 @@ struct default_colorset
 // the array of colorset entries, make sure the number on the left reflects
 // the number of colors in the array on the right
 static const default_colorset default_colorsets[] = {
-    {6, color_codes0}, // 0 Lightside
-    {4, color_codes1}, // 1 Sauna
-    {4, color_codes2}, // 2 UltraViolet
-    {4, color_codes3}, // 3 Freezer Burn
-    {6, color_codes4}, // 4 Ice Blade
-    {6, color_codes5}, // 5 Rainbow Glitter
+  { 6, color_codes0 },  // 0 Lightside
+  { 4, color_codes1 },  // 1 Sauna
+  { 4, color_codes2 },  // 2 UltraViolet
+  { 4, color_codes3 },  // 3 Freezer Burn
+  { 6, color_codes4 },  // 4 Ice Blade
+  { 6, color_codes5 },  // 5 Rainbow Glitter
 };
 
-void Patterns::make_default(uint8_t index, Pattern &pat)
+void Patterns::make_default(uint8_t index, Pattern &pat) 
 {
-  if (index >= NUM_MODE_SLOTS)
-  {
+  if (index >= NUM_MODE_SLOTS) {
     return;
   }
   PatternArgs args;
-  switch (index)
-  {
-  case 0: // Lightside
-    args.on_dur = 2;
-    args.gap_dur = 40;
-    break;
-  case 1: // Sauna
-    args.on_dur = 1;
-    args.off_dur = 9;
-    break;
-  case 2: // UltraViolet
-    args.on_dur = 9;
-    break;
-  case 3: // Freezer Burn
-    args.on_dur = 1;
-    args.off_dur = 10;
-    args.gap_dur = 10;
-    args.dash_dur = 18;
-    break;
-  case 4: // Ice Blade
-    args.on_dur = 3;
-    args.off_dur = 1;
-    break;
-  case 5: // Rainbow Glitter
-    args.on_dur = 1;
-    args.off_dur = 50;
-    break;
+  switch (index) {
+    case 0:  // Lightside
+      args.on_dur = 2;
+      args.gap_dur = 40;
+      break;
+    case 1:  // Sauna
+      args.on_dur = 1;
+      args.off_dur = 9;
+      break;
+    case 2:  // UltraViolet
+      args.on_dur = 9;
+      break;
+    case 3:  // Freezer Burn
+      args.on_dur = 1;
+      args.off_dur = 10;
+      args.gap_dur = 10;
+      args.dash_dur = 18;
+      break;
+    case 4:  // Ice Blade
+      args.on_dur = 3;
+      args.off_dur = 1;
+      break;
+    case 5:  // Rainbow Glitter
+      args.on_dur = 1;
+      args.off_dur = 50;
+      break;
   }
   // assign default args
   pat.setArgs(args);

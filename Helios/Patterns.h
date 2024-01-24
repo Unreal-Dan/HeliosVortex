@@ -8,8 +8,7 @@
 // with a class, and there are 'shell' patterns which are simply wrapperns around another pattern
 // with different parameters passed to the constructor.  There is no way to know which patterns
 // are 'core' patterns, except by looking at PatternBuilder::generate to see which classes exist
-enum PatternID : int8_t
-{
+enum PatternID : int8_t {
   // no pattern at all, use this sparingly and default to
   // PATTERN_FIRST when possible
   PATTERN_NONE = (PatternID)-1,
@@ -45,16 +44,14 @@ enum PatternID : int8_t
   // Meta pattern constants
   INTERNAL_PATTERNS_END,
   PATTERN_LAST = (INTERNAL_PATTERNS_END - 1),
-  PATTERN_COUNT = (PATTERN_LAST - PATTERN_FIRST) + 1, // total number of patterns
+  PATTERN_COUNT = (PATTERN_LAST - PATTERN_FIRST) + 1,  // total number of patterns
 };
 
 class Pattern;
 
-class Patterns
-{
-public:
+class Patterns {
+ public:
   static void make_default(uint8_t index, Pattern &pat);
   static void make_pattern(PatternID id, Pattern &pat);
 };
-
 #endif
