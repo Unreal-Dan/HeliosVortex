@@ -60,9 +60,6 @@ bool Helios::init()
   cur_mode = 0;
   selected_slot = 0;
   selected_base_quad = 0;
-  selected_hue = 0;
-  selected_sat = 255;
-  selected_val = 255;
   keepgoing = true;
 #ifdef HELIOS_CLI
   sleeping = false;
@@ -379,10 +376,6 @@ void Helios::handle_on_menu(uint8_t mag, bool past)
       cur_state = STATE_COLOR_SELECT_SLOT;
       // reset the menu selection
       menu_selection = 0;
-      // reset color menu selections
-      selected_hue = 0;
-      selected_sat = 255;
-      selected_val = 255;
 #if ALTERNATIVE_HSV_RGB == 1
       // use the nice hue to rgb rainbow
       g_hsv_rgb_alg = HSV_TO_RGB_RAINBOW;
@@ -479,7 +472,7 @@ void Helios::handle_state_col_select()
   // this is a stupid override for when we're exiting color select
   // show a white selection instead
   if (slot_option != OPTION_NONE) {
-    cur = RGB_WHITE;
+    cur = RGB_WHITE_BRI_LOW;
   }
   // show selection in all of these menus
   show_selection(cur);
@@ -491,6 +484,12 @@ bool Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
   uint8_t num_cols = set.numColors();
 
   bool long_click = Button::onLongClick();
+
+  // Reset the color selection variables, these are the hue/sat/val that have been selected
+  // in the following menus, this is a weird place to reset these but it ends up being the only
+  // place where it can be written once and still handle all the possible cases it needs to run
+  selected_sat = 255;
+  selected_val = 255;
 
   if (num_cols < NUM_COLOR_SLOTS && menu_selection == num_cols) {
     // add color
@@ -572,7 +571,6 @@ bool Helios::handle_state_col_select_quadrant()
         return false;
       case 1:  // selected white
         // adds white, skip hue/sat to brightness
-        selected_hue = 0;
         selected_sat = 0;
         menu_selection = 0;
         cur_state = STATE_COLOR_SELECT_VAL;
@@ -614,7 +612,7 @@ bool Helios::handle_state_col_select_quadrant()
   return true;
 }
 
-void Helios::col_select_sat_val_inner()
+void Helios::handle_col_select_show_hue_sat_val()
 {
   // render current selection
   Led::set(HSVColor(selected_hue, selected_sat, selected_val));
@@ -623,21 +621,21 @@ void Helios::col_select_sat_val_inner()
 void Helios::handle_state_col_select_hue()
 {
   selected_hue = color_menu_data[selected_base_quad].hues[menu_selection];
-  col_select_sat_val_inner();
+  handle_col_select_show_hue_sat_val();
 }
 
 void Helios::handle_state_col_select_sat()
 {
   static const uint8_t saturation_values[4] = {HSV_SAT_HIGH, HSV_SAT_MEDIUM, HSV_SAT_LOW, HSV_SAT_LOWEST};
   selected_sat = saturation_values[menu_selection];
-  col_select_sat_val_inner();
+  handle_col_select_show_hue_sat_val();
 }
 
 void Helios::handle_state_col_select_val()
 {
   static const uint8_t hsv_values[4] = {HSV_VAL_HIGH, HSV_VAL_MEDIUM, HSV_VAL_LOW, HSV_VAL_LOWEST};
   selected_val = hsv_values[menu_selection];
-  col_select_sat_val_inner();
+  handle_col_select_show_hue_sat_val();
 }
 
 void Helios::handle_state_pat_select()
