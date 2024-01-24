@@ -447,7 +447,7 @@ void Helios::handle_state_col_select()
   }
   if (check_longclick && Button::onLongClick()) {
     bool save = false;
-    if (cur_state == STATE_COLOR_SELECT_SAT || cur_state == STATE_COLOR_SELECT_HUE) {
+    if (cur_state == STATE_COLOR_SELECT_HUE || cur_state == STATE_COLOR_SELECT_SAT) {
       if ((Button::holdDuration() % 2000) > 1000) {
         save = true;
       }
@@ -649,7 +649,6 @@ void Helios::handle_state_col_select_val()
   static const uint8_t hsv_values[4] = {HSV_VAL_HIGH, HSV_VAL_MEDIUM, HSV_VAL_LOW, HSV_VAL_LOWEST};
   selected_val = hsv_values[menu_selection];
   handle_col_select_show_hue_sat_val();
-  show_long_selection();
 }
 
 void Helios::handle_state_pat_select()
