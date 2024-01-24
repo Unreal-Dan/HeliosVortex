@@ -60,9 +60,6 @@ bool Helios::init()
   cur_mode = 0;
   selected_slot = 0;
   selected_base_quad = 0;
-  selected_hue = 0;
-  selected_sat = 255;
-  selected_val = 255;
   keepgoing = true;
 #ifdef HELIOS_CLI
   sleeping = false;
@@ -568,7 +565,6 @@ bool Helios::handle_state_col_select_quadrant()
         return false;
       case 1:  // selected white
         // adds white, skip hue/sat to brightness
-        selected_hue = 0;
         selected_sat = 0;
         menu_selection = 0;
         cur_state = STATE_COLOR_SELECT_VAL;
