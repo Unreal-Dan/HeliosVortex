@@ -448,7 +448,7 @@ void Helios::handle_state_col_select()
   if (check_longclick && Button::onLongClick()) {
     bool save = false;
     if (cur_state == STATE_COLOR_SELECT_HUE || cur_state == STATE_COLOR_SELECT_SAT) {
-      if ((Button::holdDuration() % (LONG_FLASH_DURATION * 2)) > LONG_FLASH_DURATION) {
+      if ((Button::holdDuration() % (LONG_CLICK_THRESHOLD * 2)) > LONG_CLICK_THRESHOLD) {
         save = true;
       }
     }
@@ -780,7 +780,7 @@ void Helios::save_global_flags()
 void Helios::show_long_selection(RGBColor color)
 {
   uint16_t holdDur = (uint16_t)Button::holdDuration();
-  if ((holdDur % (LONG_FLASH_DURATION * 2)) > LONG_FLASH_DURATION) {
+  if ((holdDur % (LONG_CLICK_THRESHOLD * 2)) > LONG_CLICK_THRESHOLD) {
     Led::strobe(150, 150, RGB_CORAL_ORANGE_SAT_LOWEST, color);
   }
 }
@@ -793,8 +793,7 @@ void Helios::show_selection(RGBColor color)
   }
   uint16_t holdDur = (uint16_t)Button::holdDuration();
   // if the hold duration is outside the flashing range do nothing
-  if (holdDur < SHORT_CLICK_THRESHOLD ||
-      holdDur > (SHORT_CLICK_THRESHOLD + SELECTION_FLASH_DURATION)) {
+  if (holdDur < SHORT_CLICK_THRESHOLD || holdDur > LONG_CLICK_THRESHOLD) {
     return;
   }
   Led::set(color);
