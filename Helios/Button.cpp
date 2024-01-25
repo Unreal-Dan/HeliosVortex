@@ -207,13 +207,19 @@ bool Button::processPostInput()
 
 void Button::doShortClick()
 {
+  m_newRelease = true;
   m_shortClick = true;
+  m_pressTime = Time::getCurtime();
+  m_holdDuration = SHORT_CLICK_THRESHOLD - 1;
   m_releaseCount++;
 }
 
 void Button::doLongClick()
 {
+  m_newRelease = true;
   m_longClick = true;
+  m_pressTime = Time::getCurtime();
+  m_holdDuration = SHORT_CLICK_THRESHOLD + 1;
   m_releaseCount++;
 }
 
