@@ -64,6 +64,7 @@ private:
   static void load_cur_mode();
   static void save_cur_mode();
   static void save_global_flags();
+  static void show_long_selection(RGBColor color);
   static void show_selection(RGBColor color);
 
   enum State : uint8_t {
