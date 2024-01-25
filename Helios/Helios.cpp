@@ -608,7 +608,7 @@ bool Helios::handle_state_col_select_quadrant()
   // show a white flash for the first two menus
   if (menu_selection <= 1) {
     show_selection(RGB_WHITE_BRI_LOW);
-  } else{
+  } else {
     // dim the color for the quad menus
     RGBColor cur = Led::get();
     cur.red /= 2;
@@ -629,7 +629,8 @@ void Helios::handle_state_col_select_hue()
 {
   selected_hue = color_menu_data[selected_base_quad].hues[menu_selection];
   handle_col_select_show_hue_sat_val();
-  show_long_selection();
+  RGBColor current_color = Led::get();
+  show_long_selection(current_color);
 }
 
 void Helios::handle_state_col_select_sat()
@@ -637,7 +638,8 @@ void Helios::handle_state_col_select_sat()
   static const uint8_t saturation_values[4] = {HSV_SAT_HIGH, HSV_SAT_MEDIUM, HSV_SAT_LOW, HSV_SAT_LOWEST};
   selected_sat = saturation_values[menu_selection];
   handle_col_select_show_hue_sat_val();
-  show_long_selection();
+  RGBColor current_color = Led::get();
+  show_long_selection(current_color);
 }
 
 void Helios::handle_state_col_select_val()
@@ -775,11 +777,11 @@ void Helios::save_global_flags()
   Storage::write_config(1, cur_mode);
 }
 
-void Helios::show_long_selection()
+void Helios::show_long_selection(RGBColor color)
 {
   uint16_t holdDur = (uint16_t)Button::holdDuration();
   if ((holdDur % (LONG_FLASH_DURATION * 2)) > LONG_FLASH_DURATION) {
-    Led::strobe(150, 150, RGBColor(0xFF, 0x7F, 0), RGB_OFF);
+    Led::strobe(150, 150, RGB_CORAL_ORANGE_SAT_LOWEST, color);
   }
 }
 
