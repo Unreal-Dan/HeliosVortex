@@ -30,7 +30,14 @@
 // Default Brightness
 //
 // The default brightness of the led
-#define DEFAULT_BRIGHTNESS 255
+#define DEFAULT_BRIGHTNESS 170
+
+// Brightness Options
+//
+// There are three brightness options, the lowest is equal to this value,
+// the middle is 2x this value, and the highest is 3x this value
+#define BRIGHTNESS_STEP   85
+
 
 // Tickrate
 //
@@ -64,11 +71,6 @@
 // color selection menu and provide a slightly different range of colors
 #define ALTERNATIVE_HSV_RGB 0
 
-// Brightness Options
-//
-// There are three brightness options, the lowest is equal to this value,
-// the middle is 2x this value, and the highest is 3x this value
-#define BRIGHTNESS_STEP   85
 
 // Pre-defined saturation values
 #define HSV_SAT_HIGH      255

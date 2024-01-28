@@ -693,6 +693,8 @@ void Helios::handle_state_set_defaults()
         Patterns::make_default(i, pat);
         Storage::write_pattern(i, pat);
       }
+      // Reset global brightness to default
+      Led::setBrightness(DEFAULT_BRIGHTNESS);
       // reset global flags
       global_flags = FLAG_NONE;
       cur_mode = 0;
