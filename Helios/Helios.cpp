@@ -315,6 +315,8 @@ void Helios::handle_state_modes()
   }
   // if this isn't a release tick there's nothing more to do
   if (Button::onRelease()) {
+    // Resets the menu selection before entering new state
+    menu_selection = 0;
     if (heldPast && Button::releaseCount() == 1) {
       handle_off_menu(magnitude, heldPast);
       return;
