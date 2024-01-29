@@ -713,7 +713,7 @@ void Helios::handle_state_set_defaults()
 void Helios::handle_state_set_global_brightness()
 {
   if (Button::onShortClick()) {
-    menu_selection = (menu_selection + 1) % 4;
+    menu_selection = (menu_selection + 1) % NUM_BRIGHTNESS_OPTIONS;
   }
   // show different levels of green for each selection
   uint8_t col = 0;
