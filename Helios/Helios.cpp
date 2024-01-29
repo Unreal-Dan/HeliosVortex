@@ -72,7 +72,7 @@ bool Helios::init()
     cur_mode = Storage::read_config(1);
   }
   // read the global brightness from index 2 config
-  uint8_t saved_brightness = Storage::read_config(2);
+  uint8_t saved_brightness = Storage::read_brightness();
   // If brightness is set in storage, use it
   if (saved_brightness > 0) {
     Led::setBrightness(saved_brightness);
@@ -703,7 +703,7 @@ void Helios::handle_state_set_defaults()
       }
       // Reset global brightness to default
       Led::setBrightness(DEFAULT_BRIGHTNESS);
-      Storage::write_config(2, DEFAULT_BRIGHTNESS);
+      Storage::write_brightness(DEFAULT_BRIGHTNESS);
       // reset global flags
       global_flags = FLAG_NONE;
       cur_mode = 0;
@@ -748,7 +748,7 @@ void Helios::handle_state_set_global_brightness()
   if (Button::onLongClick()) {
     // set the brightness based on the selection
     Led::setBrightness(brightness);
-    Storage::write_config(2, brightness);
+    Storage::write_brightness(brightness);
     cur_state = STATE_MODES;
   }
   show_selection(RGB_WHITE_BRI_LOW);

@@ -20,6 +20,9 @@ public:
   static uint8_t read_config(uint8_t index);
   static void write_config(uint8_t index, uint8_t val);
 
+  static uint8_t read_brightness() { return read_config(STORAGE_BRIGHTNESS_INDEX); }
+  static void write_brightness(uint8_t brightness) { write_config(STORAGE_BRIGHTNESS_INDEX, brightness); }
+
 #ifdef HELIOS_CLI
   // toggle storage on/off
   static void enableStorage(bool enabled) { m_enableStorage = enabled; }
