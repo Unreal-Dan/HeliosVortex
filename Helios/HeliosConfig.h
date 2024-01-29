@@ -45,12 +45,6 @@
 #define BRIGHTNESS_LOW      85
 #define BRIGHTNESS_LOWEST   30
 
-// Brightness Config Index
-//
-// The index of the brightness config byte
-#define STORAGE_BRIGHTNESS_INDEX 2
-
-
 // Tickrate
 //
 // The number of engine ticks per second

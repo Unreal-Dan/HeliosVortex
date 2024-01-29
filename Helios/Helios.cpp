@@ -66,10 +66,10 @@ bool Helios::init()
 #endif
 
   // read the global flags from index 0 config
-  global_flags = (Flags)Storage::read_config(0);
+  global_flags = (Flags)Storage::read_global_flags();
   if (has_flag(FLAG_CONJURE)) {
     // if conjure is enabled then load the current mode index from storage
-    cur_mode = Storage::read_config(1);
+    cur_mode = Storage::read_current_mode();
   }
   // read the global brightness from index 2 config
   uint8_t saved_brightness = Storage::read_brightness();
@@ -793,8 +793,8 @@ void Helios::handle_state_randomize()
 
 void Helios::save_global_flags()
 {
-  Storage::write_config(0, global_flags);
-  Storage::write_config(1, cur_mode);
+  Storage::write_global_flags(global_flags);
+  Storage::write_current_mode(cur_mode);
 }
 
 void Helios::show_long_selection(RGBColor color)
