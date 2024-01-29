@@ -795,7 +795,6 @@ void Helios::save_global_flags()
 {
   Storage::write_config(0, global_flags);
   Storage::write_config(1, cur_mode);
-  Storage::write_config(2, Led::getBrightness());
 }
 
 void Helios::show_long_selection(RGBColor color)
