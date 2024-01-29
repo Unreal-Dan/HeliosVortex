@@ -1,5 +1,5 @@
 Input=300wp1500wr300wl700wc700wc700wc700wc700wc700wl300wc300wl300wc300wl300wc300wl300wc300wl300wc300wc300wc300wc300wl300wc300wl300wc300wl300wc300wl300wc300wl300wc300wc300wc300wl300wc300wl300wc300wl300wc300wl300wc300wl300wc300wc300wl300wc300wl300wc300wl300wc300wl300wc300wl300wl300wc300wl300wc300wl300wc300wc300wl300wc300wl300wp2500wr300wc300wc300wc300wc300wc300wc300wc300wc300wc300wc300wc300wc300wl300w300wp4500wr300wc300wc300wc300wc300wp3500wr300wc300wc300wc300wc300wp3500wr300wc300wc300wc300wp5500wr300wc300wc300wc300wc300wc300wc300wc300wc300wc300wl300wq
-Brief=Program a 6 color mode, choose a new flashing pattern, shift a mode, enter conjure mode on another mode, turn on and off, exit conjure mode, go to randomizer on another mode and save a new randomized mode, turn off, enter global brightness, save medium brightness, turn back on
+Brief=Program a 6 color mode, choose a new flashing pattern, shift a mode, enter conjure mode on another mode, turn on and off, exit conjure mode, go to randomizer on another mode and save a new randomized mode
 Args=
 --------------------------------------------------------------------------------
 FF0000
