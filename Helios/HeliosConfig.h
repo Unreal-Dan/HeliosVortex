@@ -45,7 +45,6 @@
 #define BRIGHTNESS_LOW      85
 #define BRIGHTNESS_LOWEST   30
 
-
 // Tickrate
 //
 // The number of engine ticks per second
