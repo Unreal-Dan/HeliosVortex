@@ -315,6 +315,8 @@ void Helios::handle_state_modes()
   }
   // if this isn't a release tick there's nothing more to do
   if (Button::onRelease()) {
+    // Resets the menu selection before entering new state
+    menu_selection = 0;
     if (heldPast && Button::releaseCount() == 1) {
       handle_off_menu(magnitude, heldPast);
       return;
@@ -693,6 +695,8 @@ void Helios::handle_state_set_defaults()
         Patterns::make_default(i, pat);
         Storage::write_pattern(i, pat);
       }
+      // Reset global brightness to default
+      Led::setBrightness(DEFAULT_BRIGHTNESS);
       // reset global flags
       global_flags = FLAG_NONE;
       cur_mode = 0;
@@ -709,26 +713,34 @@ void Helios::handle_state_set_defaults()
 void Helios::handle_state_set_global_brightness()
 {
   if (Button::onShortClick()) {
-    menu_selection = (menu_selection + 1) % 3;
+    menu_selection = (menu_selection + 1) % NUM_BRIGHTNESS_OPTIONS;
   }
   // show different levels of green for each selection
   uint8_t col = 0;
+  uint8_t brightness = 0; 
   switch (menu_selection) {
     case 0:
       col = 0xFF;
+      brightness = BRIGHTNESS_HIGH; 
       break;
     case 1:
       col = 0x78;
+      brightness = BRIGHTNESS_MEDIUM; 
       break;
     case 2:
       col = 0x3c;
+      brightness = BRIGHTNESS_LOW; 
+      break;
+    case 3:
+      col = 0x28;
+      brightness = BRIGHTNESS_LOWEST; 
       break;
   }
   Led::set(0, col, 0);
   // when the user long clicks a selection
   if (Button::onLongClick()) {
-    // set the brightness based on the selection * the brightness step amount
-    Led::setBrightness(menu_selection * BRIGHTNESS_STEP);
+    // set the brightness based on the selection
+    Led::setBrightness(brightness);
     cur_state = STATE_MODES;
   }
   show_selection(RGB_WHITE_BRI_LOW);

@@ -27,10 +27,24 @@
 // The number of modes on the device
 #define NUM_MODE_SLOTS 6
 
+// Number of Global Brightness Options
+//
+// The number of global brightness options
+#define NUM_BRIGHTNESS_OPTIONS 4
+
 // Default Brightness
 //
 // The default brightness of the led
-#define DEFAULT_BRIGHTNESS 255
+#define DEFAULT_BRIGHTNESS 170
+
+// Global Brightness Options
+//
+// There are three brightness options, high, medium, and low
+#define BRIGHTNESS_HIGH     255
+#define BRIGHTNESS_MEDIUM   170
+#define BRIGHTNESS_LOW      85
+#define BRIGHTNESS_LOWEST   30
+
 
 // Tickrate
 //
@@ -64,11 +78,6 @@
 // color selection menu and provide a slightly different range of colors
 #define ALTERNATIVE_HSV_RGB 0
 
-// Brightness Options
-//
-// There are three brightness options, the lowest is equal to this value,
-// the middle is 2x this value, and the highest is 3x this value
-#define BRIGHTNESS_STEP   85
 
 // Pre-defined saturation values
 #define HSV_SAT_HIGH      255
