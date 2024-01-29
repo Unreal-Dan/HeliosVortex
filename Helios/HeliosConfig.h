@@ -27,6 +27,11 @@
 // The number of modes on the device
 #define NUM_MODE_SLOTS 6
 
+// Number of Global Brightness Options
+//
+// The number of global brightness options
+#define NUM_BRIGHTNESS_OPTIONS 4
+
 // Default Brightness
 //
 // The default brightness of the led
