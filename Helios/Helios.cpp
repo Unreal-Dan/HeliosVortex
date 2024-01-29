@@ -71,6 +71,7 @@ bool Helios::init()
     // if conjure is enabled then load the current mode index from storage
     cur_mode = Storage::read_config(1);
   }
+  Led::setBrightness(Storage::read_config(2));
 
   // load the current mode from store and initialize it
   load_cur_mode();
