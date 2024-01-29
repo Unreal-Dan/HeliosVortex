@@ -713,7 +713,7 @@ void Helios::handle_state_set_defaults()
 void Helios::handle_state_set_global_brightness()
 {
   if (Button::onShortClick()) {
-    menu_selection = (menu_selection + 1) % 3;
+    menu_selection = (menu_selection + 1) % 4;
   }
   // show different levels of green for each selection
   uint8_t col = 0;
@@ -730,6 +730,10 @@ void Helios::handle_state_set_global_brightness()
     case 2:
       col = 0x3c;
       brightness = BRIGHTNESS_LOW; 
+      break;
+    case 3:
+      col = 0x28;
+      brightness = BRIGHTNESS_LOWEST; 
       break;
   }
   Led::set(0, col, 0);

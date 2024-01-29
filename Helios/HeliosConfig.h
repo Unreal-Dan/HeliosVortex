@@ -38,6 +38,7 @@
 #define BRIGHTNESS_HIGH     255
 #define BRIGHTNESS_MEDIUM   170
 #define BRIGHTNESS_LOW      85
+#define BRIGHTNESS_LOWEST   30
 
 
 // Tickrate
