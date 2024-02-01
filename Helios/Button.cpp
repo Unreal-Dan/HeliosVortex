@@ -170,7 +170,7 @@ bool Button::processPreInput()
     Button::doToggle();
     break;
   case 's': // start recording
-    Button::doStartRecording();
+    Button::doRecord();
     break;
   case 'q': // quit
     Helios::terminate();
@@ -245,7 +245,7 @@ void Button::doToggle()
 {
   m_pinState = !m_pinState;
 }
-void Button::doStartRecording()
+void Button::doRecord()
 {
   isRecording = true;
 }
