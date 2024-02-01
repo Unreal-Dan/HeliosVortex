@@ -102,8 +102,6 @@ int main(int argc, char *argv[])
     writeBMP("pattern_output.bmp", colorBuffer);
   }
 
-  cout << "Exiting program." << endl;
-
   return 0;
 }
 
