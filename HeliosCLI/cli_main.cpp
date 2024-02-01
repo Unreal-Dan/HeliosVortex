@@ -226,38 +226,39 @@ static void show()
     // this resets the cursor back to the beginning of the line
     out += "\r";
   }
+  // Define the scaling factor (e.g., 1 = no scaling up 30 = scale up 100%)
+  float scaleFactor = 1;
+
+  // Get the current color and scale its brightness up
+  Color currentColor = {Led::get().red, Led::get().green, Led::get().blue};
+  Color scaledColor = scaleUpBrightness(currentColor, scaleFactor);
   if (output_type == OUTPUT_TYPE_COLOR) {
     out += "\x1B[0m["; // opening |
     out += "\x1B[48;2;"; // colorcode start
-    out += to_string(Led::get().red) + ";"; // col red
-    out += to_string(Led::get().green) + ";"; // col green
-    out += to_string(Led::get().blue) + "m"; // col blue
+    out += to_string(scaledColor.red) + ";"; // col red
+    out += to_string(scaledColor.green) + ";"; // col green
+    out += to_string(scaledColor.blue) + "m"; // col blue
     out += "  "; // colored space
     out += "\x1B[0m]"; // ending |
   } else if (output_type == OUTPUT_TYPE_HEX) {
     // otherwise this just prints out the raw hex code if not in color mode
     for (uint32_t i = 0; i < output_type; ++i) {
       char buf[128] = { 0 };
-      snprintf(buf, sizeof(buf), "%02X%02X%02X", Led::get().red, Led::get().green, Led::get().blue);
+      snprintf(buf, sizeof(buf), "%02X%02X%02X", scaledColor.red, scaledColor.green, scaledColor.blue);
       out += buf;
     }
   } else if (output_type == OUTPUT_TYPE_BMP) {
     // Output color to console
     out += "\x1B[0m["; // opening |
     out += "\x1B[48;2;"; // colorcode start
-    out += to_string(Led::get().red) + ";"; // col red
-    out += to_string(Led::get().green) + ";"; // col green
-    out += to_string(Led::get().blue) + "m"; // col blue
+    out += to_string(scaledColor.red) + ";"; // col red
+    out += to_string(scaledColor.green) + ";"; // col green
+    out += to_string(scaledColor.blue) + "m"; // col blue
     out += "  "; // colored space
     out += "\x1B[0m]"; // ending |
     // In the 'show' function, apply scaling before adding to buffer
     if (output_type == OUTPUT_TYPE_BMP && isRecording) {
-      // Define the scaling factor (e.g., 1.5 to increase brightness by 50%)
-      float scaleFactor = 30;
 
-      // Get the current color and scale its brightness up
-      Color currentColor = {Led::get().red, Led::get().green, Led::get().blue};
-      Color scaledColor = scaleUpBrightness(currentColor, scaleFactor);
 
       // Add scaled color to buffer
       colorBuffer.push_back(scaledColor);
