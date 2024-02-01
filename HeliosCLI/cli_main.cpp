@@ -17,11 +17,21 @@
 #include "Button.h"
 #include "Led.h"
 
+#define SCALE8(i, scale)  (((uint16_t)i * (uint16_t)(scale)) >> 8)
+
 using namespace std;
 struct Color {
   uint8_t red, green, blue;
 };
 std::vector<Color> colorBuffer;
+
+Color scaleUpBrightness(const Color& color, float scaleFactor) {
+  Color scaledColor;
+  scaledColor.red = std::min(static_cast<int>(color.red * scaleFactor), 255);
+  scaledColor.green = std::min(static_cast<int>(color.green * scaleFactor), 255);
+  scaledColor.blue = std::min(static_cast<int>(color.blue * scaleFactor), 255);
+  return scaledColor;
+}
 
 // the output types of the tool
 enum OutputType {
@@ -240,10 +250,17 @@ static void show()
     out += to_string(Led::get().blue) + "m"; // col blue
     out += "  "; // colored space
     out += "\x1B[0m]"; // ending |
+    // In the 'show' function, apply scaling before adding to buffer
     if (output_type == OUTPUT_TYPE_BMP && isRecording) {
-      // Save color to bmp file only if recording
+      // Define the scaling factor (e.g., 1.5 to increase brightness by 50%)
+      float scaleFactor = 30;
+
+      // Get the current color and scale its brightness up
       Color currentColor = {Led::get().red, Led::get().green, Led::get().blue};
-      colorBuffer.push_back(currentColor);
+      Color scaledColor = scaleUpBrightness(currentColor, scaleFactor);
+
+      // Add scaled color to buffer
+      colorBuffer.push_back(scaledColor);
     }
   }
   if (!in_place) {
