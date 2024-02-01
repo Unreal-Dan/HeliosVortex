@@ -7,6 +7,9 @@
 #include <getopt.h>
 
 #include <string>
+#include <vector>
+#include <fstream>
+#include <cstdint>
 
 #include "Helios.h"
 #include "TimeControl.h"
@@ -15,12 +18,17 @@
 #include "Led.h"
 
 using namespace std;
+struct Color {
+  uint8_t red, green, blue;
+};
+std::vector<Color> colorBuffer;
 
 // the output types of the tool
 enum OutputType {
   OUTPUT_TYPE_NONE,
   OUTPUT_TYPE_HEX,
   OUTPUT_TYPE_COLOR,
+  OUTPUT_TYPE_BMP,
 };
 
 // various globals for the tool
@@ -40,6 +48,7 @@ static bool read_inputs();
 static void show();
 static void restore_terminal();
 static void set_terminal_nonblocking();
+static void writeBMP(const std::string& filename, const std::vector<Color>& colors);
 static void print_usage(const char* program_name);
 
 int main(int argc, char *argv[])
@@ -76,6 +85,14 @@ int main(int argc, char *argv[])
     // render the output of the main loop
     show();
   }
+  // Write remaining colors in buffer to BMP file before exiting
+  if (!colorBuffer.empty()) {
+    cout << "Writing " << colorBuffer.size() << " colors to BMP." << endl;
+    writeBMP("output.bmp", colorBuffer);
+  }
+
+  cout << "Exiting program." << endl;
+
   return 0;
 }
 
@@ -86,6 +103,7 @@ static void parse_options(int argc, char *argv[])
   int option_index = 0;
   static struct option long_options[] = {
     {"hex", no_argument, nullptr, 'x'},
+    {"bmp", no_argument, nullptr, 'b'},
     {"color", no_argument, nullptr, 'c'},
     {"quiet", no_argument, nullptr, 'q'},
     {"lockstep", no_argument, nullptr, 'l'},
@@ -96,8 +114,12 @@ static void parse_options(int argc, char *argv[])
     {"help", no_argument, nullptr, 'h'},
     {nullptr, 0, nullptr, 0}
   };
-  while ((opt = getopt_long(argc, argv, "xcqtliransP:C:A:h", long_options, &option_index)) != -1) {
+  while ((opt = getopt_long(argc, argv, "xbcqtliransP:C:A:h", long_options, &option_index)) != -1) {
     switch (opt) {
+    case 'b':
+      // if the user wants pretty colors or hex codes
+      output_type = OUTPUT_TYPE_BMP;
+      break;
     case 'x':
       // if the user wants pretty colors or hex codes
       output_type = OUTPUT_TYPE_HEX;
@@ -208,6 +230,20 @@ static void show()
       snprintf(buf, sizeof(buf), "%02X%02X%02X", Led::get().red, Led::get().green, Led::get().blue);
       out += buf;
     }
+  } else if (output_type == OUTPUT_TYPE_BMP) {
+    // Output color to console
+    out += "\x1B[0m["; // opening |
+    out += "\x1B[48;2;"; // colorcode start
+    out += to_string(Led::get().red) + ";"; // col red
+    out += to_string(Led::get().green) + ";"; // col green
+    out += to_string(Led::get().blue) + "m"; // col blue
+    out += "  "; // colored space
+    out += "\x1B[0m]"; // ending |
+    // Save color to bmp file
+    Color currentColor = {Led::get().red, Led::get().green, Led::get().blue};
+
+    // Add color to buffer
+    colorBuffer.push_back(currentColor);
   }
   if (!in_place) {
     out += "\n";
@@ -245,11 +281,51 @@ static void set_terminal_nonblocking()
   atexit(restore_terminal);
 }
 
+static void writeBMP(const std::string& filename, const std::vector<Color>& colors) {
+  int32_t width = colors.size();
+  int32_t height = 1; // Each color is a pixel in a 1-row image
+  uint32_t rowSize = width * 3 + width % 4;
+  uint32_t fileSize = 54 + rowSize * height;
+
+  std::ofstream file(filename, std::ios::out | std::ios::binary);
+
+  // BMP Header
+  file.put('B').put('M'); // Signature
+  file.write(reinterpret_cast<const char*>(&fileSize), 4); // File size
+  file.write("\0\0\0\0", 4); // Reserved
+  file.write("\x36\0\0\0", 4); // Pixel data offset
+
+  // DIB Header
+  file.write("\x28\0\0\0", 4); // DIB Header size
+  file.write(reinterpret_cast<const char*>(&width), 4); // Width
+  file.write(reinterpret_cast<const char*>(&height), 4); // Height
+  file.write("\x01\0", 2); // Planes
+  file.write("\x18\0", 2); // Bits per pixel (24 for RGB)
+  file.write("\0\0\0\0", 4); // Compression (none)
+  file.write("\0\0\0\0", 4); // Image size (can be 0 for uncompressed)
+  file.write("\x13\0\0\0", 4); // Horizontal resolution (px/m, just a placeholder value)
+  file.write("\x13\0\0\0", 4); // Vertical resolution (px/m, placeholder value)
+  file.write("\0\0\0\0", 4); // Colors in color table (none for RGB)
+  file.write("\0\0\0\0", 4); // Important color count (all)
+
+  // Pixel Data
+  for (const auto& color : colors) {
+    file.put(color.blue).put(color.green).put(color.red);
+  }
+  // Padding for each row (BMP rows are aligned to 4-byte boundaries)
+  for (int i = 0; i < width % 4; ++i) {
+    file.put(0);
+  }
+
+  file.close();
+}
+
 // print out the usage for the tool
 static void print_usage(const char* program_name)
 {
   fprintf(stderr, "Usage: %s [options] < input commands\n", program_name);
   fprintf(stderr, "Output Selection (at least one required):\n");
+  fprintf(stderr, "  -b, --bmp                Generates a bmp of the colors\n");
   fprintf(stderr, "  -x, --hex                Use hex values to represent led colors\n");
   fprintf(stderr, "  -c, --color              Use console color codes to represent led colors\n");
   fprintf(stderr, "\n");
