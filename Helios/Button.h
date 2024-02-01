@@ -58,6 +58,7 @@ public:
   static void doPress();
   static void doRelease();
   static void doToggle();
+  static void doStartRecording();
 
   // queue up an input event for the button
   static void queueInput(char input);

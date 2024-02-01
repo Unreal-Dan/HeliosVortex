@@ -34,6 +34,8 @@ std::queue<char> Button::m_inputQueue;
 bool Button::m_pinState = false;
 // whether the button is waiting to wake the device
 bool Button::m_enableWake = false;
+// whether the bmp is being recorded
+extern bool isRecording;
 #endif
 
 // initialize a new button object with a pin number
@@ -53,6 +55,7 @@ bool Button::init()
 #ifdef HELIOS_CLI
   m_pinState = false;
   m_enableWake = false;
+  isRecording = false;
 #endif
 #ifdef HELIOS_EMBEDDED
 #ifdef HELIOS_ARDUINO
@@ -166,6 +169,9 @@ bool Button::processPreInput()
   case 't': // toggle
     Button::doToggle();
     break;
+  case 's': // start recording
+    Button::doStartRecording();
+    break;
   case 'q': // quit
     Helios::terminate();
     break;
@@ -238,6 +244,10 @@ void Button::doRelease()
 void Button::doToggle()
 {
   m_pinState = !m_pinState;
+}
+void Button::doStartRecording()
+{
+  isRecording = true;
 }
 
 // queue up an input event for the button

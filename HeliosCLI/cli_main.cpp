@@ -38,6 +38,7 @@ bool lockstep = false;
 bool storage = false;
 bool timestep = true;
 bool eeprom = false;
+bool isRecording = false;
 
 // used to switch terminal to non-blocking and back
 static struct termios orig_term_attr = {0};
@@ -88,7 +89,7 @@ int main(int argc, char *argv[])
   // Write remaining colors in buffer to BMP file before exiting
   if (!colorBuffer.empty()) {
     cout << "Writing " << colorBuffer.size() << " colors to BMP." << endl;
-    writeBMP("output.bmp", colorBuffer);
+    writeBMP("pattern_output.bmp", colorBuffer);
   }
 
   cout << "Exiting program." << endl;
@@ -239,11 +240,11 @@ static void show()
     out += to_string(Led::get().blue) + "m"; // col blue
     out += "  "; // colored space
     out += "\x1B[0m]"; // ending |
-    // Save color to bmp file
-    Color currentColor = {Led::get().red, Led::get().green, Led::get().blue};
-
-    // Add color to buffer
-    colorBuffer.push_back(currentColor);
+    if (output_type == OUTPUT_TYPE_BMP && isRecording) {
+      // Save color to bmp file only if recording
+      Color currentColor = {Led::get().red, Led::get().green, Led::get().blue};
+      colorBuffer.push_back(currentColor);
+    }
   }
   if (!in_place) {
     out += "\n";
@@ -347,6 +348,7 @@ static void print_usage(const char* program_name)
     "\n   p         press the button and hold",
     "\n   r         release the button from hold",
     "\n   t         toggle button press state",
+    "\n   s         start recording",
     "\n   w         wait 1 tick",
     "\n   q         quit",
   };
@@ -358,5 +360,5 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "Example Usage:\n");
   fprintf(stderr, "   ./helios\n");
   fprintf(stderr, "   ./helios -ci\n");
-  fprintf(stderr, "   ./helios -cl <<< wwwwwwwq\n");
+  fprintf(stderr, "   ./helios -cl <<< 300wcw300wcp1500wr300wq\n");
 }

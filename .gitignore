@@ -8,4 +8,5 @@
 *.elf
 .vscode
 helios
+*.bmp
 
