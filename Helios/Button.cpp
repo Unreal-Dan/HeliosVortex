@@ -34,7 +34,6 @@ std::queue<char> Button::m_inputQueue;
 bool Button::m_pinState = false;
 // whether the button is waiting to wake the device
 bool Button::m_enableWake = false;
-// whether the bmp is being recorded
 #endif
 
 // initialize a new button object with a pin number
