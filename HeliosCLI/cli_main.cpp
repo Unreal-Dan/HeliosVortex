@@ -22,14 +22,6 @@
 using namespace std;
 vector<RGBColor> colorBuffer;
 
-RGBColor scaleUpBrightness(const RGBColor& color, float scaleFactor) {
-  RGBColor scaledColor;
-  scaledColor.red = min(static_cast<int>(color.red * scaleFactor), 255);
-  scaledColor.green = min(static_cast<int>(color.green * scaleFactor), 255);
-  scaledColor.blue = min(static_cast<int>(color.blue * scaleFactor), 255);
-  return scaledColor;
-}
-
 // the output types of the tool
 enum OutputType {
   OUTPUT_TYPE_NONE,
@@ -45,7 +37,6 @@ bool lockstep = false;
 bool storage = false;
 bool timestep = true;
 bool eeprom = false;
-bool isRecording = false;
 
 // used to switch terminal to non-blocking and back
 static struct termios orig_term_attr = {0};
@@ -252,11 +243,19 @@ static void show()
     out += "  "; // colored space
     out += "\x1B[0m]"; // ending |
     // In the 'show' function, apply scaling before adding to buffer
-    if (output_type == OUTPUT_TYPE_BMP && isRecording) {
-
-
+    if (output_type == OUTPUT_TYPE_BMP && Helios::get_record()) {
       // Add scaled color to buffer
       colorBuffer.push_back(scaledColor);
+    }
+    else if (output_type == OUTPUT_TYPE_BMP && !Helios::get_record()) {
+      // Write remaining colors in buffer to BMP file before exiting
+      if (!colorBuffer.empty()) {
+        static int fileCounter = 1;
+        string fileName = "pattern_" + to_string(fileCounter) + ".bmp";
+        cout << "Writing " << colorBuffer.size() << " colors to BMP: " << fileName << endl;
+        writeBMP(fileName, colorBuffer);
+        fileCounter++;
+      }
     }
   }
   if (!in_place) {
@@ -362,6 +361,7 @@ static void print_usage(const char* program_name)
     "\n   r         release the button from hold",
     "\n   t         toggle button press state",
     "\n   s         start recording",
+    "\n   e         end recording",
     "\n   w         wait 1 tick",
     "\n   q         quit",
   };

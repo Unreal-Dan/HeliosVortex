@@ -7,6 +7,5 @@
 *.eep
 *.elf
 .vscode
-helios
 *.bmp
 
