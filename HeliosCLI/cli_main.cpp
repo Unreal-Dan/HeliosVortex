@@ -20,13 +20,10 @@
 #define SCALE8(i, scale)  (((uint16_t)i * (uint16_t)(scale)) >> 8)
 
 using namespace std;
-struct Color {
-  uint8_t red, green, blue;
-};
-std::vector<Color> colorBuffer;
+std::vector<RGBColor> colorBuffer;
 
-Color scaleUpBrightness(const Color& color, float scaleFactor) {
-  Color scaledColor;
+RGBColor scaleUpBrightness(const RGBColor& color, float scaleFactor) {
+  RGBColor scaledColor;
   scaledColor.red = std::min(static_cast<int>(color.red * scaleFactor), 255);
   scaledColor.green = std::min(static_cast<int>(color.green * scaleFactor), 255);
   scaledColor.blue = std::min(static_cast<int>(color.blue * scaleFactor), 255);
@@ -59,7 +56,7 @@ static bool read_inputs();
 static void show();
 static void restore_terminal();
 static void set_terminal_nonblocking();
-static void writeBMP(const std::string& filename, const std::vector<Color>& colors);
+static void writeBMP(const std::string& filename, const std::vector<RGBColor>& colors);
 static void print_usage(const char* program_name);
 
 int main(int argc, char *argv[])
@@ -225,11 +222,11 @@ static void show()
     out += "\r";
   }
   // Define the scaling factor (e.g., 1 = no scaling up 30 = scale up 100%)
-  float scaleFactor = 1;
+  float scaleFactor = 10;
 
   // Get the current color and scale its brightness up
-  Color currentColor = {Led::get().red, Led::get().green, Led::get().blue};
-  Color scaledColor = scaleUpBrightness(currentColor, scaleFactor);
+  RGBColor currentColor = {Led::get().red, Led::get().green, Led::get().blue};
+  RGBColor scaledColor = scaleUpBrightness(currentColor, scaleFactor);
   if (output_type == OUTPUT_TYPE_COLOR) {
     out += "\x1B[0m["; // opening |
     out += "\x1B[48;2;"; // colorcode start
@@ -298,7 +295,7 @@ static void set_terminal_nonblocking()
   atexit(restore_terminal);
 }
 
-static void writeBMP(const std::string& filename, const std::vector<Color>& colors) {
+static void writeBMP(const std::string& filename, const std::vector<RGBColor>& colors) {
   int32_t width = colors.size();
   int32_t height = 1; // Each color is a pixel in a 1-row image
   uint32_t rowSize = width * 3 + width % 4;
