@@ -8,7 +8,6 @@
 #ifdef HELIOS_CLI
 #include <vector>
 #include <fstream>
-using namespace std;
 #endif
 
 

@@ -153,9 +153,9 @@ RGBColor RGBColor::adjustBrightness(uint8_t fadeBy)
 // Helios CLI Colors
 RGBColor RGBColor::scaleUpBrightness(float scaleFactor) {
   RGBColor scaledColor;
-  scaledColor.red = min(static_cast<int>(red * scaleFactor), 255);
-  scaledColor.green = min(static_cast<int>(green * scaleFactor), 255);
-  scaledColor.blue = min(static_cast<int>(blue * scaleFactor), 255);
+  scaledColor.red = std::min(static_cast<int>(red * scaleFactor), 255);
+  scaledColor.green = std::min(static_cast<int>(green * scaleFactor), 255);
+  scaledColor.blue = std::min(static_cast<int>(blue * scaleFactor), 255);
   return scaledColor;
 }
 #endif

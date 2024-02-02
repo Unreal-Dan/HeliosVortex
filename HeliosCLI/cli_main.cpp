@@ -20,8 +20,7 @@
 
 #define SCALE8(i, scale)  (((uint16_t)i * (uint16_t)(scale)) >> 8)
 
-using namespace std;
-vector<RGBColor> colorBuffer;
+std::vector<RGBColor> colorBuffer;
 
 // the output types of the tool
 enum OutputType {
@@ -48,7 +47,7 @@ static bool read_inputs();
 static void show();
 static void restore_terminal();
 static void set_terminal_nonblocking();
-static void writeBMP(const string& filename, const vector<RGBColor>& colors);
+static void writeBMP(const std::string& filename, const std::vector<RGBColor>& colors);
 static void print_usage(const char* program_name);
 
 int main(int argc, char *argv[])
@@ -87,7 +86,7 @@ int main(int argc, char *argv[])
   }
   // Write remaining colors in buffer to BMP file before exiting
   if (!colorBuffer.empty()) {
-    cout << "Writing " << colorBuffer.size() << " colors to BMP." << endl;
+    std::cout << "Writing " << colorBuffer.size() << " colors to BMP." << std::endl;
     writeBMP("pattern_output.bmp", colorBuffer);
   }
 
@@ -208,7 +207,7 @@ static void show()
   if (output_type == OUTPUT_TYPE_NONE) {
     return;
   }
-  string out;
+  std::string out;
   if (in_place) {
     // this resets the cursor back to the beginning of the line
     out += "\r";
@@ -222,9 +221,9 @@ static void show()
   if (output_type == OUTPUT_TYPE_COLOR) {
     out += "\x1B[0m["; // opening |
     out += "\x1B[48;2;"; // colorcode start
-    out += to_string(scaledColor.red) + ";"; // col red
-    out += to_string(scaledColor.green) + ";"; // col green
-    out += to_string(scaledColor.blue) + "m"; // col blue
+    out += std::to_string(scaledColor.red) + ";"; // col red
+    out += std::to_string(scaledColor.green) + ";"; // col green
+    out += std::to_string(scaledColor.blue) + "m"; // col blue
     out += "  "; // colored space
     out += "\x1B[0m]"; // ending |
   } else if (output_type == OUTPUT_TYPE_HEX) {
@@ -238,24 +237,25 @@ static void show()
     // Output color to console
     out += "\x1B[0m["; // opening |
     out += "\x1B[48;2;"; // colorcode start
-    out += to_string(scaledColor.red) + ";"; // col red
-    out += to_string(scaledColor.green) + ";"; // col green
-    out += to_string(scaledColor.blue) + "m"; // col blue
+    out += std::to_string(scaledColor.red) + ";"; // col red
+    out += std::to_string(scaledColor.green) + ";"; // col green
+    out += std::to_string(scaledColor.blue) + "m"; // col blue
     out += "  "; // colored space
     out += "\x1B[0m]"; // ending |
     // In the 'show' function, apply scaling before adding to buffer
     if (output_type == OUTPUT_TYPE_BMP && Helios::get_record()) {
       // Add scaled color to buffer
       colorBuffer.push_back(scaledColor);
-    }
-    else if (output_type == OUTPUT_TYPE_BMP && !Helios::get_record()) {
+    } else if (output_type == OUTPUT_TYPE_BMP && !Helios::get_record()) {
       // Write remaining colors in buffer to BMP file before exiting
       if (!colorBuffer.empty()) {
         static int fileCounter = 1;
-        string fileName = "pattern_" + to_string(fileCounter) + ".bmp";
-        cout << "Writing " << colorBuffer.size() << " colors to BMP: " << fileName << endl;
+        std::string fileName = "pattern_" + std::to_string(fileCounter) + ".bmp";
+        std::cout << "Writing " << colorBuffer.size() << " colors to BMP: " << fileName << std::endl;
         writeBMP(fileName, colorBuffer);
         fileCounter++;
+        // Clear the color buffer
+        colorBuffer.clear();
       }
     }
   }
@@ -295,13 +295,13 @@ static void set_terminal_nonblocking()
   atexit(restore_terminal);
 }
 
-static void writeBMP(const string& filename, const vector<RGBColor>& colors) {
+static void writeBMP(const std::string& filename, const std::vector<RGBColor>& colors) {
   int32_t width = colors.size();
   int32_t height = 1; // Each color is a pixel in a 1-row image
   uint32_t rowSize = width * 3 + width % 4;
   uint32_t fileSize = 54 + rowSize * height;
 
-  ofstream file(filename, ios::out | ios::binary);
+  std::ofstream file(filename, std::ios::out | std::ios::binary);
 
   // BMP Header
   file.put('B').put('M'); // Signature

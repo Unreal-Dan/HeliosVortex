@@ -62,7 +62,7 @@ bool Helios::init()
   selected_slot = 0;
   selected_base_quad = 0;
   keepgoing = true;
-  isRecording = true;
+  isRecording = false;
 #ifdef HELIOS_CLI
   sleeping = false;
 #endif
