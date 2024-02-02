@@ -33,6 +33,7 @@ uint8_t Helios::selected_sat;
 uint8_t Helios::selected_val;
 Pattern Helios::pat;
 bool Helios::keepgoing;
+bool Helios::isRecording;
 
 #ifdef HELIOS_CLI
 bool Helios::sleeping;
@@ -61,6 +62,7 @@ bool Helios::init()
   selected_slot = 0;
   selected_base_quad = 0;
   keepgoing = true;
+  isRecording = true;
 #ifdef HELIOS_CLI
   sleeping = false;
 #endif
@@ -724,23 +726,23 @@ void Helios::handle_state_set_global_brightness()
   }
   // show different levels of green for each selection
   uint8_t col = 0;
-  uint8_t brightness = 0; 
+  uint8_t brightness = 0;
   switch (menu_selection) {
     case 0:
       col = 0xFF;
-      brightness = BRIGHTNESS_HIGH; 
+      brightness = BRIGHTNESS_HIGH;
       break;
     case 1:
       col = 0x78;
-      brightness = BRIGHTNESS_MEDIUM; 
+      brightness = BRIGHTNESS_MEDIUM;
       break;
     case 2:
       col = 0x3c;
-      brightness = BRIGHTNESS_LOW; 
+      brightness = BRIGHTNESS_LOW;
       break;
     case 3:
       col = 0x28;
-      brightness = BRIGHTNESS_LOWEST; 
+      brightness = BRIGHTNESS_LOWEST;
       break;
   }
   Led::set(0, col, 0);
@@ -778,7 +780,7 @@ void Helios::handle_state_randomize()
     Random ctx(seed);
     Colorset &cur_set = pat.colorset();
     uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
-    
+
     cur_set.randomizeColors(ctx, num_cols);
     Patterns::make_pattern((PatternID)(ctx.next8() % PATTERN_COUNT), pat);
     pat.init();

@@ -8,4 +8,6 @@
 *.elf
 .vscode
 *.bmp
+makehelios
+
 
