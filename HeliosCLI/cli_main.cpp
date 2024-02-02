@@ -211,7 +211,7 @@ static void show()
     out += "\r";
   }
   // Define the scaling factor (e.g., 1 = no scaling up 30 = scale up 100%)
-  float scaleFactor = 10;
+  float scaleFactor = 1;
 
   // Get the current color and scale its brightness up
   RGBColor currentColor = {Led::get().red, Led::get().green, Led::get().blue};
