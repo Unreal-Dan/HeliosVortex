@@ -5,6 +5,12 @@
 
 #include "HeliosConfig.h"
 #include "ColorConstants.h"
+#ifdef HELIOS_CLI
+#include <vector>
+#include <fstream>
+using namespace std;
+#endif
+
 
 #if ALTERNATIVE_HSV_RGB == 1
 enum hsv_to_rgb_algorithm : uint8_t
@@ -89,5 +95,10 @@ RGBColor hsv_to_rgb_generic(const HSVColor &rhs);
 
 // Convert rgb to hsv with generic fast method
 HSVColor rgb_to_hsv_generic(const RGBColor &rhs);
+
+#ifdef HELIOS_CLI
+// Helios CLI Colors
+RGBColor scaleUpBrightness(const RGBColor& color, float scaleFactor);
+#endif
 
 #endif

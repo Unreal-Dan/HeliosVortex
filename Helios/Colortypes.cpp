@@ -407,3 +407,14 @@ HSVColor rgb_to_hsv_generic(const RGBColor &rhs)
   }
   return hsv;
 }
+
+#ifdef HELIOS_CLI
+// Helios CLI Colors
+RGBColor scaleUpBrightness(const RGBColor& color, float scaleFactor) {
+  RGBColor scaledColor;
+  scaledColor.red = min(static_cast<int>(color.red * scaleFactor), 255);
+  scaledColor.green = min(static_cast<int>(color.green * scaleFactor), 255);
+  scaledColor.blue = min(static_cast<int>(color.blue * scaleFactor), 255);
+  return scaledColor;
+}
+#endif
