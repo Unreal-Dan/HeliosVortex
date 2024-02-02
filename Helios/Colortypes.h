@@ -5,9 +5,6 @@
 
 #include "HeliosConfig.h"
 #include "ColorConstants.h"
-#ifdef HELIOS_CLI
-#include <fstream>
-#endif
 
 #if ALTERNATIVE_HSV_RGB == 1
 enum hsv_to_rgb_algorithm : uint8_t

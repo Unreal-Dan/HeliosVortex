@@ -1,4 +1,7 @@
 #include "Colortypes.h"
+#ifdef HELIOS_CLI
+#include <fstream>
+#endif
 
 #if ALTERNATIVE_HSV_RGB == 1
 // global hsv to rgb algorithm selector
