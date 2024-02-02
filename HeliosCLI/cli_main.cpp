@@ -20,13 +20,13 @@
 #define SCALE8(i, scale)  (((uint16_t)i * (uint16_t)(scale)) >> 8)
 
 using namespace std;
-std::vector<RGBColor> colorBuffer;
+vector<RGBColor> colorBuffer;
 
 RGBColor scaleUpBrightness(const RGBColor& color, float scaleFactor) {
   RGBColor scaledColor;
-  scaledColor.red = std::min(static_cast<int>(color.red * scaleFactor), 255);
-  scaledColor.green = std::min(static_cast<int>(color.green * scaleFactor), 255);
-  scaledColor.blue = std::min(static_cast<int>(color.blue * scaleFactor), 255);
+  scaledColor.red = min(static_cast<int>(color.red * scaleFactor), 255);
+  scaledColor.green = min(static_cast<int>(color.green * scaleFactor), 255);
+  scaledColor.blue = min(static_cast<int>(color.blue * scaleFactor), 255);
   return scaledColor;
 }
 
@@ -56,7 +56,7 @@ static bool read_inputs();
 static void show();
 static void restore_terminal();
 static void set_terminal_nonblocking();
-static void writeBMP(const std::string& filename, const std::vector<RGBColor>& colors);
+static void writeBMP(const string& filename, const vector<RGBColor>& colors);
 static void print_usage(const char* program_name);
 
 int main(int argc, char *argv[])
@@ -295,13 +295,13 @@ static void set_terminal_nonblocking()
   atexit(restore_terminal);
 }
 
-static void writeBMP(const std::string& filename, const std::vector<RGBColor>& colors) {
+static void writeBMP(const string& filename, const vector<RGBColor>& colors) {
   int32_t width = colors.size();
   int32_t height = 1; // Each color is a pixel in a 1-row image
   uint32_t rowSize = width * 3 + width % 4;
   uint32_t fileSize = 54 + rowSize * height;
 
-  std::ofstream file(filename, std::ios::out | std::ios::binary);
+  ofstream file(filename, ios::out | ios::binary);
 
   // BMP Header
   file.put('B').put('M'); // Signature
