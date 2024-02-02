@@ -82,9 +82,6 @@ public:
 
   uint32_t raw() const { return ((uint32_t)red << 16) | ((uint32_t)green << 8) | (uint32_t)blue; }
 
-
-
-
   // public members
   uint8_t red;
   uint8_t green;
