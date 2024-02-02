@@ -77,13 +77,13 @@ public:
   void clear();
 
   RGBColor adjustBrightness(uint8_t fadeBy);
+  #ifdef HELIOS_CLI
+  // Helios CLI Colors
+  RGBColor scaleUpBrightness(float scaleFactor);
+  #endif
 
   uint32_t raw() const { return ((uint32_t)red << 16) | ((uint32_t)green << 8) | (uint32_t)blue; }
 
-  #ifdef HELIOS_CLI
-  // Helios CLI Colors
-  RGBColor scaleUpBrightness(const RGBColor& color, float scaleFactor);
-  #endif
 
 
 
