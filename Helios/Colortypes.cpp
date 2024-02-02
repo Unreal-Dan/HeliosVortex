@@ -418,4 +418,3 @@ HSVColor rgb_to_hsv_generic(const RGBColor &rhs)
   }
   return hsv;
 }
-
