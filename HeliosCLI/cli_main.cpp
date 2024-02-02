@@ -14,6 +14,7 @@
 #include "Helios.h"
 #include "TimeControl.h"
 #include "Storage.h"
+#include "Colortypes.h"
 #include "Button.h"
 #include "Led.h"
 
@@ -217,7 +218,7 @@ static void show()
 
   // Get the current color and scale its brightness up
   RGBColor currentColor = {Led::get().red, Led::get().green, Led::get().blue};
-  RGBColor scaledColor = scaleUpBrightness(currentColor, scaleFactor);
+  RGBColor scaledColor = RGBColor::scaleUpBrightness(currentColor, scaleFactor);
   if (output_type == OUTPUT_TYPE_COLOR) {
     out += "\x1B[0m["; // opening |
     out += "\x1B[48;2;"; // colorcode start

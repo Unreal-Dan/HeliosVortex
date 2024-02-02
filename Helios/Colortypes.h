@@ -80,6 +80,13 @@ public:
 
   uint32_t raw() const { return ((uint32_t)red << 16) | ((uint32_t)green << 8) | (uint32_t)blue; }
 
+  #ifdef HELIOS_CLI
+  // Helios CLI Colors
+  RGBColor scaleUpBrightness(const RGBColor& color, float scaleFactor);
+  #endif
+
+
+
   // public members
   uint8_t red;
   uint8_t green;
@@ -95,10 +102,5 @@ RGBColor hsv_to_rgb_generic(const HSVColor &rhs);
 
 // Convert rgb to hsv with generic fast method
 HSVColor rgb_to_hsv_generic(const RGBColor &rhs);
-
-#ifdef HELIOS_CLI
-// Helios CLI Colors
-RGBColor scaleUpBrightness(const RGBColor& color, float scaleFactor);
-#endif
 
 #endif
