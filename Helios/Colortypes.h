@@ -9,7 +9,6 @@
 #include <fstream>
 #endif
 
-
 #if ALTERNATIVE_HSV_RGB == 1
 enum hsv_to_rgb_algorithm : uint8_t
 {
