@@ -6,7 +6,6 @@
 #include "HeliosConfig.h"
 #include "ColorConstants.h"
 #ifdef HELIOS_CLI
-#include <vector>
 #include <fstream>
 #endif
 
