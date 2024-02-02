@@ -73,7 +73,7 @@ TESTS=\
 
 # target files
 TARGETS=\
-    makehelios \
+    helios \
 
 # Default target for 'make' command
 all: $(TARGETS)
@@ -82,7 +82,7 @@ all: $(TARGETS)
 tests: $(TESTS)
 
 # target for vortex lib
-makehelios: $(DEPS)
+helios: $(DEPS)
 	$(CC) $(CFLAGS) $^ -o $@ $(LLIBS)
 
 # catch-all make target to generate .o and .d files

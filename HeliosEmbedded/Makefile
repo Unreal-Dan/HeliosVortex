@@ -109,7 +109,7 @@ OBJS = $(SRCS:.cpp=.o)
 DFILES = $(SRCS:.cpp=.d)
 
 # Target name
-TARGET = makehelios
+TARGET = helios
 
 all: $(TARGET).hex
 	@echo Detected Operating System: $(OS)

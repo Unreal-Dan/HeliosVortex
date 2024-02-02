@@ -1,3 +1,5 @@
+*
+!*/
 *.o
 *.d
 *.hex
@@ -8,4 +10,3 @@
 *.elf
 .vscode
 *.bmp
-makehelios
