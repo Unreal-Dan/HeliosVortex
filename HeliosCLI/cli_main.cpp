@@ -18,8 +18,6 @@
 #include "Button.h"
 #include "Led.h"
 
-#define SCALE8(i, scale)  (((uint16_t)i * (uint16_t)(scale)) >> 8)
-
 std::vector<RGBColor> colorBuffer;
 
 // the output types of the tool
