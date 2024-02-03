@@ -15,12 +15,12 @@ public:
 
   static bool keep_going() { return keepgoing; }
   static void terminate() { keepgoing = false; }
-  static void start_record() { isRecording = true; }
-  static void end_record() { isRecording = false; }
-  static bool is_recording() { return isRecording; }
 
 #ifdef HELIOS_CLI
   static bool is_asleep() { return sleeping; }
+  static void start_record() { isRecording = true; }
+  static void end_record() { isRecording = false; }
+  static bool is_recording() { return isRecording; }
 #endif
 
 private:

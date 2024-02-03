@@ -213,6 +213,9 @@ static bool read_inputs()
       command = newc;
     }
     for (uint32_t i = 0; i < repeatAmount; ++i) {
+      // TODO: catch the 's' and the 'e' here and handle them at the CLI level
+      //       OR implement recording in the engine itself. But don't have the recording bool
+      //       owned by the engine, but the actual recording data (array of colors) owned by the CLI
       // otherwise just queue up the command
       Button::queueInput(command);
     }
@@ -250,7 +253,7 @@ static void show()
       out += buf;
     }
   }
-  // In the 'show' function, apply scaling before adding to buffer
+  // if the engine
   if (Helios::is_recording()) {
     // Add scaled color to buffer
     colorBuffer.push_back(scaledColor);
