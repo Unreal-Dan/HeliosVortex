@@ -172,6 +172,9 @@ bool Button::processPreInput()
   case 'e': // end recording
     Helios::end_record();
     break;
+  case 'b': // scale brightness
+    // Scale Brightness
+    break;
   case 'q': // quit
     Helios::terminate();
     break;

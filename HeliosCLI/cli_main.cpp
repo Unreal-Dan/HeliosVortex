@@ -35,6 +35,8 @@ bool lockstep = false;
 bool storage = false;
 bool timestep = true;
 bool eeprom = false;
+// Define the scaling factor (e.g., 1 = no scaling up 30 = scale up 100%)
+float scaleFactor = 1;
 
 // used to switch terminal to non-blocking and back
 static struct termios orig_term_attr = {0};
@@ -210,13 +212,10 @@ static void show()
     // this resets the cursor back to the beginning of the line
     out += "\r";
   }
-  // Define the scaling factor (e.g., 1 = no scaling up 30 = scale up 100%)
-  float scaleFactor = 1;
-
   // Get the current color and scale its brightness up
   RGBColor currentColor = {Led::get().red, Led::get().green, Led::get().blue};
   RGBColor scaledColor = currentColor.scaleUpBrightness(scaleFactor);
-  if (output_type == OUTPUT_TYPE_COLOR) {
+  if (output_type == OUTPUT_TYPE_COLOR || output_type == OUTPUT_TYPE_BMP) {
     out += "\x1B[0m["; // opening |
     out += "\x1B[48;2;"; // colorcode start
     out += std::to_string(scaledColor.red) + ";"; // col red
@@ -231,15 +230,8 @@ static void show()
       snprintf(buf, sizeof(buf), "%02X%02X%02X", scaledColor.red, scaledColor.green, scaledColor.blue);
       out += buf;
     }
-  } else if (output_type == OUTPUT_TYPE_BMP) {
-    // Output color to console
-    out += "\x1B[0m["; // opening |
-    out += "\x1B[48;2;"; // colorcode start
-    out += std::to_string(scaledColor.red) + ";"; // col red
-    out += std::to_string(scaledColor.green) + ";"; // col green
-    out += std::to_string(scaledColor.blue) + "m"; // col blue
-    out += "  "; // colored space
-    out += "\x1B[0m]"; // ending |
+  }
+  if (output_type == OUTPUT_TYPE_BMP) {
     // In the 'show' function, apply scaling before adding to buffer
     if (output_type == OUTPUT_TYPE_BMP && Helios::get_record()) {
       // Add scaled color to buffer
@@ -294,12 +286,15 @@ static void set_terminal_nonblocking()
 }
 
 static void writeBMP(const std::string& filename, const std::vector<RGBColor>& colors) {
+  std::string folderPath = "patterns/";
+  std::string fullPath = folderPath + filename;
+
   int32_t width = colors.size();
   int32_t height = 1; // Each color is a pixel in a 1-row image
   uint32_t rowSize = width * 3 + width % 4;
   uint32_t fileSize = 54 + rowSize * height;
 
-  std::ofstream file(filename, std::ios::out | std::ios::binary);
+  std::ofstream file(fullPath, std::ios::out | std::ios::binary);
 
   // BMP Header
   file.put('B').put('M'); // Signature
