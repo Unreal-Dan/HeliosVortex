@@ -17,7 +17,7 @@ public:
   static void terminate() { keepgoing = false; }
   static void start_record() { isRecording = true; }
   static void end_record() { isRecording = false; }
-  static bool get_record() { return isRecording; }
+  static bool is_recording() { return isRecording; }
 
 #ifdef HELIOS_CLI
   static bool is_asleep() { return sleeping; }

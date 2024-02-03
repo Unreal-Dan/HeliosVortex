@@ -1,6 +1,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
 #include <termios.h>
 #include <sys/select.h>
 #include <sys/ioctl.h>
@@ -30,13 +31,14 @@ enum OutputType {
 
 // various globals for the tool
 OutputType output_type = OUTPUT_TYPE_COLOR;
+std::string bmp_filename = "pattern.bmp";
 bool in_place = false;
 bool lockstep = false;
 bool storage = false;
 bool timestep = true;
 bool eeprom = false;
 // Define the scaling factor (e.g., 1 = no scaling up 30 = scale up 100%)
-float scaleFactor = 1;
+float scaleFactor = 1.0f;
 
 // used to switch terminal to non-blocking and back
 static struct termios orig_term_attr = {0};
@@ -47,7 +49,7 @@ static bool read_inputs();
 static void show();
 static void restore_terminal();
 static void set_terminal_nonblocking();
-static void writeBMP(const std::string& filename, const std::vector<RGBColor>& colors);
+static bool writeBMP(const std::string& filename, const std::vector<RGBColor>& colors);
 static void print_usage(const char* program_name);
 
 int main(int argc, char *argv[])
@@ -86,8 +88,12 @@ int main(int argc, char *argv[])
   }
   // Write remaining colors in buffer to BMP file before exiting
   if (!colorBuffer.empty()) {
-    std::cout << "Writing " << colorBuffer.size() << " colors to BMP." << std::endl;
-    writeBMP("pattern_output.bmp", colorBuffer);
+    std::cout << "Writing " << colorBuffer.size() << " colors to " << bmp_filename << std::endl;
+    // try to write out the bmp file
+    if (!writeBMP(bmp_filename.c_str(), colorBuffer)) {
+      // non-zero exit code means the utility failed it's job
+      return 1;
+    }
   }
 
   return 0;
@@ -100,7 +106,7 @@ static void parse_options(int argc, char *argv[])
   int option_index = 0;
   static struct option long_options[] = {
     {"hex", no_argument, nullptr, 'x'},
-    {"bmp", no_argument, nullptr, 'b'},
+    {"bmp", optional_argument, nullptr, 'b'},
     {"color", no_argument, nullptr, 'c'},
     {"quiet", no_argument, nullptr, 'q'},
     {"lockstep", no_argument, nullptr, 'l'},
@@ -111,11 +117,19 @@ static void parse_options(int argc, char *argv[])
     {"help", no_argument, nullptr, 'h'},
     {nullptr, 0, nullptr, 0}
   };
-  while ((opt = getopt_long(argc, argv, "xbcqtliransP:C:A:h", long_options, &option_index)) != -1) {
+  while ((opt = getopt_long(argc, argv, "b::xcqltisEh", long_options, &option_index)) != -1) {
     switch (opt) {
     case 'b':
       // if the user wants pretty colors or hex codes
       output_type = OUTPUT_TYPE_BMP;
+      // allow for a space between the -b and the filename
+      if (optarg == NULL && optind < argc && argv[optind][0] != '-') {
+        optarg = argv[optind++];
+      }
+      // if an argument was provided for -b then set it as the bmp filename
+      if (optarg) {
+        bmp_filename = optarg;
+      }
       break;
     case 'x':
       // if the user wants pretty colors or hex codes
@@ -214,7 +228,7 @@ static void show()
   }
   // Get the current color and scale its brightness up
   RGBColor currentColor = {Led::get().red, Led::get().green, Led::get().blue};
-  RGBColor scaledColor = currentColor.scaleUpBrightness(scaleFactor);
+  RGBColor scaledColor = currentColor.scaleBrightness(scaleFactor);
   if (output_type == OUTPUT_TYPE_COLOR || output_type == OUTPUT_TYPE_BMP) {
     out += "\x1B[0m["; // opening |
     out += "\x1B[48;2;"; // colorcode start
@@ -231,23 +245,10 @@ static void show()
       out += buf;
     }
   }
-  if (output_type == OUTPUT_TYPE_BMP) {
-    // In the 'show' function, apply scaling before adding to buffer
-    if (output_type == OUTPUT_TYPE_BMP && Helios::get_record()) {
-      // Add scaled color to buffer
-      colorBuffer.push_back(scaledColor);
-    } else if (output_type == OUTPUT_TYPE_BMP && !Helios::get_record()) {
-      // Write remaining colors in buffer to BMP file before exiting
-      if (!colorBuffer.empty()) {
-        static int fileCounter = 1;
-        std::string fileName = "pattern_" + std::to_string(fileCounter) + ".bmp";
-        std::cout << "Writing " << colorBuffer.size() << " colors to BMP: " << fileName << std::endl;
-        writeBMP(fileName, colorBuffer);
-        fileCounter++;
-        // Clear the color buffer
-        colorBuffer.clear();
-      }
-    }
+  // In the 'show' function, apply scaling before adding to buffer
+  if (output_type == OUTPUT_TYPE_BMP && Helios::is_recording()) {
+    // Add scaled color to buffer
+    colorBuffer.push_back(scaledColor);
   }
   if (!in_place) {
     out += "\n";
@@ -285,46 +286,58 @@ static void set_terminal_nonblocking()
   atexit(restore_terminal);
 }
 
-static void writeBMP(const std::string& filename, const std::vector<RGBColor>& colors) {
-  std::string folderPath = "patterns/";
-  std::string fullPath = folderPath + filename;
-
+bool writeBMP(const std::string& filename, const std::vector<RGBColor>& colors)
+{
+  // structure of the bmp and dib headers to write out
+  struct BMPHeader {
+    char signature[2];
+    uint32_t fileSize;
+    uint32_t reserved;
+    uint32_t dataOffset;
+  };
+  struct DIBHeader {
+    uint32_t headerSize;
+    int32_t width;
+    int32_t height;
+    uint16_t planes;
+    uint16_t bitsPerPixel;
+    uint32_t compression;
+    uint32_t imageSize;
+    int32_t xPixelsPerMeter;
+    int32_t yPixelsPerMeter;
+    uint32_t colorsInColorTable;
+    uint32_t importantColorCount;
+  };
+  // some basic calculations for the bmp dimensions
   int32_t width = colors.size();
-  int32_t height = 1; // Each color is a pixel in a 1-row image
-  uint32_t rowSize = width * 3 + width % 4;
-  uint32_t fileSize = 54 + rowSize * height;
-
-  std::ofstream file(fullPath, std::ios::out | std::ios::binary);
-
-  // BMP Header
-  file.put('B').put('M'); // Signature
-  file.write(reinterpret_cast<const char*>(&fileSize), 4); // File size
-  file.write("\0\0\0\0", 4); // Reserved
-  file.write("\x36\0\0\0", 4); // Pixel data offset
-
-  // DIB Header
-  file.write("\x28\0\0\0", 4); // DIB Header size
-  file.write(reinterpret_cast<const char*>(&width), 4); // Width
-  file.write(reinterpret_cast<const char*>(&height), 4); // Height
-  file.write("\x01\0", 2); // Planes
-  file.write("\x18\0", 2); // Bits per pixel (24 for RGB)
-  file.write("\0\0\0\0", 4); // Compression (none)
-  file.write("\0\0\0\0", 4); // Image size (can be 0 for uncompressed)
-  file.write("\x13\0\0\0", 4); // Horizontal resolution (px/m, just a placeholder value)
-  file.write("\x13\0\0\0", 4); // Vertical resolution (px/m, placeholder value)
-  file.write("\0\0\0\0", 4); // Colors in color table (none for RGB)
-  file.write("\0\0\0\0", 4); // Important color count (all)
-
-  // Pixel Data
-  for (const auto& color : colors) {
-    file.put(color.blue).put(color.green).put(color.red);
+  int32_t height = 1;
+  uint32_t rowSize = width * 3 + (width % 4 ? 4 - (width * 3 % 4) : 0);
+  // create local instances of the BMP and DIB header to write out
+  BMPHeader bmpHeader = {{'B', 'M'}, 54 + rowSize * height, 0, 54};
+  DIBHeader dibHeader = {40, width, height, 1, 24, 0, 0, 2835, 2835, 0, 0};
+  // open the output bmp file
+  std::ofstream file(filename, std::ios::binary);
+  if (!file) {
+    std::cerr << "Failed to open file: " << filename << " (" << strerror(errno) << ")" << std::endl;
+    return false;
   }
-  // Padding for each row (BMP rows are aligned to 4-byte boundaries)
-  for (int i = 0; i < width % 4; ++i) {
+  // write out the bmp header and dib header
+  file.write((char*)&bmpHeader, sizeof(bmpHeader));
+  file.write((char*)&dibHeader, sizeof(dibHeader));
+  // write out the array of colors
+  for (const auto& color : colors) {
+    file.write((char*)&color, 3);
+  }
+  // fill the rest of the space with 0s so it's aligned
+  for (uint32_t i = 0; i < (rowSize - (width * 3)); ++i) {
     file.put(0);
   }
-
-  file.close();
+  // check the file was written properly
+  if (!file.good()) {
+    std::cerr << "Error writing to file: " << filename << std::endl;
+    return false;
+  }
+  return true;
 }
 
 // print out the usage for the tool
@@ -332,9 +345,9 @@ static void print_usage(const char* program_name)
 {
   fprintf(stderr, "Usage: %s [options] < input commands\n", program_name);
   fprintf(stderr, "Output Selection (at least one required):\n");
-  fprintf(stderr, "  -b, --bmp                Generates a bmp of the colors\n");
-  fprintf(stderr, "  -x, --hex                Use hex values to represent led colors\n");
-  fprintf(stderr, "  -c, --color              Use console color codes to represent led colors\n");
+  fprintf(stderr, "  -b, --bmp [file]         Specify a bitmap filename to output colors to (default: output.bmp)\n");
+  fprintf(stderr, "  -x, --hex                Print hex values to represent led colors instead of color codes\n");
+  fprintf(stderr, "  -c, --color              Print console color codes to represent led colors\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Engine Control Flags (optional):\n");
   fprintf(stderr, "  -l, --lockstep           Only step once each time an input is received\n");

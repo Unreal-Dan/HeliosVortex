@@ -151,10 +151,8 @@ RGBColor RGBColor::adjustBrightness(uint8_t fadeBy)
 }
 
 #ifdef HELIOS_CLI
-// calculate the minimum value between two values
-#define MIN(x, y) (((x) > (y)) ? (x) : (y))
 // scale a uint8 by a float value, don't use this on embedded!
-#define FSCALE8(x, scale) (uint8_t)MIN((uint32_t)(x * scale), 255)
+#define FSCALE8(x, scale) (uint8_t)(((float)x * scale) > 255 ? 255 : ((float)x * scale))
 // return a scaled up the brightness version of the current color
 RGBColor RGBColor::scaleBrightness(float scale)
 {
