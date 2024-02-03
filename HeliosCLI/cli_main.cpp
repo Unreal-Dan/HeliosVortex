@@ -135,7 +135,7 @@ static void parse_options(int argc, char *argv[])
       if (optarg) {
         bmp_filename = optarg;
       }
-      scaleFactor = atof(optarg);  // Parse the argument as a float and assign it to scaleFactor
+      // scaleFactor = atof(optarg);  // Parse the argument as a float and assign it to scaleFactor
       break;
     case 'x':
       // if the user wants pretty colors or hex codes
