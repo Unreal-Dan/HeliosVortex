@@ -70,11 +70,20 @@ public:
   bool empty() const;
   void clear();
 
+  // scale down the brightness of a color by some fade amount
   RGBColor adjustBrightness(uint8_t fadeBy);
-  #ifdef HELIOS_CLI
-  // Helios CLI Colors
-  RGBColor scaleUpBrightness(float scaleFactor);
-  #endif
+
+#ifdef HELIOS_CLI
+  // return a scale brightness version of the current color, this uses
+  // a float value to scale the r/g/b values of the color
+  //  ex: 0.0 = black
+  //      0.5 = half as bright
+  //      1.0 = no change
+  //      1.5 = 50% brighter
+  //      2.0 = twice as bright
+  //    255.0 = white
+  RGBColor scaleBrightness(float scale);
+#endif
 
   uint32_t raw() const { return ((uint32_t)red << 16) | ((uint32_t)green << 8) | (uint32_t)blue; }
 

@@ -141,6 +141,7 @@ void RGBColor::clear()
   blue = 0;
 }
 
+// scale down the brightness of a color by some fade amount
 RGBColor RGBColor::adjustBrightness(uint8_t fadeBy)
 {
   red = (((int)red) * (int)(256 - fadeBy)) >> 8;
@@ -150,19 +151,16 @@ RGBColor RGBColor::adjustBrightness(uint8_t fadeBy)
 }
 
 #ifdef HELIOS_CLI
-
 // calculate the minimum value between two values
 #define MIN(x, y) (((x) > (y)) ? (x) : (y))
 // scale a uint8 by a float value, don't use this on embedded!
 #define FSCALE8(x, scale) (uint8_t)MIN((uint32_t)(x * scale), 255)
-
 // return a scaled up the brightness version of the current color
-RGBColor RGBColor::scaleUpBrightness(float scale)
+RGBColor RGBColor::scaleBrightness(float scale)
 {
   // scale each color up by the given amount and return a new color
   return RGBColor(FSCALE8(red, scale), FSCALE8(green, scale), FSCALE8(blue, scale));
 }
-
 #endif
 
 // ========================================================
