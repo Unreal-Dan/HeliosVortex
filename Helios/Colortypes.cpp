@@ -1,7 +1,4 @@
 #include "Colortypes.h"
-#ifdef HELIOS_CLI
-#include <fstream>
-#endif
 
 #if ALTERNATIVE_HSV_RGB == 1
 // global hsv to rgb algorithm selector
@@ -153,13 +150,15 @@ RGBColor RGBColor::adjustBrightness(uint8_t fadeBy)
 }
 
 #ifdef HELIOS_CLI
-// Helios CLI Colors
-RGBColor RGBColor::scaleUpBrightness(float scaleFactor) {
-  RGBColor scaledColor;
-  scaledColor.red = std::min(static_cast<int>(red * scaleFactor), 255);
-  scaledColor.green = std::min(static_cast<int>(green * scaleFactor), 255);
-  scaledColor.blue = std::min(static_cast<int>(blue * scaleFactor), 255);
-  return scaledColor;
+// calculate the minimum value between two values
+#define MIN(x, y) (((x) > (y)) ? (x) : (y))
+// return a scaled up the brightness version of the current color
+RGBColor RGBColor::scaleUpBrightness(float scale)
+{
+  // scale each color up by the given amount and do not let it pass 255
+  return RGBColor((uint8_t)MIN((uint32_t)(red * scale), 255),
+                  (uint8_t)MIN((uint32_t)(green * scale), 255),
+                  (uint8_t)MIN((uint32_t)(blue * scale), 255));
 }
 #endif
 
