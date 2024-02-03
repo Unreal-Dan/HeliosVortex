@@ -26,7 +26,6 @@ enum OutputType {
   OUTPUT_TYPE_NONE,
   OUTPUT_TYPE_HEX,
   OUTPUT_TYPE_COLOR,
-  OUTPUT_TYPE_BMP,
 };
 
 // various globals for the tool
@@ -37,6 +36,7 @@ bool lockstep = false;
 bool storage = false;
 bool timestep = true;
 bool eeprom = false;
+bool generate_bmp = false;
 // Define the scaling factor (e.g., 1 = no scaling up 30 = scale up 100%)
 float scaleFactor = 1.0f;
 
@@ -86,10 +86,15 @@ int main(int argc, char *argv[])
     // render the output of the main loop
     show();
   }
-  // Write remaining colors in buffer to BMP file before exiting
-  if (!colorBuffer.empty()) {
+  // if the user requested a bmp file to be written
+  if (generate_bmp) {
+    // if they didn't record anything give them a message indicating they need to record
+    if (!colorBuffer.size()) {
+      std::cout << "Cannot generate BMP! Color buffer is empty, did you specify a section to record with 's' and 'e' input commands?" << std::endl;
+      return 0;
+    }
     std::cout << "Writing " << colorBuffer.size() << " colors to " << bmp_filename << std::endl;
-    // try to write out the bmp file
+    // try to write out however many colors they recorded to the bmp file
     if (!writeBMP(bmp_filename.c_str(), colorBuffer)) {
       // non-zero exit code means the utility failed it's job
       return 1;
@@ -117,11 +122,11 @@ static void parse_options(int argc, char *argv[])
     {"help", no_argument, nullptr, 'h'},
     {nullptr, 0, nullptr, 0}
   };
-  while ((opt = getopt_long(argc, argv, "b::xcqltisEh", long_options, &option_index)) != -1) {
+  while ((opt = getopt_long(argc, argv, "xcqltisb::Eh", long_options, &option_index)) != -1) {
     switch (opt) {
     case 'b':
-      // if the user wants pretty colors or hex codes
-      output_type = OUTPUT_TYPE_BMP;
+      // generate a bmp file
+      generate_bmp = true;
       // allow for a space between the -b and the filename
       if (optarg == NULL && optind < argc && argv[optind][0] != '-') {
         optarg = argv[optind++];
@@ -229,7 +234,7 @@ static void show()
   // Get the current color and scale its brightness up
   RGBColor currentColor = {Led::get().red, Led::get().green, Led::get().blue};
   RGBColor scaledColor = currentColor.scaleBrightness(scaleFactor);
-  if (output_type == OUTPUT_TYPE_COLOR || output_type == OUTPUT_TYPE_BMP) {
+  if (output_type == OUTPUT_TYPE_COLOR) {
     out += "\x1B[0m["; // opening |
     out += "\x1B[48;2;"; // colorcode start
     out += std::to_string(scaledColor.red) + ";"; // col red
@@ -246,7 +251,7 @@ static void show()
     }
   }
   // In the 'show' function, apply scaling before adding to buffer
-  if (output_type == OUTPUT_TYPE_BMP && Helios::is_recording()) {
+  if (Helios::is_recording()) {
     // Add scaled color to buffer
     colorBuffer.push_back(scaledColor);
   }
@@ -345,7 +350,6 @@ static void print_usage(const char* program_name)
 {
   fprintf(stderr, "Usage: %s [options] < input commands\n", program_name);
   fprintf(stderr, "Output Selection (at least one required):\n");
-  fprintf(stderr, "  -b, --bmp [file]         Specify a bitmap filename to output colors to (default: output.bmp)\n");
   fprintf(stderr, "  -x, --hex                Print hex values to represent led colors instead of color codes\n");
   fprintf(stderr, "  -c, --color              Print console color codes to represent led colors\n");
   fprintf(stderr, "\n");
@@ -356,6 +360,7 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "  -s, --no-storage         Disable persistent storage to file (FlashStorage.flash)\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Other Options:\n");
+  fprintf(stderr, "  -b, --bmp [file]         Specify a bitmap file to generate (default: output.bmp)\n");
   fprintf(stderr, "  -E, --eeprom             Generate an eeprom file for flashing\n");
   fprintf(stderr, "  -h, --help               Display this help message\n");
   fprintf(stderr, "\n");
@@ -367,8 +372,8 @@ static void print_usage(const char* program_name)
     "\n   p         press the button and hold",
     "\n   r         release the button from hold",
     "\n   t         toggle button press state",
-    "\n   s         start recording",
-    "\n   e         end recording",
+    "\n   s         start recording BMP output",
+    "\n   e         end recording BMP output",
     "\n   w         wait 1 tick",
     "\n   q         quit",
   };
