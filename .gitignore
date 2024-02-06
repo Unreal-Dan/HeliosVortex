@@ -1,5 +1,13 @@
+# Ignore everything
 *
+
+# But not directories
 !*/
+
+# Re-include .sh scripts
+!*.sh
+
+# Ignore object files, dependency files, and other build artifacts
 *.o
 *.d
 *.hex
@@ -8,5 +16,10 @@
 *.bin
 *.eep
 *.elf
-.vscode
+
+# Ignore VSCode directory
+.vscode/
+
+# Ignore bitmap files
 *.bmp
+
