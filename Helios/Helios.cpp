@@ -150,7 +150,8 @@ void Helios::enter_sleep()
 #endif
 }
 
-void Helios::wakeup() {
+void Helios::wakeup()
+{
 #ifdef HELIOS_EMBEDDED
   // nothing needed here, this interrupt firing will make the mainthread resume
 #else
@@ -168,6 +169,45 @@ void Helios::wakeup() {
   // turn off the sleeping flag that only CLI has
   sleeping = false;
 #endif
+}
+
+void Helios::load_next_mode()
+{
+  // increment current mode and wrap around
+  cur_mode = (uint8_t)(cur_mode + 1) % NUM_MODE_SLOTS;
+  // now load current mode again
+  load_cur_mode();
+}
+
+void Helios::load_cur_mode()
+{
+  // read pattern from storage at cur mode index
+  if (!Storage::read_pattern(cur_mode, pat)) {
+    // and just initialize default if it cannot be read
+    Patterns::make_default(cur_mode, pat);
+    // try to write it out because storage was corrupt
+    Storage::write_pattern(cur_mode, pat);
+  }
+  // then re-initialize the pattern
+  pat.init();
+}
+
+void Helios::save_cur_mode()
+{
+  Storage::write_pattern(cur_mode, pat);
+}
+
+void Helios::save_global_flags()
+{
+  Storage::write_global_flags(global_flags);
+  Storage::write_current_mode(cur_mode);
+}
+
+void Helios::set_mode_index(uint8_t mode_index)
+{
+  cur_mode = (uint8_t)mode_index % NUM_MODE_SLOTS;
+  // now load current mode again
+  load_cur_mode();
 }
 
 void Helios::handle_state()
@@ -228,32 +268,6 @@ void Helios::handle_state()
       break;
 #endif
   }
-}
-
-void Helios::load_next_mode()
-{
-  // increment current mode and wrap around
-  cur_mode = (uint8_t)(cur_mode + 1) % NUM_MODE_SLOTS;
-  // now load current mode again
-  load_cur_mode();
-}
-
-void Helios::load_cur_mode()
-{
-  // read pattern from storage at cur mode index
-  if (!Storage::read_pattern(cur_mode, pat)) {
-    // and just initialize default if it cannot be read
-    Patterns::make_default(cur_mode, pat);
-    // try to write it out because storage was corrupt
-    Storage::write_pattern(cur_mode, pat);
-  }
-  // then re-initialize the pattern
-  pat.init();
-}
-
-void Helios::save_cur_mode()
-{
-  Storage::write_pattern(cur_mode, pat);
 }
 
 void Helios::handle_state_modes()
@@ -789,12 +803,6 @@ void Helios::handle_state_randomize()
   }
   pat.play();
   show_selection(RGB_WHITE_BRI_LOW);
-}
-
-void Helios::save_global_flags()
-{
-  Storage::write_global_flags(global_flags);
-  Storage::write_current_mode(cur_mode);
 }
 
 void Helios::show_long_selection(RGBColor color)

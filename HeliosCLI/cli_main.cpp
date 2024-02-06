@@ -77,6 +77,7 @@ uint32_t num_cycles = 0;
 float brightness_scale = 1.0f;
 std::string initial_colorset_str = "";
 std::string initial_pattern_str = "";
+uint32_t initial_mode_index = 0;
 
 // used to switch terminal to non-blocking and back
 static struct termios orig_term_attr = {0};
@@ -100,11 +101,10 @@ int main(int argc, char *argv[])
   Time::enableTimestep(timestep);
   // toggle storage in the engine based on cli input
   Storage::enableStorage(storage);
-  // run the arduino setup routine
+  // run the engine initialization
   Helios::init();
-
-  // additional engine manipulation here
-
+  // set the initial mode index
+  Helios::set_mode_index(initial_mode_index);
   // Set the initial pattern based on user arguments
   if (initial_pattern_str.length() > 0) {
     // convert the string arg to integer, then treat it as a PatternID
@@ -114,7 +114,6 @@ int main(int argc, char *argv[])
     // re-initialize the current pattern
     Helios::cur_pattern().init();
   }
-
   // Set the initial colorset based on user arguments
   if (initial_colorset_str.length() > 0) {
     std::stringstream ss(initial_colorset_str);
@@ -134,7 +133,6 @@ int main(int argc, char *argv[])
     // re-initialize the current pattern
     Helios::cur_pattern().init();
   }
-
   // just generate eeprom?
   if (eeprom) {
     return 0;
@@ -211,16 +209,17 @@ static void parse_options(int argc, char *argv[])
     {"no-timestep", no_argument, nullptr, 't'},
     {"in-place", no_argument, nullptr, 'i'},
     {"no-storage", no_argument, nullptr, 's'},
-    {"full-cycle", optional_argument, nullptr, 'y'},
+    {"cycle", optional_argument, nullptr, 'y'},
     {"brightness-scale", required_argument, nullptr, 'a'},
     {"colorset", required_argument, nullptr, 'C'},
     {"pattern", required_argument, nullptr, 'P'},
+    {"mode-index", required_argument, nullptr, 'I'},
     {"bmp", optional_argument, nullptr, 'b'},
     {"eeprom", no_argument, nullptr, 'E'},
     {"help", no_argument, nullptr, 'h'},
     {nullptr, 0, nullptr, 0}
   };
-  while ((opt = getopt_long(argc, argv, "xcqltisyaC:P:b::Eh", long_options, &option_index)) != -1) {
+  while ((opt = getopt_long(argc, argv, "xcqltisyaC:P:I:b::Eh", long_options, &option_index)) != -1) {
     switch (opt) {
     case 'x':
       // if the user wants pretty colors or hex codes
@@ -270,7 +269,7 @@ static void parse_options(int argc, char *argv[])
         brightness_scale = strtof(optarg, NULL);
       }
       // allow brightness scale 0? probably not because it's most likely a mistake
-      // like wrong arguments and the brightness was passed a string, so just reset 
+      // like wrong arguments and the brightness was passed a string, so just reset
       // the brightness to 1.0 if it parsed as 0
       if (!brightness_scale) {
         brightness_scale = 1.0f;
@@ -283,6 +282,10 @@ static void parse_options(int argc, char *argv[])
     case 'P':
       // set the initial pattern from the string
       initial_pattern_str = optarg;
+      break;
+    case 'I':
+      // set the initial mode index
+      initial_mode_index = strtoul(optarg, NULL, 10);
       break;
     case 'b':
       // generate a bmp file
@@ -357,6 +360,13 @@ static bool read_inputs()
 static void show()
 {
   if (output_type == OUTPUT_TYPE_NONE) {
+    if (generate_bmp) {
+      // still need to generate the BMP by recoring all the output colors
+      // even if they have chosen the -q for quiet option
+      RGBColor currentColor = {Led::get().red, Led::get().green, Led::get().blue};
+      RGBColor scaledColor = currentColor.scaleBrightness(brightness_scale);
+      colorBuffer.push_back(scaledColor);
+    }
     return;
   }
   std::string out;
@@ -426,7 +436,15 @@ static void set_terminal_nonblocking()
 
 bool writeBMP(const std::string& filename, const std::vector<RGBColor>& colors)
 {
-  // structure of the bmp and dib headers to write out
+  if (colors.empty()) {
+    std::cerr << "Invalid image dimensions or empty color array." << std::endl;
+    return false;
+  }
+  // need structure alignment for BMP header structures
+#pragma pack(push, 1)
+  // just putting these here because they are directly relevant to this function
+  // and not used anywhere else in the code, if they get used more then just pull
+  // this all out into it's own file based on BMP writing
   struct BMPHeader {
     char signature[2];
     uint32_t fileSize;
@@ -446,31 +464,36 @@ bool writeBMP(const std::string& filename, const std::vector<RGBColor>& colors)
     uint32_t colorsInColorTable;
     uint32_t importantColorCount;
   };
-  // some basic calculations for the bmp dimensions
-  int32_t width = colors.size();
-  int32_t height = 1;
-  uint32_t rowSize = width * 3 + (width % 4 ? 4 - (width * 3 % 4) : 0);
-  // create local instances of the BMP and DIB header to write out
-  BMPHeader bmpHeader = {{'B', 'M'}, 54 + rowSize * height, 0, 54};
-  DIBHeader dibHeader = {40, width, height, 1, 24, 0, 0, 2835, 2835, 0, 0};
-  // open the output bmp file
+#pragma pack(pop)
+  const int32_t width = colors.size();
+  const int32_t height = 1;
+  // rows are padded to the nearest multiple of 4 bytes
+  const uint32_t rowPaddedSize = (width * 3 + 3) & ~3;
+  const uint32_t imageSize = rowPaddedSize * height;
+  const uint32_t fileSize = 54 + imageSize;
+  // BMP header (14 bytes) + DIB header (40 bytes) + image data
+  BMPHeader bmpHeader = {{'B', 'M'}, fileSize, 0, 54};
+  DIBHeader dibHeader = {40, width, height, 1, 24, 0, imageSize, 2835, 2835, 0, 0};
+  // open the file
   std::ofstream file(filename, std::ios::binary);
   if (!file) {
     std::cerr << "Failed to open file: " << filename << " (" << strerror(errno) << ")" << std::endl;
     return false;
   }
-  // write out the bmp header and dib header
-  file.write((char*)&bmpHeader, sizeof(bmpHeader));
-  file.write((char*)&dibHeader, sizeof(dibHeader));
-  // write out the array of colors
-  for (const auto& color : colors) {
-    file.write((char*)&color, 3);
+  // write out the headers
+  file.write((const char *)&bmpHeader, sizeof(bmpHeader));
+  file.write((const char *)&dibHeader, sizeof(dibHeader));
+  // write out data
+  for (int32_t y = height - 1; y >= 0; --y) {
+    for (int32_t x = 0; x < width; ++x) {
+      const RGBColor& color = colors[y * width + x];
+      // BGR format
+      const unsigned char pixel[3] = { color.blue, color.green, color.red };
+      file.write((const char *)pixel, 3);
+    }
+    // write out extra padding bytes at end of row
+    file.write("\0\0\0", rowPaddedSize - (width * 3));
   }
-  // fill the rest of the space with 0s so it's aligned
-  for (uint32_t i = 0; i < (rowSize - (width * 3)); ++i) {
-    file.put(0);
-  }
-  // check the file was written properly
   if (!file.good()) {
     std::cerr << "Error writing to file: " << filename << std::endl;
     return false;
@@ -498,6 +521,7 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "Initial Pattern and Colorset (optional):\n");
   fprintf(stderr, "  -C, --colorset           Set the colorset of the first mode, ex: red,green,0x0000ff\n");
   fprintf(stderr, "  -P, --pattern            Set the pattern of the first mode, ex: 1 or blend\n");
+  fprintf(stderr, "  -I, --mode-index         Set the initial mode index, ex 4\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Other Options:\n");
   fprintf(stderr, "  -b, --bmp [file]         Specify a bitmap file to generate (default: " DEFAULT_BMP_FILENAME ")\n");
