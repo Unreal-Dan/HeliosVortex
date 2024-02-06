@@ -73,7 +73,7 @@ bool timestep = true;
 bool eeprom = false;
 bool generate_bmp = false;
 std::vector<RGBColor> colorBuffer;
-bool full_cycle = false;
+uint32_t num_cycles = 0;
 float brightness_scale = 1.0f;
 std::string initial_colorset_str = "";
 std::string initial_pattern_str = "";
@@ -111,6 +111,8 @@ int main(int argc, char *argv[])
     PatternID id = (PatternID)strtoul(initial_pattern_str.c_str(), NULL, 10);
     // pass the current pattern to make_pattern to update it's internals
     Patterns::make_pattern(id, Helios::cur_pattern());
+    // re-initialize the current pattern
+    Helios::cur_pattern().init();
   }
 
   // Set the initial colorset based on user arguments
@@ -129,12 +131,18 @@ int main(int argc, char *argv[])
     }
     // update the colorset of the current pattern
     Helios::cur_pattern().setColorset(set);
+    // re-initialize the current pattern
+    Helios::cur_pattern().init();
   }
 
   // just generate eeprom?
   if (eeprom) {
     return 0;
   }
+  // keep track of the number of cycles and the last colorset index each tick
+  // so that we can detect when one full cycle of the pattern has passed
+  uint32_t cycle_count = 0;
+  uint8_t last_index = 0;
   while (Helios::keep_going()) {
     // check for any inputs and read the next one
     read_inputs();
@@ -149,6 +157,25 @@ int main(int argc, char *argv[])
     // don't render anything if asleep, but technically it's still running...
     if (Helios::is_asleep()) {
       continue;
+    }
+    // watch for a full cycle if it was requested by the command line
+    if (num_cycles > 0) {
+      // grab the current index of the colorset, which might be the same for
+      // several tick in a row, so we must check whether it just changed this
+      // tick by comparing it to the index we saved last tick
+      uint8_t cur_index = Helios::cur_pattern().colorset().curIndex();
+      if (cur_index == 0 && last_index != 0) {
+        // only if the current index is 0 (start of colorset) and the last index was
+        // not 0 then the colorset *just* started iterating through it's colors, so
+        // count this as +1 cycle in the cycle count
+        cycle_count++;
+      }
+      // then if we run more than the chosen number of cycles just quit
+      if (cycle_count >= num_cycles) {
+        Helios::terminate();
+        break;
+      }
+      last_index = cur_index;
     }
     // render the output of the main loop
     show();
@@ -184,7 +211,7 @@ static void parse_options(int argc, char *argv[])
     {"no-timestep", no_argument, nullptr, 't'},
     {"in-place", no_argument, nullptr, 'i'},
     {"no-storage", no_argument, nullptr, 's'},
-    {"full-cycle", no_argument, nullptr, 'y'},
+    {"full-cycle", optional_argument, nullptr, 'y'},
     {"brightness-scale", required_argument, nullptr, 'a'},
     {"colorset", required_argument, nullptr, 'C'},
     {"pattern", required_argument, nullptr, 'P'},
@@ -193,7 +220,7 @@ static void parse_options(int argc, char *argv[])
     {"help", no_argument, nullptr, 'h'},
     {nullptr, 0, nullptr, 0}
   };
-  while ((opt = getopt_long(argc, argv, "xcqltisyC:P:b::Eh", long_options, &option_index)) != -1) {
+  while ((opt = getopt_long(argc, argv, "xcqltisyaC:P:b::Eh", long_options, &option_index)) != -1) {
     switch (opt) {
     case 'x':
       // if the user wants pretty colors or hex codes
@@ -223,12 +250,25 @@ static void parse_options(int argc, char *argv[])
       storage = false;
       break;
     case 'y':
-      // run a full cycle of the mode then quit
-      full_cycle = true;
+      // set the number of cycles to default 1
+      num_cycles = 1;
+      // allow for a space between the -y and the cycle count
+      if (optarg == NULL && optind < argc && argv[optind][0] != '-') {
+        optarg = argv[optind++];
+      }
+      // if an argument was provided for -y then set it as the number of cycles
+      if (optarg) {
+        num_cycles = strtoul(optarg, NULL, 10);
+      }
       break;
     case 'a':
-      // set the brightness scale as a float
-      brightness_scale = strtof(optarg, NULL);
+      // allow for a space between the -y and the cycle count
+      if (optarg == NULL && optind < argc && argv[optind][0] != '-') {
+        optarg = argv[optind++];
+      }
+      if (optarg) {
+        brightness_scale = strtof(optarg, NULL);
+      }
       // allow brightness scale 0? probably not because it's most likely a mistake
       // like wrong arguments and the brightness was passed a string, so just reset 
       // the brightness to 1.0 if it parsed as 0
@@ -306,9 +346,6 @@ static bool read_inputs()
       command = newc;
     }
     for (uint32_t i = 0; i < repeatAmount; ++i) {
-      // TODO: catch the 's' and the 'e' here and handle them at the CLI level
-      //       OR implement recording in the engine itself. But don't have the recording bool
-      //       owned by the engine, but the actual recording data (array of colors) owned by the CLI
       // otherwise just queue up the command
       Button::queueInput(command);
     }
@@ -455,7 +492,7 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "  -t, --no-timestep        Run as fast as possible without managing timestep\n");
   fprintf(stderr, "  -i, --in-place           Print the output in-place (interactive mode)\n");
   fprintf(stderr, "  -s, --no-storage         Disable persistent storage to file (FlashStorage.flash)\n");
-  fprintf(stderr, "  -y, --full-cycle         Run a single cycle of the first mode (for generating pattern images)\n");
+  fprintf(stderr, "  -y, --cycle [N]          Run N cycles of the first mode, default 1 (to gen pattern images)\n");
   fprintf(stderr, "  -a, --brightness-scale   Set the brightness scale of the output colors (2.0 is 100%% brighter)\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Initial Pattern and Colorset (optional):\n");
