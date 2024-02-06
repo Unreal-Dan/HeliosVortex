@@ -11,6 +11,9 @@
 #include <vector>
 #include <fstream>
 #include <cstdint>
+#include <sstream>
+#include <algorithm>
+#include <map>
 
 #include "Helios.h"
 #include "TimeControl.h"
@@ -19,7 +22,12 @@
 #include "Button.h"
 #include "Led.h"
 
-std::vector<RGBColor> colorBuffer;
+/*
+ * TODO still:
+ * 3. look at making a script to record output and create images
+ * 5. maybe??? add options to generate circle instead of line?
+ * 6. Maybe use imagemagic to generate circle? instead of C++?
+ */
 
 // the output types of the tool
 enum OutputType {
@@ -28,17 +36,47 @@ enum OutputType {
   OUTPUT_TYPE_COLOR,
 };
 
+// map of colors for the -C, --colorset parsing
+std::map<std::string, int> color_map = {
+    {"black",   0x000000},
+    {"white",   0xFFFFFF},
+    {"red",     0xFF0000},
+    {"lime",    0x00FF00},
+    {"blue",    0x0000FF},
+    {"yellow",  0xFFFF00},
+    {"cyan",    0x00FFFF},
+    {"magenta", 0xFF00FF},
+    {"silver",  0xC0C0C0},
+    {"gray",    0x808080},
+    {"maroon",  0x800000},
+    {"olive",   0x808000},
+    {"green",   0x008000},
+    {"purple",  0x800080},
+    {"teal",    0x008080},
+    {"navy",    0x000080},
+    {"orange",  0xFFA500},
+    {"pink",    0xFFC0CB},
+    {"brown",   0xA52A2A}
+    //...add more as needed
+};
+
+// the default bmp filename
+#define DEFAULT_BMP_FILENAME "pattern.bmp"
+
 // various globals for the tool
 OutputType output_type = OUTPUT_TYPE_COLOR;
-std::string bmp_filename = "pattern.bmp";
+std::string bmp_filename = DEFAULT_BMP_FILENAME;
 bool in_place = false;
 bool lockstep = false;
 bool storage = false;
 bool timestep = true;
 bool eeprom = false;
 bool generate_bmp = false;
-// Define the scaling factor (e.g., 1 = no scaling up 30 = scale up 100%)
-float scaleFactor = 1.0f;
+std::vector<RGBColor> colorBuffer;
+bool full_cycle = false;
+float brightness_scale = 1.0f;
+std::string initial_colorset_str = "";
+std::string initial_pattern_str = "";
 
 // used to switch terminal to non-blocking and back
 static struct termios orig_term_attr = {0};
@@ -64,6 +102,35 @@ int main(int argc, char *argv[])
   Storage::enableStorage(storage);
   // run the arduino setup routine
   Helios::init();
+
+  // additional engine manipulation here
+
+  // Set the initial pattern based on user arguments
+  if (initial_pattern_str.length() > 0) {
+    // convert the string arg to integer, then treat it as a PatternID
+    PatternID id = (PatternID)strtoul(initial_pattern_str.c_str(), NULL, 10);
+    // pass the current pattern to make_pattern to update it's internals
+    Patterns::make_pattern(id, Helios::cur_pattern());
+  }
+
+  // Set the initial colorset based on user arguments
+  if (initial_colorset_str.length() > 0) {
+    std::stringstream ss(initial_colorset_str);
+    std::string color;
+    Colorset set;
+    while (getline(ss, color, ',')) {
+      // iterate letters and lowercase them
+      std::transform(color.begin(), color.end(), color.begin(), [](unsigned char c){ return tolower(c); });
+      if (color_map.count(color) > 0) {
+        set.addColor(color_map[color]);
+      } else {
+        set.addColor(strtoul(color.c_str(), nullptr, 16));
+      }
+    }
+    // update the colorset of the current pattern
+    Helios::cur_pattern().setColorset(set);
+  }
+
   // just generate eeprom?
   if (eeprom) {
     return 0;
@@ -90,7 +157,7 @@ int main(int argc, char *argv[])
   if (generate_bmp) {
     // if they didn't record anything give them a message indicating they need to record
     if (!colorBuffer.size()) {
-      std::cout << "Cannot generate BMP! Color buffer is empty, did you specify a section to record with 's' and 'e' input commands?" << std::endl;
+      std::cout << "Cannot generate BMP! Color buffer is empty" << std::endl;
       return 0;
     }
     std::cout << "Writing " << colorBuffer.size() << " colors to " << bmp_filename << std::endl;
@@ -111,31 +178,23 @@ static void parse_options(int argc, char *argv[])
   int option_index = 0;
   static struct option long_options[] = {
     {"hex", no_argument, nullptr, 'x'},
-    {"bmp", optional_argument, nullptr, 'b'},
     {"color", no_argument, nullptr, 'c'},
     {"quiet", no_argument, nullptr, 'q'},
     {"lockstep", no_argument, nullptr, 'l'},
     {"no-timestep", no_argument, nullptr, 't'},
     {"in-place", no_argument, nullptr, 'i'},
     {"no-storage", no_argument, nullptr, 's'},
+    {"full-cycle", no_argument, nullptr, 'y'},
+    {"brightness-scale", required_argument, nullptr, 'a'},
+    {"colorset", required_argument, nullptr, 'C'},
+    {"pattern", required_argument, nullptr, 'P'},
+    {"bmp", optional_argument, nullptr, 'b'},
     {"eeprom", no_argument, nullptr, 'E'},
     {"help", no_argument, nullptr, 'h'},
     {nullptr, 0, nullptr, 0}
   };
-  while ((opt = getopt_long(argc, argv, "xcqltisb::Eh", long_options, &option_index)) != -1) {
+  while ((opt = getopt_long(argc, argv, "xcqltisyC:P:b::Eh", long_options, &option_index)) != -1) {
     switch (opt) {
-    case 'b':
-      // generate a bmp file
-      generate_bmp = true;
-      // allow for a space between the -b and the filename
-      if (optarg == NULL && optind < argc && argv[optind][0] != '-') {
-        optarg = argv[optind++];
-      }
-      // if an argument was provided for -b then set it as the bmp filename
-      if (optarg) {
-        bmp_filename = optarg;
-      }
-      break;
     case 'x':
       // if the user wants pretty colors or hex codes
       output_type = OUTPUT_TYPE_HEX;
@@ -162,6 +221,40 @@ static void parse_options(int argc, char *argv[])
     case 's':
       // TODO: implement storage filename
       storage = false;
+      break;
+    case 'y':
+      // run a full cycle of the mode then quit
+      full_cycle = true;
+      break;
+    case 'a':
+      // set the brightness scale as a float
+      brightness_scale = strtof(optarg, NULL);
+      // allow brightness scale 0? probably not because it's most likely a mistake
+      // like wrong arguments and the brightness was passed a string, so just reset 
+      // the brightness to 1.0 if it parsed as 0
+      if (!brightness_scale) {
+        brightness_scale = 1.0f;
+      }
+      break;
+    case 'C':
+      // set the initial colorset from the string
+      initial_colorset_str = optarg;
+      break;
+    case 'P':
+      // set the initial pattern from the string
+      initial_pattern_str = optarg;
+      break;
+    case 'b':
+      // generate a bmp file
+      generate_bmp = true;
+      // allow for a space between the -b and the filename
+      if (optarg == NULL && optind < argc && argv[optind][0] != '-') {
+        optarg = argv[optind++];
+      }
+      // if an argument was provided for -b then set it as the bmp filename
+      if (optarg) {
+        bmp_filename = optarg;
+      }
       break;
     case 'E':
       eeprom = true;
@@ -236,7 +329,7 @@ static void show()
   }
   // Get the current color and scale its brightness up
   RGBColor currentColor = {Led::get().red, Led::get().green, Led::get().blue};
-  RGBColor scaledColor = currentColor.scaleBrightness(scaleFactor);
+  RGBColor scaledColor = currentColor.scaleBrightness(brightness_scale);
   if (output_type == OUTPUT_TYPE_COLOR) {
     out += "\x1B[0m["; // opening |
     out += "\x1B[48;2;"; // colorcode start
@@ -254,7 +347,7 @@ static void show()
     }
   }
   // if the engine
-  if (Helios::is_recording()) {
+  if (generate_bmp) {
     // Add scaled color to buffer
     colorBuffer.push_back(scaledColor);
   }
@@ -355,15 +448,22 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "Output Selection (at least one required):\n");
   fprintf(stderr, "  -x, --hex                Print hex values to represent led colors instead of color codes\n");
   fprintf(stderr, "  -c, --color              Print console color codes to represent led colors\n");
+  fprintf(stderr, "  -q, --quiet              Do not print anything, silently perform an operation\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Engine Control Flags (optional):\n");
   fprintf(stderr, "  -l, --lockstep           Only step once each time an input is received\n");
   fprintf(stderr, "  -t, --no-timestep        Run as fast as possible without managing timestep\n");
   fprintf(stderr, "  -i, --in-place           Print the output in-place (interactive mode)\n");
   fprintf(stderr, "  -s, --no-storage         Disable persistent storage to file (FlashStorage.flash)\n");
+  fprintf(stderr, "  -y, --full-cycle         Run a single cycle of the first mode (for generating pattern images)\n");
+  fprintf(stderr, "  -a, --brightness-scale   Set the brightness scale of the output colors (2.0 is 100%% brighter)\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "Initial Pattern and Colorset (optional):\n");
+  fprintf(stderr, "  -C, --colorset           Set the colorset of the first mode, ex: red,green,0x0000ff\n");
+  fprintf(stderr, "  -P, --pattern            Set the pattern of the first mode, ex: 1 or blend\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Other Options:\n");
-  fprintf(stderr, "  -b, --bmp [file]         Specify a bitmap file to generate (default: output.bmp)\n");
+  fprintf(stderr, "  -b, --bmp [file]         Specify a bitmap file to generate (default: " DEFAULT_BMP_FILENAME ")\n");
   fprintf(stderr, "  -E, --eeprom             Generate an eeprom file for flashing\n");
   fprintf(stderr, "  -h, --help               Display this help message\n");
   fprintf(stderr, "\n");
@@ -375,8 +475,6 @@ static void print_usage(const char* program_name)
     "\n   p         press the button and hold",
     "\n   r         release the button from hold",
     "\n   t         toggle button press state",
-    "\n   s         start recording BMP output",
-    "\n   e         end recording BMP output",
     "\n   w         wait 1 tick",
     "\n   q         quit",
   };

@@ -18,9 +18,7 @@ public:
 
 #ifdef HELIOS_CLI
   static bool is_asleep() { return sleeping; }
-  static void start_record() { isRecording = true; }
-  static void end_record() { isRecording = false; }
-  static bool is_recording() { return isRecording; }
+  static Pattern &cur_pattern() { return pat; }
 #endif
 
 private:
@@ -105,7 +103,6 @@ private:
   static Colorset default_colorsets[6];
   static Pattern pat;
   static bool keepgoing;
-  static bool isRecording;
 
 #ifdef HELIOS_CLI
   static bool sleeping;

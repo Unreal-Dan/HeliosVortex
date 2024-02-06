@@ -166,15 +166,6 @@ bool Button::processPreInput()
   case 't': // toggle
     Button::doToggle();
     break;
-  case 's': // start recording
-    Helios::start_record();
-    break;
-  case 'e': // end recording
-    Helios::end_record();
-    break;
-  case 'b': // scale brightness
-    // Scale Brightness
-    break;
   case 'q': // quit
     Helios::terminate();
     break;

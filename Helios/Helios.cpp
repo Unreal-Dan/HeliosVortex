@@ -33,7 +33,6 @@ uint8_t Helios::selected_sat;
 uint8_t Helios::selected_val;
 Pattern Helios::pat;
 bool Helios::keepgoing;
-bool Helios::isRecording;
 
 #ifdef HELIOS_CLI
 bool Helios::sleeping;
@@ -62,7 +61,6 @@ bool Helios::init()
   selected_slot = 0;
   selected_base_quad = 0;
   keepgoing = true;
-  isRecording = false;
 #ifdef HELIOS_CLI
   sleeping = false;
 #endif
