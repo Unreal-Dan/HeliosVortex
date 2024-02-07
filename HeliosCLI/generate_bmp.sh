@@ -44,6 +44,12 @@ HELIOS=./helios
 PATTERN_DIR=./default_patterns
 BMP_DIR=./bmp_patterns
 
+# Default values
+CYCLE_COUNT=1
+INPUT_COMMANDS="410wq"
+NUM_PATTERNS=20
+NUM_DEFAULT_PATTERNS=6
+
 # Ensure bmp_patterns directory exists
 mkdir -p "$BMP_DIR"
 
@@ -58,6 +64,19 @@ if [ ! -x "$HELIOS" ]; then
     exit 1
 fi
 
+# Parse command-line options
+while getopts ":c" opt; do
+  case ${opt} in
+    c )
+      INPUT_COMMANDS=""
+      ;;
+    \? )
+      echo "Invalid option: $OPTARG" 1>&2
+      exit 1
+      ;;
+  esac
+done
+
 # Iterate over .pattern files
 for pattern_file in "$PATTERN_DIR"/*.pattern; do
     filename=$(basename -- "$pattern_file")
@@ -66,27 +85,47 @@ for pattern_file in "$PATTERN_DIR"/*.pattern; do
     PATTERN_ID=$(grep "PATTERN_ID=" "$pattern_file" | cut -d= -f2)
 
     # Use extracted parameters to generate the pattern
-    $HELIOS \
-        --quiet \
-        --no-timestep \
-        --colorset "$COLOR_SET" \
-        --pattern "$PATTERN_ID" \
-        --cycle 1 \
-        --bmp "$BMP_DIR/${filename}.bmp"
+    if [ -z "$INPUT_COMMANDS" ]; then
+        $HELIOS \
+            --quiet \
+            --no-timestep \
+            --colorset "$COLOR_SET" \
+            --pattern "$PATTERN_ID" \
+            --bmp "$BMP_DIR/${filename}.bmp" \
+            --cycle "$CYCLE_COUNT"
+    else
+        $HELIOS \
+            --quiet \
+            --no-timestep \
+            --colorset "$COLOR_SET" \
+            --pattern "$PATTERN_ID" \
+            --bmp "$BMP_DIR/${filename}.bmp" \
+            <<< "$INPUT_COMMANDS"
+    fi
 
     if [ $? -ne 0 ]; then
         echo "Helios command failed for $filename with COLOR_SET=$COLOR_SET, PATTERN_ID=$PATTERN_ID"
     fi
-
-for i in {0..19}; do
-	echo "Generating pattern $i..."
-  $HELIOS \
-		--quiet \
-		--no-timestep \
-		--colorset "red,orange,yellow,turquoise,blue,pink" \
-        --pattern "$i" \
-		--cycle 1 \
-		--bmp "$BMP_DIR/$(printf "%03d_Pattern.bmp" $((i + 7)))"
 done
 
+# Generate patterns 0 to 19
+for ((i = 0; i <= NUM_PATTERNS - 1; i++)); do
+    echo "Generating pattern $i..."
+    if [ -z "$INPUT_COMMANDS" ]; then
+        $HELIOS \
+            --quiet \
+            --no-timestep \
+            --colorset "red,orange,yellow,turquoise,blue,pink" \
+            --pattern "$i" \
+            --bmp "$BMP_DIR/$(printf "%03d_Pattern.bmp" $((i + NUM_DEFAULT_PATTERNS + 1)))" \
+            --cycle "$CYCLE_COUNT"
+    else
+        $HELIOS \
+            --quiet \
+            --no-timestep \
+            --colorset "red,orange,yellow,turquoise,blue,pink" \
+            --pattern "$i" \
+            --bmp "$BMP_DIR/$(printf "%03d_Pattern.bmp" $((i + NUM_DEFAULT_PATTERNS + 1)))" \
+            <<< "$INPUT_COMMANDS"
+    fi
 done
