@@ -1,5 +1,2 @@
-MODE_INDEX=0
-BRIGHTNESS_SCALE=2.0
 COLOR_SET=red,orange,yellow,turquoise,blue,pink
 PATTERN_ID=9
-MIN_BRIGHTNESS=255
