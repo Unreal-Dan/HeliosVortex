@@ -5,10 +5,6 @@ BMP_FOLDER="bmp_patterns"
 # Output directory for PNG files
 OUTPUT_FOLDER="circular_patterns"
 
-# Generate BMP files first
-echo "Generating BMP files..."
-./generate_bmp.sh -c
-
 # Create output directory if it does not exist
 mkdir -p "$OUTPUT_FOLDER"
 

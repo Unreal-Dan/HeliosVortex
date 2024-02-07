@@ -105,6 +105,14 @@ FORCE:
 clean:
 	@$(RM) $(DFILES) $(OBJS) $(TARGETS) $(TESTS)
 
+# generate pngs
+pngs: bmps
+	./generate_pngs.sh
+
+# generate pngs
+bmps:
+	./generate_bmps.sh
+
 # Now include our target dependency files
 # the hyphen means ignore non-existent files
 -include $(DFILES)
