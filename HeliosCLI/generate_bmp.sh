@@ -78,7 +78,7 @@ for pattern_file in "$PATTERN_DIR"/*.pattern; do
         echo "Helios command failed for $filename with COLOR_SET=$COLOR_SET, PATTERN_ID=$PATTERN_ID"
     fi
 
-for i in {0..20}; do
+for i in {0..19}; do
 	echo "Generating pattern $i..."
   $HELIOS \
 		--quiet \
