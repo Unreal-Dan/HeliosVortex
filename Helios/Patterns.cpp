@@ -30,7 +30,7 @@ static const default_colorset default_colorsets[] = {
   { 6, color_codes5 },  // 5 Rainbow Glitter
 };
 
-void Patterns::make_default(uint8_t index, Pattern &pat) 
+void Patterns::make_default(uint8_t index, Pattern &pat)
 {
   if (index >= NUM_MODE_SLOTS) {
     return;
@@ -59,7 +59,7 @@ void Patterns::make_default(uint8_t index, Pattern &pat)
     case 4:  // Ice Blade
       args.on_dur = 3;
       args.off_dur = 1;
-      args.gap_dur = 23;
+      args.gap_dur = 30;
       break;
     case 5:  // Rainbow Glitter
       args.on_dur = 1;
@@ -157,7 +157,7 @@ void Patterns::make_pattern(PatternID id, Pattern &pat)
     args.off_dur = 23;
     args.blend_speed = 10;
     break;
-    
+
   case PATTERN_MORPH_GLOW:
     args.on_dur = 1;
     args.off_dur = 3;
@@ -191,6 +191,6 @@ void Patterns::make_pattern(PatternID id, Pattern &pat)
     args.blend_speed = 10;
     break;
   }
-  
+
   pat.setArgs(args);
 }
