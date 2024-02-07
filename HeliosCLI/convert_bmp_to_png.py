@@ -1,5 +1,6 @@
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw
 import numpy as np
+import argparse
 import os
 
 def map_pattern_to_circle(draw, pattern, center, radius, thickness):
@@ -37,22 +38,15 @@ def create_circular_pattern(path_to_bmp):
     print("-- Pattern mapped successfully")
     return canvas
 
-def generate_circular_patterns(bmp_folder, output_folder):
-    print(f"Generating circular patterns from BMPs in {bmp_folder} to {output_folder}")
-    print(f"----------------------------------------------------------------------")
-    for filename in os.listdir(bmp_folder):
-        if filename.endswith('.bmp'):
-            print(f"** Processing {filename}")
-            path_to_bmp = os.path.join(bmp_folder, filename)
-            circular_pattern = create_circular_pattern(path_to_bmp)
-            output_filename = filename.replace('.bmp', '.png')
-            output_path = os.path.join(output_folder, output_filename)
-            circular_pattern.save(output_path)
-            print(f"** Saved circular pattern to {output_path}")
-            print(f"----------------------------------------------------------------------")
+def main():
+    parser = argparse.ArgumentParser(description="Generate a circular pattern from a BMP file.")
+    parser.add_argument("bmp_file", type=str, help="Path to the BMP file")
+    parser.add_argument("output_file", type=str, help="Path to the output PNG file")
+    args = parser.parse_args()
 
-# Set the paths to your folders
-bmp_folder = 'bmp_patterns'
-output_folder = 'circular_patterns'
+    circular_pattern = create_circular_pattern(args.bmp_file)
+    circular_pattern.save(args.output_file)
+    print(f"** Saved circular pattern to {args.output_file}")
 
-generate_circular_patterns(bmp_folder, output_folder)
+if __name__ == "__main__":
+    main()
