@@ -9,6 +9,7 @@
 !*.pattern
 !*.h
 !*.cpp
+!*.py
 
 # Ignore object files, dependency files, and other build artifacts
 *.o
@@ -25,4 +26,7 @@
 
 # Ignore bitmap files
 *.bmp
+
+# Ignore png
+*.png
 
