@@ -2,7 +2,7 @@
 .SUFFIXES:
 
 # List all make targets which are not filenames
-.PHONY: all tests clean
+.PHONY: all tests clean pngs bmps
 
 # compiler tool definitions
 CC=g++
@@ -111,7 +111,7 @@ pngs: bmps
 
 # generate pngs
 bmps:
-	./generate_bmps.sh
+	./generate_bmps.sh -c
 
 # Now include our target dependency files
 # the hyphen means ignore non-existent files
