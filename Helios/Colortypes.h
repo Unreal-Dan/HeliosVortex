@@ -82,8 +82,9 @@ public:
   //      1.5 = 50% brighter
   //      2.0 = twice as bright
   //    255.0 = white
-  RGBColor bringUpBrightness(uint8_t min_brightness);
   RGBColor scaleBrightness(float scale);
+  // bring up the brightness of a color to a minimum level
+  RGBColor bringUpBrightness(uint8_t min_brightness);
 #endif
 
   uint32_t raw() const { return ((uint32_t)red << 16) | ((uint32_t)green << 8) | (uint32_t)blue; }
