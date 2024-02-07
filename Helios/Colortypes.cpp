@@ -151,6 +151,18 @@ RGBColor RGBColor::adjustBrightness(uint8_t fadeBy)
 }
 
 #ifdef HELIOS_CLI
+// Adjust brightness to ensure visibility on screens, without floating-point arithmetic and without using max function
+RGBColor RGBColor::bringUpBrightness(uint8_t min_brightness) {
+  // Adjust each color component using FSCALE8 and ensure it doesn't drop below MIN_BRIGHTNESS
+  HSVColor col = *this;
+  if (col.val == 0) {
+    return col;
+  }
+  if (col.val < min_brightness) {
+    col.val = min_brightness;
+  }
+  return col;
+}
 // scale a uint8 by a float value, don't use this on embedded!
 #define FSCALE8(x, scale) (uint8_t)(((float)x * scale) > 255 ? 255 : ((float)x * scale))
 // return a scaled up the brightness version of the current color
@@ -160,7 +172,6 @@ RGBColor RGBColor::scaleBrightness(float scale)
   return RGBColor(FSCALE8(red, scale), FSCALE8(green, scale), FSCALE8(blue, scale));
 }
 #endif
-
 // ========================================================
 //  Below are various functions for converting hsv <-> rgb
 

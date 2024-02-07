@@ -21,6 +21,7 @@
 #include "Colortypes.h"
 #include "Button.h"
 #include "Led.h"
+#include "color_map.h"
 
 /*
  * TODO still:
@@ -34,30 +35,6 @@ enum OutputType {
   OUTPUT_TYPE_NONE,
   OUTPUT_TYPE_HEX,
   OUTPUT_TYPE_COLOR,
-};
-
-// map of colors for the -C, --colorset parsing
-std::map<std::string, int> color_map = {
-    {"black",   0x000000},
-    {"white",   0xFFFFFF},
-    {"red",     0xFF0000},
-    {"lime",    0x00FF00},
-    {"blue",    0x0000FF},
-    {"yellow",  0xFFFF00},
-    {"cyan",    0x00FFFF},
-    {"magenta", 0xFF00FF},
-    {"silver",  0xC0C0C0},
-    {"gray",    0x808080},
-    {"maroon",  0x800000},
-    {"olive",   0x808000},
-    {"green",   0x008000},
-    {"purple",  0x800080},
-    {"teal",    0x008080},
-    {"navy",    0x000080},
-    {"orange",  0xFFA500},
-    {"pink",    0xFFC0CB},
-    {"brown",   0xA52A2A}
-    //...add more as needed
 };
 
 // the default bmp filename
@@ -75,6 +52,7 @@ bool generate_bmp = false;
 std::vector<RGBColor> colorBuffer;
 uint32_t num_cycles = 0;
 float brightness_scale = 1.0f;
+uint8_t minumum_brightness = 75;
 std::string initial_colorset_str = "";
 std::string initial_pattern_str = "";
 uint32_t initial_mode_index = 0;
@@ -211,6 +189,7 @@ static void parse_options(int argc, char *argv[])
     {"no-storage", no_argument, nullptr, 's'},
     {"cycle", optional_argument, nullptr, 'y'},
     {"brightness-scale", required_argument, nullptr, 'a'},
+    {"min-brightness", required_argument, nullptr, 'm'},
     {"colorset", required_argument, nullptr, 'C'},
     {"pattern", required_argument, nullptr, 'P'},
     {"mode-index", required_argument, nullptr, 'I'},
@@ -219,7 +198,7 @@ static void parse_options(int argc, char *argv[])
     {"help", no_argument, nullptr, 'h'},
     {nullptr, 0, nullptr, 0}
   };
-  while ((opt = getopt_long(argc, argv, "xcqltisyaC:P:I:b::Eh", long_options, &option_index)) != -1) {
+  while ((opt = getopt_long(argc, argv, "xcqltisyamC:P:I:b::Eh", long_options, &option_index)) != -1) {
     switch (opt) {
     case 'x':
       // if the user wants pretty colors or hex codes
@@ -273,6 +252,21 @@ static void parse_options(int argc, char *argv[])
       // the brightness to 1.0 if it parsed as 0
       if (!brightness_scale) {
         brightness_scale = 1.0f;
+      }
+      break;
+    case 'm':
+      // allow for a space between the -y and the cycle count
+      if (optarg == NULL && optind < argc && argv[optind][0] != '-') {
+        optarg = argv[optind++];
+      }
+      if (optarg) {
+        minumum_brightness = strtoul(optarg, NULL, 100);
+      }
+      // allow brightness scale 0? probably not because it's most likely a mistake
+      // like wrong arguments and the brightness was passed a string, so just reset
+      // the brightness to 1.0 if it parsed as 0
+      if (!minumum_brightness) {
+        minumum_brightness = 75;
       }
       break;
     case 'C':
@@ -364,8 +358,7 @@ static void show()
       // still need to generate the BMP by recoring all the output colors
       // even if they have chosen the -q for quiet option
       RGBColor currentColor = {Led::get().red, Led::get().green, Led::get().blue};
-      RGBColor scaledColor = currentColor.scaleBrightness(brightness_scale);
-      colorBuffer.push_back(scaledColor);
+      colorBuffer.push_back(currentColor);
     }
     return;
   }
@@ -376,27 +369,26 @@ static void show()
   }
   // Get the current color and scale its brightness up
   RGBColor currentColor = {Led::get().red, Led::get().green, Led::get().blue};
-  RGBColor scaledColor = currentColor.scaleBrightness(brightness_scale);
   if (output_type == OUTPUT_TYPE_COLOR) {
     out += "\x1B[0m["; // opening |
     out += "\x1B[48;2;"; // colorcode start
-    out += std::to_string(scaledColor.red) + ";"; // col red
-    out += std::to_string(scaledColor.green) + ";"; // col green
-    out += std::to_string(scaledColor.blue) + "m"; // col blue
+    out += std::to_string(currentColor.red) + ";"; // col red
+    out += std::to_string(currentColor.green) + ";"; // col green
+    out += std::to_string(currentColor.blue) + "m"; // col blue
     out += "  "; // colored space
     out += "\x1B[0m]"; // ending |
   } else if (output_type == OUTPUT_TYPE_HEX) {
     // otherwise this just prints out the raw hex code if not in color mode
     for (uint32_t i = 0; i < output_type; ++i) {
       char buf[128] = { 0 };
-      snprintf(buf, sizeof(buf), "%02X%02X%02X", scaledColor.red, scaledColor.green, scaledColor.blue);
+      snprintf(buf, sizeof(buf), "%02X%02X%02X", currentColor.red, currentColor.green, currentColor.blue);
       out += buf;
     }
   }
   // if the engine
   if (generate_bmp) {
     // Add scaled color to buffer
-    colorBuffer.push_back(scaledColor);
+    colorBuffer.push_back(currentColor);
   }
   if (!in_place) {
     out += "\n";

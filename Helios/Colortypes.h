@@ -82,6 +82,7 @@ public:
   //      1.5 = 50% brighter
   //      2.0 = twice as bright
   //    255.0 = white
+  RGBColor bringUpBrightness(uint8_t min_brightness);
   RGBColor scaleBrightness(float scale);
 #endif
 
