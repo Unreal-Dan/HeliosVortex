@@ -7,6 +7,7 @@
 # Re-include .sh scripts
 !*.sh
 !*.pattern
+!*.h
 
 # Ignore object files, dependency files, and other build artifacts
 *.o
