@@ -509,6 +509,7 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "  -s, --no-storage         Disable persistent storage to file (FlashStorage.flash)\n");
   fprintf(stderr, "  -y, --cycle [N]          Run N cycles of the first mode, default 1 (to gen pattern images)\n");
   fprintf(stderr, "  -a, --brightness-scale   Set the brightness scale of the output colors (2.0 is 100%% brighter)\n");
+  fprintf(stderr, "  -m, --min-brightness     Set the minimum brightness the output colors can be\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Initial Pattern and Colorset (optional):\n");
   fprintf(stderr, "  -C, --colorset           Set the colorset of the first mode, ex: red,green,0x0000ff\n");
