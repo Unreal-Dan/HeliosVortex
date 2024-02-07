@@ -16,8 +16,15 @@ public:
   static bool keep_going() { return keepgoing; }
   static void terminate() { keepgoing = false; }
 
+  static void load_next_mode();
+  static void load_cur_mode();
+  static void save_cur_mode();
+  static void save_global_flags();
+  static void set_mode_index(uint8_t mode_index);
+
 #ifdef HELIOS_CLI
   static bool is_asleep() { return sleeping; }
+  static Pattern &cur_pattern() { return pat; }
 #endif
 
 private:
@@ -60,10 +67,6 @@ private:
   static void handle_state_set_global_brightness();
   static void handle_state_shift_mode();
   static void handle_state_randomize();
-  static void load_next_mode();
-  static void load_cur_mode();
-  static void save_cur_mode();
-  static void save_global_flags();
   static void show_long_selection(RGBColor color);
   static void show_selection(RGBColor color);
 
