@@ -358,7 +358,8 @@ static void show()
       // still need to generate the BMP by recoring all the output colors
       // even if they have chosen the -q for quiet option
       RGBColor currentColor = {Led::get().red, Led::get().green, Led::get().blue};
-      colorBuffer.push_back(currentColor);
+      RGBColor scaledColor = currentColor.scaleBrightness(brightness_scale);
+      colorBuffer.push_back(scaledColor);
     }
     return;
   }
@@ -369,26 +370,27 @@ static void show()
   }
   // Get the current color and scale its brightness up
   RGBColor currentColor = {Led::get().red, Led::get().green, Led::get().blue};
+  RGBColor scaledColor = currentColor.scaleBrightness(brightness_scale);
   if (output_type == OUTPUT_TYPE_COLOR) {
     out += "\x1B[0m["; // opening |
     out += "\x1B[48;2;"; // colorcode start
-    out += std::to_string(currentColor.red) + ";"; // col red
-    out += std::to_string(currentColor.green) + ";"; // col green
-    out += std::to_string(currentColor.blue) + "m"; // col blue
+    out += std::to_string(scaledColor.red) + ";"; // col red
+    out += std::to_string(scaledColor.green) + ";"; // col green
+    out += std::to_string(scaledColor.blue) + "m"; // col blue
     out += "  "; // colored space
     out += "\x1B[0m]"; // ending |
   } else if (output_type == OUTPUT_TYPE_HEX) {
     // otherwise this just prints out the raw hex code if not in color mode
     for (uint32_t i = 0; i < output_type; ++i) {
       char buf[128] = { 0 };
-      snprintf(buf, sizeof(buf), "%02X%02X%02X", currentColor.red, currentColor.green, currentColor.blue);
+      snprintf(buf, sizeof(buf), "%02X%02X%02X", scaledColor.red, scaledColor.green, scaledColor.blue);
       out += buf;
     }
   }
   // if the engine
   if (generate_bmp) {
     // Add scaled color to buffer
-    colorBuffer.push_back(currentColor);
+    colorBuffer.push_back(scaledColor);
   }
   if (!in_place) {
     out += "\n";

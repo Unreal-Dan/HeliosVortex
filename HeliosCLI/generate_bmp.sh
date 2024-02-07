@@ -83,12 +83,14 @@ for pattern_file in "$PATTERN_DIR"/*.pattern; do
     filename="${filename%.*}"
     COLOR_SET=$(grep "COLOR_SET=" "$pattern_file" | cut -d= -f2)
     PATTERN_ID=$(grep "PATTERN_ID=" "$pattern_file" | cut -d= -f2)
+    BRIGHTNESS_SCALE=$(grep "BRIGHTNESS_SCALE=" "$pattern_file" | cut -d= -f2)
 
     # Use extracted parameters to generate the pattern
     if [ -z "$INPUT_COMMANDS" ]; then
         $HELIOS \
             --quiet \
             --no-timestep \
+            --brightness-scale "$BRIGHTNESS_SCALE" \
             --colorset "$COLOR_SET" \
             --pattern "$PATTERN_ID" \
             --bmp "$BMP_DIR/${filename}.bmp" \
@@ -97,6 +99,7 @@ for pattern_file in "$PATTERN_DIR"/*.pattern; do
         $HELIOS \
             --quiet \
             --no-timestep \
+            --brightness-scale "$BRIGHTNESS_SCALE" \
             --colorset "$COLOR_SET" \
             --pattern "$PATTERN_ID" \
             --bmp "$BMP_DIR/${filename}.bmp" \
@@ -115,6 +118,7 @@ for ((i = 0; i <= NUM_PATTERNS - 1; i++)); do
         $HELIOS \
             --quiet \
             --no-timestep \
+            --brightness-scale "2.0" \
             --colorset "red,orange,yellow,turquoise,blue,pink" \
             --pattern "$i" \
             --bmp "$BMP_DIR/$(printf "%03d_Pattern.bmp" $((i + NUM_DEFAULT_PATTERNS + 1)))" \
@@ -123,6 +127,7 @@ for ((i = 0; i <= NUM_PATTERNS - 1; i++)); do
         $HELIOS \
             --quiet \
             --no-timestep \
+            --brightness-scale "2.0" \
             --colorset "red,orange,yellow,turquoise,blue,pink" \
             --pattern "$i" \
             --bmp "$BMP_DIR/$(printf "%03d_Pattern.bmp" $((i + NUM_DEFAULT_PATTERNS + 1)))" \
