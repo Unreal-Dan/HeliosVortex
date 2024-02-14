@@ -134,6 +134,10 @@ void Helios::tick()
 void Helios::enter_sleep()
 {
 #ifdef HELIOS_EMBEDDED
+  // Set all pins to output
+  DDRB = 0xFF;
+  // Set all pins low
+  PORTB = 0x00;
   // Enable wake on interrupt for the button
   Button::enableWake();
   // Set sleep mode to POWER DOWN mode
