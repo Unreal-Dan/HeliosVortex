@@ -1,14 +1,17 @@
 #ifndef HELIOS_CONFIG_H
 #define HELIOS_CONFIG_H
 
+// Mofset Pin
 #define MOFSET_PIN PB1
+
+// Number of LEDs
+#define LED_COUNT 1
 
 // Short Click Threshold
 //
 // The length of time in milliseconds for a click to
 // be considered either a short or long click
 #define SHORT_CLICK_THRESHOLD 400
-
 
 // Selection Flash Duration
 //
@@ -19,6 +22,7 @@
 //
 // The maximum length a long click can be
 #define LONG_CLICK_THRESHOLD (SHORT_CLICK_THRESHOLD + TIME_TILL_LONG_CLICK_FLASH)
+
 // Max Color Slots
 //
 // The number of slots in a colorset

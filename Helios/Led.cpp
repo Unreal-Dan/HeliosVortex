@@ -114,7 +114,8 @@ void Led::update()
     hi,         // PORT value with output bit set high.
     lo;         // PORT value with output bit set low.
 
-  volatile uint16_t i = 1; // Not used in the loop, but for consistency with the assembly code structure.
+  volatile uint16_t
+    i = LED_COUNT * sizeof(RGBColor); // Loop counter
     // Define the port and pinMask for the LED pin
   volatile uint8_t* port = &PORTB; // Example for ATtiny85, adjust if using a different port
   uint8_t pinMask = (1 << LED_PIN); // Adjust PB1 to your specific pin
