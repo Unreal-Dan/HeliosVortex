@@ -17,9 +17,10 @@
 #endif
 #endif
 
-#define PWM_PIN_R PB0 // Red channel (pin 5)
-#define PWM_PIN_G PB1 // Green channel (pin 6)
-#define PWM_PIN_B PB4 // Blue channel (pin 3)
+#define LED_PIN PB0 // Data Channel (pin 5)
+// #define PWM_PIN_R PB0 // Red channel (pin 5)
+// #define PWM_PIN_G PB1 // Green channel (pin 6)
+// #define PWM_PIN_B PB4 // Blue channel (pin 3)
 
 #define SCALE8(i, scale)  (((uint16_t)i * (uint16_t)(scale)) >> 8)
 
@@ -116,48 +117,26 @@ void Led::hold(RGBColor col)
 void Led::update()
 {
 // Thanks to TinyNeoPixel for this code
-#ifdef VORTEX_EMBEDDED
-  volatile uint16_t
-    i = sizeof(RGBColor); // Loop counter
+#ifdef HELIOS_EMBEDDED
+  // Assuming m_ledColor is a struct or class holding the RGB values.
   volatile uint8_t
-    *ptr = (volatile uint8_t *)m_realColor,   // Pointer to next byte
-    b = *ptr++,   // Current byte value
-    hi,             // PORT w/output bit set high
-    lo;             // PORT w/output bit set low
+    *ptr = (volatile uint8_t *)&m_ledColor, // Pointer directly to the m_ledColor variable.
+    b = *ptr++, // First byte of the RGB structure.
+    hi,         // PORT value with output bit set high.
+    lo;         // PORT value with output bit set low.
 
-  // AVRxt MCUs --  tinyAVR 0/1/2, megaAVR 0, AVR Dx ----------------------
-  // with extended maximum speeds to supm_port vigorously overclocked
-  // Dx-series parts. This is by no means intended to imply that they will
-  // run at those speeds, only that - if they do - you can control WS2812s
-  // with them.
-
-  // Hand-tuned assembly code issues data to the LED drivers at a specific
-  // rate.  There's separate code for different CPU speeds (8, 12, 16 MHz)
-  // for both the WS2811 (400 KHz) and WS2812 (800 KHz) drivers.  The
-  // datastream timing for the LED drivers allows a little wiggle room each
-  // way (listed in the datasheets), so the conditions for compiling each
-  // case are set up for a range of frequencies rather than just the exact
-  // 8, 12 or 16 MHz values, permitting use with some close-but-not-spot-on
-  // devices (e.g. 16.5 MHz DigiSpark).  The ranges were arrived at based
-  // on the datasheet figures and have not been extensively tested outside
-  // the canonical 8/12/16 MHz speeds; there's no guarantee these will work
-  // close to the extremes (or possibly they could be pushed further).
-  // Keep in mind only one CPU speed case actually gets compiled; the
-  // resulting program isn't as massive as it might look from source here.
+  volatile uint16_t i = 1; // Not used in the loop, but for consistency with the assembly code structure.
+    // Define the port and pinMask for the LED pin
+  volatile uint8_t* port = &PORTB; // Example for ATtiny85, adjust if using a different port
+  uint8_t pinMask = (1 << LED_PIN); // Adjust PB1 to your specific pin
+  // Setup the high and low values for the port.
+  hi = *port | pinMask;
+  lo = *port & ~pinMask;
 
  // 8 MHz(ish) AVRxt ---------------------------------------------------------
   #if (F_CPU >= 7400000UL) && (F_CPU <= 9500000UL)
-
-    volatile uint8_t n1, n2 = 0;  // First, next bits out
-
-    // We need to be able to write to the port register in one clock
-    // to meet timing constraints here.
-
-    // 10 instruction clocks per bit: HHxxxxxLLL
-    // OUT instructions:              ^ ^    ^   (T=0,2,7)
-
-    hi   = *port |  pinMask;
-    lo   = *port & ~pinMask;
+    // 8MHz specific timing.
+    volatile uint8_t n1, n2 = 0;
     n1 = lo;
     if (b & 0x80) n1 = hi;
 
@@ -253,18 +232,10 @@ void Led::update()
 // 16 MHz(ish) AVRxt ------------------------------------------------------
 #elif (F_CPU >= 15400000UL) && (F_CPU <= 19000000L)
 
-    // WS2811 and WS2812 have different hi/lo duty cycles; this is
-    // similar but NOT an exact copy of the prior 400-on-8 code.
-
-    // 20 inst. clocks per bit: HHHHHxxxxxxxxLLLLLLL      H:5 x:8 L7
-    // ST instructions:         ^    ^       ^       (T=0,5,13)
-
+      // 16MHz specific timing.
     volatile uint8_t next, bit;
-
-    hi   = *port |  pinMask;
-    lo   = *port & ~pinMask;
     next = lo;
-    bit  = 8;
+    bit = 8;
 
     asm volatile(
      "_head16:"                   "\n\t" // Clk  Pseudocode    (T =  0)
