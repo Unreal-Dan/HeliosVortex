@@ -36,19 +36,9 @@ bool Led::init()
 #ifdef HELIOS_ARDUINO
   pinMode(0, OUTPUT);
   pinMode(1, OUTPUT);
-  pinMode(4, OUTPUT);
 #else
   // Set pins as outputs
   DDRB |= (1 << 0) | (1 << 1)
-  // Timer/Counter0 in Fast PWM mode
-  //TCCR0A |= (1 << WGM01) | (1 << WGM00);
-  // Clear OC0A and OC0B on compare match, set at BOTTOM (non-inverting mode)
-  //TCCR0A |= (1 << COM0A1) | (1 << COM0B1);
-  // Use clk/8 prescaler (adjust as needed)
-  //TCCR0B |= (1 << CS01);
-
-  //TCCR1 |= (1 << PWM1A) | (1 << COM1A1) | (1 << PWM1B) | (1 << COM1B1);
-  //GTCCR |= (1 << PWM1B);
 #endif
 #endif
   return true;
