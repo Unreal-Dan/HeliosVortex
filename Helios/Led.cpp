@@ -120,7 +120,7 @@ void Led::update()
 #ifdef HELIOS_EMBEDDED
   // Assuming m_ledColor is a struct or class holding the RGB values.
   volatile uint8_t
-    *ptr = (volatile uint8_t *)&m_ledColor, // Pointer directly to the m_ledColor variable.
+    *ptr = (volatile uint8_t *)&m_realColor, // Pointer directly to the m_ledColor variable.
     b = *ptr++, // First byte of the RGB structure.
     hi,         // PORT value with output bit set high.
     lo;         // PORT value with output bit set low.
