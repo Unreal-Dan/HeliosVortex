@@ -18,9 +18,6 @@
 #endif
 
 #define LED_PIN PB0 // Data Channel (pin 5)
-// #define PWM_PIN_R PB0 // Red channel (pin 5)
-// #define PWM_PIN_G PB1 // Green channel (pin 6)
-// #define PWM_PIN_B PB4 // Blue channel (pin 3)
 
 #define SCALE8(i, scale)  (((uint16_t)i * (uint16_t)(scale)) >> 8)
 
@@ -42,7 +39,7 @@ bool Led::init()
   pinMode(4, OUTPUT);
 #else
   // Set pins as outputs
-  DDRB |= (1 << 0) | (1 << 1) | (1 << 4);
+  DDRB |= (1 << 0) | (1 << 1)
   // Timer/Counter0 in Fast PWM mode
   //TCCR0A |= (1 << WGM01) | (1 << WGM00);
   // Clear OC0A and OC0B on compare match, set at BOTTOM (non-inverting mode)

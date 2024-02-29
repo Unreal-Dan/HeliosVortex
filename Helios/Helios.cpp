@@ -122,9 +122,7 @@ void Helios::tick()
   // state by checking button globals, then run the appropriate logic
   handle_state();
 
-  // NOTE: Do not update the LED here anymore, instead we call Led::update()
-  //       in the tight loop inside main() where it can perform software PWM
-  //       on the LED pins at a much higher frequency
+  // update the led state based on the current pattern and time control state
   Led::update();
 
   // finally tick the clock forward and then sleep till the entire
@@ -135,10 +133,15 @@ void Helios::tick()
 void Helios::enter_sleep()
 {
 #ifdef HELIOS_EMBEDDED
-  // Set all pins to output
-  DDRB = 0xFF;
-  // Set all pins low
-  PORTB = 0x00;
+  // Set MOFSET_PIN as output to control the MOSFET
+  DDRB |= (1 << MOFSET_PIN);
+  // Set MOFSET_PIN high to activate the MOSFET
+  PORTB |= (1 << MOFSET_PIN);
+  // Set all other pins to input to reduce power consumption
+  // Make sure to exclude MOFSET_PIN from being set to input
+  DDRB &= ~(0xFF ^ (1 << MOFSET_PIN));
+  // Optionally, enable pull-up resistors on all input pins except MOFSET_PIN
+  PORTB |= 0xFF & ~(1 << MOFSET_PIN); // Uncomment if necessary
   // Enable wake on interrupt for the button
   Button::enableWake();
   // Set sleep mode to POWER DOWN mode

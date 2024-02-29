@@ -1,6 +1,8 @@
 #ifndef HELIOS_CONFIG_H
 #define HELIOS_CONFIG_H
 
+#define MOFSET_PIN PB1
+
 // Short Click Threshold
 //
 // The length of time in milliseconds for a click to
