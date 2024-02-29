@@ -38,7 +38,7 @@ bool Led::init()
   pinMode(1, OUTPUT);
 #else
   // Set pins as outputs
-  DDRB |= (1 << 0) | (1 << 1)
+  DDRB |= (1 << 0) | (1 << 1);
 #endif
 #endif
   return true;
