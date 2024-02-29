@@ -36,21 +36,18 @@ bool Led::init()
   m_realColor = RGB_OFF;
 #ifdef HELIOS_EMBEDDED
 #ifdef HELIOS_ARDUINO
-  pinMode(0, OUTPUT);
-  pinMode(1, OUTPUT);
-  pinMode(4, OUTPUT);
+  pinMode(PWM_PIN_R, OUTPUT);
+  pinMode(PWM_PIN_G, OUTPUT);
+  pinMode(PWM_PIN_B, OUTPUT);
 #else
   // Set pins as outputs
-  DDRB |= (1 << 0) | (1 << 1) | (1 << 4);
-  // Timer/Counter0 in Fast PWM mode
-  //TCCR0A |= (1 << WGM01) | (1 << WGM00);
-  // Clear OC0A and OC0B on compare match, set at BOTTOM (non-inverting mode)
-  //TCCR0A |= (1 << COM0A1) | (1 << COM0B1);
-  // Use clk/8 prescaler (adjust as needed)
-  //TCCR0B |= (1 << CS01);
+  DDRB |= (1 << PWM_PIN_R) | (1 << PWM_PIN_G) | (1 << PWM_PIN_B);
 
-  //TCCR1 |= (1 << PWM1A) | (1 << COM1A1) | (1 << PWM1B) | (1 << COM1B1);
-  //GTCCR |= (1 << PWM1B);
+   // Set to Fast PWM mode, non-inverting
+  // WGM01:0 = 11 for Fast PWM; COM0x1:0 = 10 for non-inverting
+  TCCR0A |= (1 << WGM01) | (1 << WGM00) | (1 << COM0A1) | (1 << COM0B1);
+   // Clock select, no prescaling
+  TCCR0B |= (1 << CS00);
 #endif
 #endif
   return true;
@@ -120,27 +117,64 @@ void Led::update()
 #ifdef HELIOS_ARDUINO
   analogWrite(PWM_PIN_R, m_realColor.red);
   analogWrite(PWM_PIN_G, m_realColor.green);
-  analogWrite(PWM_PIN_B, m_realColor.blue);
+  analogWrite(PWM_PIN_G, m_realColor.blue);
 #else
-  // a counter to keep track of milliseconds for the PWM
+  // Set hardware PWM duty cycle for red and green
+  OCR0A = m_realColor.red;
+  OCR0B = m_realColor.green;
+
+  // Software PWM for blue
   static uint8_t counter = 0;
   counter++;
-  // run the software PWM on each pin
-  if (counter < m_realColor.red) {
-    PORTB |= (1 << PWM_PIN_R);
-  } else {
-    PORTB &= ~(1 << PWM_PIN_R);
-  }
-  if (counter < m_realColor.green) {
-    PORTB |= (1 << PWM_PIN_G);
-  } else {
-    PORTB &= ~(1 << PWM_PIN_G);
-  }
-  if (counter < m_realColor.blue) {
+  if (m_realColor.blue == 0) {
+    PORTB &= ~(1 << PWM_PIN_B);
+  } else if (counter < m_realColor.blue) {
     PORTB |= (1 << PWM_PIN_B);
   } else {
     PORTB &= ~(1 << PWM_PIN_B);
   }
+#endif
+#endif
+}
+
+void Led::updateSoftwarePWM()
+{
+#ifdef HELIOS_EMBEDDED
+  // write out the rgb values to analog pins
+#ifdef HELIOS_ARDUINO
+  // software PWM for blue
+  analogWrite(PWM_PIN_G, m_realColor.blue);
+#else
+  // Software PWM for blue
+  static uint8_t counter = 0;
+  counter++;
+  if (counter < m_realColor.blue) {
+  PORTB |= (1 << PWM_PIN_B);
+  } else {
+    PORTB &= ~(1 << PWM_PIN_B);
+  }
+  // if (m_realColor.blue == 0) {
+  //   PORTB &= ~(1 << PWM_PIN_B);
+  // } else if (counter < m_realColor.blue) {
+  //   PORTB |= (1 << PWM_PIN_B);
+  // } else {
+  //   PORTB &= ~(1 << PWM_PIN_B);
+  // }
+#endif
+#endif
+}
+
+void Led::updateHardwarePWM()
+{
+#ifdef HELIOS_EMBEDDED
+  // write out the rgb values to analog pins
+#ifdef HELIOS_ARDUINO
+  analogWrite(PWM_PIN_R, m_realColor.red);
+  analogWrite(PWM_PIN_G, m_realColor.green);
+#else
+  // Set hardware PWM duty cycle for red and green
+  OCR0A = m_realColor.red;
+  OCR0B = m_realColor.green;
 #endif
 #endif
 }

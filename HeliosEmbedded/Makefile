@@ -49,7 +49,7 @@ AVRDUDE_FLAGS = -C$(AVRDUDE_CONF) \
 		-b$(AVRDUDE_BAUDRATE) \
 		-v
 
-CPU_SPEED = 16000000L
+CPU_SPEED = 8000000L
 
 # the port for serial upload
 SERIAL_PORT = COM11
@@ -97,11 +97,9 @@ CFLAGS+=$(INCLUDES)
 
 # Source files
 ifeq ($(OS),Windows_NT) # Windows
-SRCS = \
-       $(shell find ../Helios -maxdepth 1 -type f -name '\*.cpp') main.cpp
+SRCS = main.cpp
 else # linux
-SRCS = \
-       $(shell find ../Helios -maxdepth 1 -type f -name \*.cpp) main.cpp
+SRCS = main.cpp
 endif
 
 OBJS = $(SRCS:.cpp=.o)
@@ -132,7 +130,7 @@ $(TARGET).elf: $(OBJS)
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
-upload: set_fuses $(TARGET).hex
+upload: set_default_fuses $(TARGET).hex
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -Uflash:w:$(TARGET).hex:i
 
 upload_eeprom: $(TARGET).eep
@@ -162,7 +160,7 @@ set_fuses:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe1:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 
 set_default_fuses:
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe2:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 
 clean:
 	rm -f $(OBJS) $(TARGET).elf $(TARGET).hex $(DFILES) $(TARGET).bin $(TARGET).eep $(TARGET).lst $(TARGET).map

@@ -46,6 +46,8 @@ public:
 
   // actually update the LEDs and show the changes
   static void update();
+  static void updateHardwarePWM();
+  static void updateSoftwarePWM();
 
 private:
   // the global brightness
