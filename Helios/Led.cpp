@@ -17,7 +17,7 @@
 #endif
 #endif
 
-#define LED_PIN PB0 // Data Channel (pin 5)
+#define LED_PIN PB4 // Data Channel (pin 5)
 
 #define SCALE8(i, scale)  (((uint16_t)i * (uint16_t)(scale)) >> 8)
 

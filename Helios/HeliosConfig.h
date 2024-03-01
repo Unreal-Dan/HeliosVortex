@@ -2,7 +2,7 @@
 #define HELIOS_CONFIG_H
 
 // Mofset Pin
-#define MOFSET_PIN PB1
+#define MOFSET_PIN PB0
 
 // Number of LEDs
 #define LED_COUNT 1
