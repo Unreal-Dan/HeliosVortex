@@ -38,9 +38,11 @@ bool Led::init()
   pinMode(4, OUTPUT);
 #else
   // Set pins as outputs
-  DDRB |= (1 << MOFSET_PIN) | (1 << LED_PIN);
+  // DDRB |= (1 << MOFSET_PIN) | (1 << LED_PIN);
+  DDRB |= (1 << LED_PIN);  // Set PB4 as output
+  PORTB |= (1 << LED_PIN); // Set PB4 to high
   // Set the MOFSET pin to low
-  PORTB &= ~(1 << MOFSET_PIN);
+  // PORTB &= (1 << MOFSET_PIN);
 #endif
 #endif
   return true;
@@ -110,16 +112,16 @@ void Led::update()
 #ifdef HELIOS_EMBEDDED
   // Assuming m_ledColor is a struct or class holding the RGB values.
   volatile uint8_t
-    *ptr = (volatile uint8_t *)&m_realColor, // Pointer directly to the m_ledColor variable.
+    *ptr = (volatile uint8_t *)&m_ledColor, // Pointer directly to the m_ledColor variable.
     b = *ptr++, // First byte of the RGB structure.
     hi,         // PORT value with output bit set high.
     lo;         // PORT value with output bit set low.
 
   volatile uint16_t
     i = LED_COUNT * sizeof(RGBColor); // Loop counter
-    // Define the port and pinMask for the LED pin
+  // Define the port and pinMask for the LED pin
   volatile uint8_t* port = &PORTB; // Example for ATtiny85, adjust if using a different port
-  uint8_t pinMask = (1 << LED_PIN); // Adjust PB1 to your specific pin
+  uint8_t pinMask = (1 << LED_PIN); // Adjust PB14 to your specific pin
   // Setup the high and low values for the port.
   hi = *port | pinMask;
   lo = *port & ~pinMask;

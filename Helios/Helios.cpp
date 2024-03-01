@@ -133,16 +133,16 @@ void Helios::tick()
 void Helios::enter_sleep()
 {
 #ifdef HELIOS_EMBEDDED
-  // Set MOFSET_PIN as output to control the MOSFET
-  DDRB |= (1 << MOFSET_PIN);
-  // Set MOFSET_PIN high to activate the MOSFET
-  PORTB |= (1 << MOFSET_PIN);
-  // Set all other pins to input to reduce power consumption
-  // Make sure to exclude MOFSET_PIN from being set to input
-  DDRB &= ~(0xFF ^ (1 << MOFSET_PIN));
-  // Optionally, enable pull-up resistors on all input pins except MOFSET_PIN
-  PORTB |= 0xFF & ~(1 << MOFSET_PIN); // Uncomment if necessary
-  // Enable wake on interrupt for the button
+  // // Set MOFSET_PIN as output to control the MOSFET
+  // DDRB |= (1 << MOFSET_PIN);
+  // // Set MOFSET_PIN high to activate the MOSFET
+  // PORTB |= (1 << MOFSET_PIN);
+  // // Set all other pins to input to reduce power consumption
+  // // Make sure to exclude MOFSET_PIN from being set to input
+  // DDRB &= ~(0xFF ^ (1 << MOFSET_PIN));
+  // // Optionally, enable pull-up resistors on all input pins except MOFSET_PIN
+  // PORTB |= 0xFF & ~(1 << MOFSET_PIN); // Uncomment if necessary
+  // // Enable wake on interrupt for the button
   Button::enableWake();
   // Set sleep mode to POWER DOWN mode
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
