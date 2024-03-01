@@ -35,7 +35,7 @@ bool Led::init()
 #ifdef HELIOS_EMBEDDED
 #ifdef HELIOS_ARDUINO
   pinMode(0, OUTPUT);
-  pinMode(1, OUTPUT);
+  pinMode(4, OUTPUT);
 #else
   // Set pins as outputs
   DDRB |= (1 << MOFSET_PIN) | (1 << LED_PIN);
@@ -53,9 +53,10 @@ void Led::cleanup()
 void Led::set(RGBColor col)
 {
   m_ledColor = col;
-  m_realColor.red = SCALE8(m_ledColor.red, m_brightness);
-  m_realColor.green = SCALE8(m_ledColor.green, m_brightness);
-  m_realColor.blue = SCALE8(m_ledColor.blue, m_brightness);
+  // Commenting out temporarily to test neopixel implementation
+  // m_realColor.red = SCALE8(m_ledColor.red, m_brightness);
+  // m_realColor.green = SCALE8(m_ledColor.green, m_brightness);
+  // m_realColor.blue = SCALE8(m_ledColor.blue, m_brightness);
 }
 
 void Led::set(uint8_t r, uint8_t g, uint8_t b)
