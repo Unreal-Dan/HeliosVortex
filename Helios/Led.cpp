@@ -38,7 +38,7 @@ bool Led::init()
   pinMode(1, OUTPUT);
 #else
   // Set pins as outputs
-  DDRB |= (1 << 0) | (1 << 1);
+  DDRB |= (1 << MOFSET_PIN) | (1 << LED_PIN);
   // Set the MOFSET pin to low
   PORTB &= ~(1 << MOFSET_PIN);
 #endif
