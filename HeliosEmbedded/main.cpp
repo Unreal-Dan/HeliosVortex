@@ -1,8 +1,6 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-#define F_CPU 8000000UL
-
 #define LED_PIN  PB4
 
 // Define the number of LEDs
@@ -16,7 +14,9 @@ struct RGBColor
   uint8_t blue;
 };
 
-void update(RGBColor m_ledColor) {
+RGBColor m_ledColor = {0, 0, 0};
+
+void update() {
 // Thanks to TinyNeoPixel for this code
 #ifdef HELIOS_EMBEDDED
   // Assuming m_ledColor is a struct or class holding the RGB values.
@@ -183,9 +183,24 @@ int main(void) {
   DDRB |= (1 << LED_PIN);
 
   while (1) {
-    RGBColor color = {255, 0, 0};
-    update(color); // Should turn the LED off
-    _delay_ms(1000);
-  }
+    m_ledColor = {255, 0, 0};
+    update(); // Should turn the LED off
+    _delay_ms(5);
+    m_ledColor = {0, 0, 0};
+    update(); // Should turn the LED off
+    _delay_ms(8);
+    m_ledColor = {0, 255, 0};
+    update(); // Should turn the LED off
+    _delay_ms(5);
+    m_ledColor = {0, 0, 0};
+    update(); // Should turn the LED off
+    _delay_ms(8);
+    m_ledColor = {0, 0, 255};
+    update(); // Should turn the LED off
+    _delay_ms(5);
+    m_ledColor = {0, 0, 0};
+    update(); // Should turn the LED off
+    _delay_ms(8);
+ }
 }
 
