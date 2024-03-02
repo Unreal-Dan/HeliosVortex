@@ -797,16 +797,16 @@ void Helios::handle_state_shift_mode()
 
 void Helios::handle_state_randomize()
 {
-  if (Button::onShortClick()) {
-    uint32_t seed = crc32((const uint8_t *)&pat, PATTERN_SIZE);
-    Random ctx(seed);
-    Colorset &cur_set = pat.colorset();
-    uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
+  // if (Button::onShortClick()) {
+  //   uint32_t seed = crc32((const uint8_t *)&pat, PATTERN_SIZE);
+  //   Random ctx(seed);
+  //   Colorset &cur_set = pat.colorset();
+  //   uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
 
-    cur_set.randomizeColors(ctx, num_cols);
-    Patterns::make_pattern((PatternID)(ctx.next8() % PATTERN_COUNT), pat);
-    pat.init();
-  }
+  //   cur_set.randomizeColors(ctx, num_cols);
+  //   Patterns::make_pattern((PatternID)(ctx.next8() % PATTERN_COUNT), pat);
+  //   pat.init();
+  // }
   if (Button::onLongClick()) {
     save_cur_mode();
     cur_state = STATE_MODES;

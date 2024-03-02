@@ -27,7 +27,7 @@ static const default_colorset default_colorsets[] = {
   { 4, color_codes2 },  // 2 Butterfly
   { 6, color_codes3 },  // 3 Freezer Burn
   { 6, color_codes4 },  // 4 Ice Blade
-  // { 6, color_codes5 },  // 5 Rainbow Glitter
+  { 6, color_codes5 },  // 5 Rainbow Glitter
 };
 
 void Patterns::make_default(uint8_t index, Pattern &pat)
