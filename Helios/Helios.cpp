@@ -34,9 +34,7 @@ uint8_t Helios::selected_val;
 Pattern Helios::pat;
 bool Helios::keepgoing;
 
-#ifdef HELIOS_CLI
 bool Helios::sleeping;
-#endif
 
 bool Helios::init()
 {
@@ -61,9 +59,7 @@ bool Helios::init()
   selected_slot = 0;
   selected_base_quad = 0;
   keepgoing = true;
-#ifdef HELIOS_CLI
   sleeping = false;
-#endif
 
   // read the global flags from index 0 config
   global_flags = (Flags)Storage::read_global_flags();
@@ -97,8 +93,14 @@ bool Helios::init()
   TIMSK |= (1 << OCIE0A);
   // Start timer with prescaler of 64
   TCCR0B |= (1 << CS01) | (1 << CS00);
+  // Put chip to sleep
+  set_sleep_mode(SLEEP_MODE_IDLE);
   // enable interrupts
   sei();
+
+  while (sleeping) {
+    sleep_mode();
+  }
 #endif
 
   return true;

@@ -106,7 +106,5 @@ private:
   static Pattern pat;
   static bool keepgoing;
 
-#ifdef HELIOS_CLI
   static bool sleeping;
-#endif
 };
