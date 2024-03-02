@@ -97,11 +97,9 @@ CFLAGS+=$(INCLUDES)
 
 # Source files
 ifeq ($(OS),Windows_NT) # Windows
-SRCS = \
-       $(shell find ../Helios -maxdepth 1 -type f -name '\*.cpp') main.cpp
+SRCS = main.cpp
 else # linux
-SRCS = \
-       $(shell find ../Helios -maxdepth 1 -type f -name \*.cpp) main.cpp
+SRCS = main.cpp
 endif
 
 OBJS = $(SRCS:.cpp=.o)
