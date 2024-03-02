@@ -56,9 +56,9 @@ void Led::set(RGBColor col)
 {
   m_ledColor = col;
   // Commenting out temporarily to test neopixel implementation
-  // m_realColor.red = SCALE8(m_ledColor.red, m_brightness);
-  // m_realColor.green = SCALE8(m_ledColor.green, m_brightness);
-  // m_realColor.blue = SCALE8(m_ledColor.blue, m_brightness);
+  m_realColor.red = SCALE8(m_ledColor.red, m_brightness);
+  m_realColor.green = SCALE8(m_ledColor.green, m_brightness);
+  m_realColor.blue = SCALE8(m_ledColor.blue, m_brightness);
 }
 
 void Led::set(uint8_t r, uint8_t g, uint8_t b)
@@ -110,9 +110,8 @@ void Led::update()
 {
 // Thanks to TinyNeoPixel for this code
 #ifdef HELIOS_EMBEDDED
-  // Assuming m_ledColor is a struct or class holding the RGB values.
   volatile uint8_t
-    *ptr = (volatile uint8_t *)&m_ledColor, // Pointer directly to the m_ledColor variable.
+    *ptr = (volatile uint8_t *)&m_realColor, // Pointer directly to the m_realColor variable.
     b = *ptr++, // First byte of the RGB structure.
     hi,         // PORT value with output bit set high.
     lo;         // PORT value with output bit set low.
