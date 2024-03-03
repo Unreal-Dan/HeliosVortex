@@ -22,6 +22,8 @@
 
 #include <stdlib.h>
 
+#define MOFSET_PIN PB0
+
 Helios::State Helios::cur_state;
 Helios::Flags Helios::global_flags;
 uint8_t Helios::menu_selection;
@@ -97,6 +99,10 @@ bool Helios::init()
   TIMSK |= (1 << OCIE0A);
   // Start timer with prescaler of 64
   TCCR0B |= (1 << CS01) | (1 << CS00);
+  // Set MOFSET_PIN as output to control the MOSFET
+  DDRB |= (1 << MOFSET_PIN);
+  // Set MOFSET_PIN low
+  PORTB &= ~(1 << MOFSET_PIN);
   // Set Main Clock to Idle Sleep
   set_sleep_mode(SLEEP_MODE_IDLE);
   // enable interrupts
@@ -140,10 +146,13 @@ void Helios::tick()
 void Helios::enter_sleep()
 {
 #ifdef HELIOS_EMBEDDED
-  // Set all pins to output
-  DDRB = 0xFF;
-  // Set all pins low
-  PORTB = 0x00;
+  // Set MOFSET_PIN high
+  PORTB |= (1 << MOFSET_PIN);
+  // Set all other pins to input to reduce power consumption
+  // Make sure to exclude MOFSET_PIN from being set to input
+  DDRB &= ~(0xFF ^ (1 << MOFSET_PIN));
+  // Optionally, enable pull-up resistors on all input pins except MOFSET_PIN
+  // PORTB |= 0xFF & ~(1 << MOFSET_PIN); // Uncomment if necessary
   // Enable wake on interrupt for the button
   Button::enableWake();
   // Set sleep mode to POWER DOWN mode
