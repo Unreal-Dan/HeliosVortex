@@ -35,8 +35,6 @@ bool Led::init()
   m_realColor = RGB_OFF;
 #ifdef HELIOS_EMBEDDED
 #ifdef HELIOS_ARDUINO
-  pinMode(0, OUTPUT);
-  pinMode(1, OUTPUT);
   pinMode(4, OUTPUT);
 #else
   // Set LED Data as pin to output
