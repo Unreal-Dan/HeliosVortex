@@ -92,16 +92,16 @@ bool Helios::init()
   OCR0A = 124;
 #elif F_CPU == 1000000L
   // 1ms at 1mhz clock with prescaler of 64
-  OCR0A = 15; // Adjusted value for 1 MHz clock
+  OCR0A = 15;
 #endif
   TIMSK |= (1 << OCIE0A);
   // Start timer with prescaler of 64
   TCCR0B |= (1 << CS01) | (1 << CS00);
-    // Put chip to sleep
+  // Set Main Clock to Idle Sleep
   set_sleep_mode(SLEEP_MODE_IDLE);
   // enable interrupts
   sei();
-
+  // Sleep chip until interrupt
   while (1) {
     sleep_mode();
   }
@@ -128,9 +128,8 @@ void Helios::tick()
   // state by checking button globals, then run the appropriate logic
   handle_state();
 
-  // NOTE: Do not update the LED here anymore, instead we call Led::update()
-  //       in the tight loop inside main() where it can perform software PWM
-  //       on the LED pins at a much higher frequency
+  // handle the led update, this will update the led based on the
+  // current red, green and blue values that have been set
   Led::update();
 
   // finally tick the clock forward and then sleep till the entire
