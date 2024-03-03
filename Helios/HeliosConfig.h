@@ -48,7 +48,7 @@
 // Tickrate
 //
 // The number of engine ticks per second
-#define TICKRATE 1000
+#define TICKRATE 8000000
 
 // Menu Hold Time
 //

@@ -82,34 +82,15 @@ bool Helios::init()
   load_cur_mode();
 
 #ifdef HELIOS_EMBEDDED
-  // Timer0 setup for 1 kHz interrupt
-  TCCR0A |= (1 << WGM01);
-#if F_CPU == 16000000L
-  // 1ms at 16MHz clock with prescaler of 64
-  OCR0A = 249;
-#elif F_CPU == 8000000L
-  // 1ms at 8mhz clock with prescaler of 64
-  OCR0A = 124;
-#elif F_CPU == 1000000L
-  // 1ms at 1mhz clock with prescaler of 64
-  OCR0A = 15; // Adjusted value for 1 MHz clock
-#endif
-  TIMSK |= (1 << OCIE0A);
-  // Start timer with prescaler of 64
-  TCCR0B |= (1 << CS01) | (1 << CS00);
-  // enable interrupts
-  sei();
+  sei();                                               // Enable global interrupt
+  while (1) {
+    Helios::tick();
+  }
 #endif
 
   return true;
 }
 
-#ifdef HELIOS_EMBEDDED
-ISR(TIM0_COMPA_vect) {
-  // 1 kHz system tick
-  Helios::tick();
-}
-#endif
 
 void Helios::tick()
 {
@@ -125,6 +106,7 @@ void Helios::tick()
   // NOTE: Do not update the LED here anymore, instead we call Led::update()
   //       in the tight loop inside main() where it can perform software PWM
   //       on the LED pins at a much higher frequency
+  Led::update();
 
   // finally tick the clock forward and then sleep till the entire
   // tick duration has been consumed
