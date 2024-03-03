@@ -49,7 +49,7 @@ AVRDUDE_FLAGS = -C$(AVRDUDE_CONF) \
 		-b$(AVRDUDE_BAUDRATE) \
 		-v
 
-CPU_SPEED = 16000000L
+CPU_SPEED = 8000000L
 
 # the port for serial upload
 SERIAL_PORT = COM11
@@ -159,10 +159,27 @@ install:
 endif
 
 set_fuses:
+ifeq ($(CPU_SPEED),16000000L)
+	@echo "Setting fuses for 16MHz..."
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe1:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+else ifeq ($(CPU_SPEED),8000000L)
+	@echo "Setting fuses for 8MHz..."
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xE2:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+else ifeq ($(CPU_SPEED),1000000L)
+	@echo "Setting fuses for 1MHz..."
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+else
+	@echo "Unsupported CPU_SPEED for fuse settings."
+endif
+
+set_16mhz_fuses:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe1:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 
-set_default_fuses:
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe2:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+set_8mhz_fuses:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xE2:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+
+set_1mhz_fuses:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 
 clean:
 	rm -f $(OBJS) $(TARGET).elf $(TARGET).hex $(DFILES) $(TARGET).bin $(TARGET).eep $(TARGET).lst $(TARGET).map

@@ -40,17 +40,32 @@ bool Led::init()
   pinMode(1, OUTPUT);
   pinMode(4, OUTPUT);
 #else
-  // Set pins as outputs
-  DDRB |= (1 << 0) | (1 << 1) | (1 << 4);
-  // Timer/Counter0 in Fast PWM mode
-  //TCCR0A |= (1 << WGM01) | (1 << WGM00);
-  // Clear OC0A and OC0B on compare match, set at BOTTOM (non-inverting mode)
-  //TCCR0A |= (1 << COM0A1) | (1 << COM0B1);
-  // Use clk/8 prescaler (adjust as needed)
-  //TCCR0B |= (1 << CS01);
+   // Configure Timer0 for Fast PWM on OC0A and OC0B (PB0 and PB1)
+    TCCR0A = (1 << WGM01) | (1 << WGM00) | (1 << COM0A1) | (1 << COM0B1);
+    TCCR0B = (1 << CS00); // No prescaling
 
-  //TCCR1 |= (1 << PWM1A) | (1 << COM1A1) | (1 << PWM1B) | (1 << COM1B1);
-  //GTCCR |= (1 << PWM1B);
+    // Configure Timer1 for PWM on OC1A (PB4) and CTC mode for tick clock
+    GTCCR = (1 << PWM1B) | (1 << COM1B1);
+    OCR1C = 0xFF; // Max PWM value
+    TCCR1 = (1 << CTC1) | (1 << CS12) | (1 << CS10); // CTC mode with prescaler
+
+    // Set OCR1A for tick clock interrupt (1 kHz)
+    OCR1A = 124; // Adjust based on prescaler and desired frequency
+
+    // Enable Timer1 Compare Match Interrupt
+    TIMSK |= (1 << OCIE1A);
+
+    // Set PWM pins as output
+    DDRB |= (1 << PB0) | (1 << PB1) | (1 << PB4);
+  // // Set pins as outputs
+  // DDRB |= (1 << 0) | (1 << 1) | (1 << 4);
+  // // Setup Timer0 (OC0A and OC0B) for PWM
+  // TCCR0A = (1 << COM0A1) | (1 << COM0B1) | (1 << WGM01) | (1 << WGM00);
+  // TCCR0B = (1 << CS00); // No prescaling
+  // // Setup Timer1 (OC1A) for PWM
+  // GTCCR = (1 << PWM1B) | (1 << COM1B1);
+  // OCR1C = 0xFF; // Set top value for PWM
+  // TCCR1 = (1 << CS10); // No prescaling, start Timer1
 #endif
 #endif
   return true;
@@ -116,31 +131,9 @@ void Led::hold(RGBColor col)
 void Led::update()
 {
 #ifdef HELIOS_EMBEDDED
-  // write out the rgb values to analog pins
-#ifdef HELIOS_ARDUINO
-  analogWrite(PWM_PIN_R, m_realColor.red);
-  analogWrite(PWM_PIN_G, m_realColor.green);
-  analogWrite(PWM_PIN_B, m_realColor.blue);
-#else
-  // a counter to keep track of milliseconds for the PWM
-  static uint8_t counter = 0;
-  counter++;
-  // run the software PWM on each pin
-  if (counter < m_realColor.red) {
-    PORTB |= (1 << PWM_PIN_R);
-  } else {
-    PORTB &= ~(1 << PWM_PIN_R);
-  }
-  if (counter < m_realColor.green) {
-    PORTB |= (1 << PWM_PIN_G);
-  } else {
-    PORTB &= ~(1 << PWM_PIN_G);
-  }
-  if (counter < m_realColor.blue) {
-    PORTB |= (1 << PWM_PIN_B);
-  } else {
-    PORTB &= ~(1 << PWM_PIN_B);
-  }
-#endif
+  // write out the rgb values to PWM registers
+  OCR0A = m_realColor.red;   // Set PWM duty cycle for red (OC0A)
+  OCR0B = m_realColor.green; // Set PWM duty cycle for green (OC0B)
+  OCR1B = m_realColor.blue;  // Set PWM duty cycle for blue (OC1A)
 #endif
 }

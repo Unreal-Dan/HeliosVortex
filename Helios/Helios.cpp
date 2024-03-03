@@ -38,6 +38,8 @@ bool Helios::keepgoing;
 bool Helios::sleeping;
 #endif
 
+volatile uint32_t lastTickTime = 0;
+
 bool Helios::init()
 {
   // initialize the time control and led control
@@ -82,30 +84,38 @@ bool Helios::init()
   load_cur_mode();
 
 #ifdef HELIOS_EMBEDDED
-  // Timer0 setup for 1 kHz interrupt
-  TCCR0A |= (1 << WGM01);
-#if F_CPU == 16000000L
-  // 1ms at 16MHz clock with prescaler of 64
-  OCR0A = 249;
-#elif F_CPU == 8000000L
-  // 1ms at 8mhz clock with prescaler of 64
-  OCR0A = 124;
-#elif F_CPU == 1000000L
-  // 1ms at 1mhz clock with prescaler of 64
-  OCR0A = 15; // Adjusted value for 1 MHz clock
-#endif
-  TIMSK |= (1 << OCIE0A);
-  // Start timer with prescaler of 64
-  TCCR0B |= (1 << CS01) | (1 << CS00);
-  // enable interrupts
-  sei();
+//  // Initialize Timer1 for 1ms interrupt
+//     TCCR1 = (1 << CTC1) | (1 << CS13) | (1 << CS12) | (1 << CS11) | (1 << CS10); // CTC mode with prescaler
+//     OCR1C = 124; // Adjust based on prescaler and desired frequency
+//     TIMSK |= (1 << OCIE1A); // Enable Timer1 Compare Match Interrupt
+
+    // Enable global interrupts
+    sei();
+
+ while (Helios::keep_going()) {
+        // Increment the time of the last tick
+        lastTickTime++;
+
+        // Check if 1ms has passed since the last tick
+        if (lastTickTime >= 8000) { // Adjust this value based on your main loop execution time
+            // Reset the time of the last tick
+            lastTickTime = 0;
+
+            // Call the tickClock function
+            Time::tickClock();
+        }
+
+        Button::update();
+        handle_state();
+        Led::update();
+    }
 #endif
 
   return true;
 }
 
 #ifdef HELIOS_EMBEDDED
-ISR(TIM0_COMPA_vect) {
+ISR(TIMER1_COMPA_vect) {
   // 1 kHz system tick
   Helios::tick();
 }
@@ -125,6 +135,7 @@ void Helios::tick()
   // NOTE: Do not update the LED here anymore, instead we call Led::update()
   //       in the tight loop inside main() where it can perform software PWM
   //       on the LED pins at a much higher frequency
+  Led::update();
 
   // finally tick the clock forward and then sleep till the entire
   // tick duration has been consumed
@@ -791,22 +802,22 @@ void Helios::handle_state_shift_mode()
 
 void Helios::handle_state_randomize()
 {
-  if (Button::onShortClick()) {
-    uint32_t seed = crc32((const uint8_t *)&pat, PATTERN_SIZE);
-    Random ctx(seed);
-    Colorset &cur_set = pat.colorset();
-    uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
+  // if (Button::onShortClick()) {
+  //   uint32_t seed = crc32((const uint8_t *)&pat, PATTERN_SIZE);
+  //   Random ctx(seed);
+  //   Colorset &cur_set = pat.colorset();
+  //   uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
 
-    cur_set.randomizeColors(ctx, num_cols);
-    Patterns::make_pattern((PatternID)(ctx.next8() % PATTERN_COUNT), pat);
-    pat.init();
-  }
-  if (Button::onLongClick()) {
-    save_cur_mode();
-    cur_state = STATE_MODES;
-  }
-  pat.play();
-  show_selection(RGB_WHITE_BRI_LOW);
+  //   cur_set.randomizeColors(ctx, num_cols);
+  //   Patterns::make_pattern((PatternID)(ctx.next8() % PATTERN_COUNT), pat);
+  //   pat.init();
+  // }
+  // if (Button::onLongClick()) {
+  //   save_cur_mode();
+  //   cur_state = STATE_MODES;
+  // }
+  // pat.play();
+  // show_selection(RGB_WHITE_BRI_LOW);
 }
 
 void Helios::show_long_selection(RGBColor color)
