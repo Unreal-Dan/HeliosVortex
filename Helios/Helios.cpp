@@ -97,8 +97,14 @@ bool Helios::init()
   TIMSK |= (1 << OCIE0A);
   // Start timer with prescaler of 64
   TCCR0B |= (1 << CS01) | (1 << CS00);
+    // Put chip to sleep
+  set_sleep_mode(SLEEP_MODE_IDLE);
   // enable interrupts
   sei();
+
+  while (1) {
+    sleep_mode();
+  }
 #endif
 
   return true;
