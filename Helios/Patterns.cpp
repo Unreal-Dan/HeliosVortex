@@ -6,8 +6,8 @@
 // define arrays of colors, you can reuse these if you have multiple
 // modes that use the same colorset -- these demonstrate the max amount
 // of colors in each set but you can absolutely list a lesser amount
-static const uint32_t color_codes0[] = {RGB_RED, RGB_ORANGE, RGB_YELLOW, RGB_TURQUOISE, RGB_BLUE, RGB_PINK};
-static const uint32_t color_codes1[] = {RGB_RED, RGB_CORAL_ORANGE_SAT_MEDIUM, RGB_ORANGE, RGB_YELLOW_SAT_LOW};
+static const uint32_t color_codes0[] = {RGB_RED, RGB_GREEN, RGB_BLUE};
+static const uint32_t color_codes1[] = {RGB_WHITE};
 static const uint32_t color_codes2[] = {RGB_PURPLE_BRI_LOWEST, RGB_MAGENTA, RGB_HOT_PINK_SAT_MEDIUM, RGB_PINK_SAT_LOWEST};
 static const uint32_t color_codes3[] = {RGB_WHITE, RGB_BLUE_BRI_LOWEST, RGB_BLUE_BRI_LOWEST, RGB_BLUE_BRI_LOWEST, RGB_BLUE_BRI_LOWEST, RGB_BLUE_BRI_LOWEST};
 static const uint32_t color_codes4[] = {RGB_MAGENTA_BRI_LOWEST, RGB_ROYAL_BLUE_BRI_LOW, RGB_TURQUOISE, RGB_ROYAL_BLUE_BRI_LOW, RGB_MAGENTA_BRI_LOWEST, RGB_OFF};
@@ -22,8 +22,8 @@ struct default_colorset {
 // the array of colorset entries, make sure the number on the left reflects
 // the number of colors in the array on the right
 static const default_colorset default_colorsets[] = {
-  { 6, color_codes0 },  // 0 Lightside
-  { 4, color_codes1 },  // 1 Sauna
+  { 3, color_codes0 },  // 0 Lightside
+  { 1, color_codes1 },  // 1 Sauna
   { 4, color_codes2 },  // 2 Butterfly
   { 6, color_codes3 },  // 3 Freezer Burn
   { 6, color_codes4 },  // 4 Ice Blade
@@ -38,12 +38,11 @@ void Patterns::make_default(uint8_t index, Pattern &pat)
   PatternArgs args;
   switch (index) {
     case 0:  // Lightside
-      args.on_dur = 2;
-      args.gap_dur = 40;
+      args.on_dur = 10;
+      args.blend_speed = 1;
       break;
     case 1:  // Sauna
-      args.on_dur = 1;
-      args.off_dur = 9;
+      args.on_dur = 9;
       break;
     case 2:  // Butterfly
       args.on_dur = 1;

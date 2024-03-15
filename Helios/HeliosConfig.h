@@ -35,7 +35,7 @@
 // Default Brightness
 //
 // The default brightness of the led
-#define DEFAULT_BRIGHTNESS 170
+#define DEFAULT_BRIGHTNESS 30
 
 // Global Brightness Options
 //
