@@ -64,7 +64,6 @@ protected:
   uint8_t m_gapDuration;
   uint8_t m_dashDuration;
   uint8_t m_groupSize;
-  uint8_t m_numFlips;
 
   // ==================================
   //  Pattern Members

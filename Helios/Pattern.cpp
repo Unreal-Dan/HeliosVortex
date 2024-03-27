@@ -216,8 +216,7 @@ bool Pattern::equals(const Pattern *other)
       m_offDuration != other->m_offDuration ||
       m_gapDuration != other->m_gapDuration ||
       m_dashDuration != other->m_dashDuration ||
-      m_groupSize != other->m_groupSize ||
-      m_numFlips != other->m_numFlips) {
+      m_groupSize != other->m_groupSize) {
     return false;
   }
   // if those match then it's effectively the same
