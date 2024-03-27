@@ -38,13 +38,12 @@ static void printState(PatternState state)
 #endif
 
 Pattern::Pattern(uint8_t onDur, uint8_t offDur, uint8_t gap,
-          uint8_t dash, uint8_t group,  uint8_t flips) :
+          uint8_t dash, uint8_t group) :
   m_onDuration(onDur),
   m_offDuration(offDur),
   m_gapDuration(gap),
   m_dashDuration(dash),
   m_groupSize(group),
-  m_numFlips(flips),
   m_patternFlags(0),
   m_colorset(),
   m_groupCounter(0),
@@ -55,7 +54,7 @@ Pattern::Pattern(uint8_t onDur, uint8_t offDur, uint8_t gap,
 
 Pattern::Pattern(const PatternArgs &args) :
   Pattern(args.on_dur, args.off_dur, args.gap_dur,
-      args.dash_dur, args.group_size, args.num_flips)
+      args.dash_dur, args.group_size)
 {
 }
 
