@@ -49,8 +49,6 @@ void Time::tickClock()
   // tick clock forward
   m_curTick++;
 
-  Time::delayMicroseconds(500);
-
 #ifdef HELIOS_CLI
   if (!m_enableTimestep) {
     return;
@@ -108,15 +106,11 @@ uint32_t Time::microseconds()
   // should always just rely on the current tick to perform operations
   uint8_t oldSREG = SREG;
   cli();
-  // Each overflow happens after 256 counts, and each count represents 1/8 microsecond
-  // So one overflow represents 256 * 1/8 microseconds
-  // Add the current timer value, also scaled by 8
-  // We can avoid the division by multiplying everything by 8 and then shifting by 3 at the end
+  // multiply by 8 early to avoid floating point math or division
   uint32_t micros = (timer0_overflow_count * (256 * 8)) + (TCNT0 * 8);
-  // Restore global interrupt flag
   SREG = oldSREG;
-  // Convert from 1/8 microseconds to microseconds by shifting right by 3
-  return micros >> 3;
+  // then shift right to counteract the multiplication by 8
+  return micros >> 6;
 #endif
 #endif
 }
