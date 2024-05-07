@@ -128,6 +128,18 @@ void Led::hold(RGBColor col)
   Time::delayMilliseconds(250);
 }
 
+void Led::setPWM(uint8_t pwmPin, uint8_t pwmValue, volatile uint8_t &controlRegister,
+    uint8_t controlBit, volatile uint8_t &compareRegister)
+{
+  if (pwmValue == 0) {
+    controlRegister &= ~controlBit;  // Disable PWM
+    PORTB &= ~(1 << pwmPin);  // Set the pin low
+  } else {
+    controlRegister |= controlBit;  // Enable PWM
+    compareRegister = pwmValue;  // Set PWM duty cycle
+  }
+}
+
 void Led::update()
 {
 #ifdef HELIOS_EMBEDDED
@@ -141,51 +153,10 @@ void Led::update()
   uint8_t oldSREG = SREG;
   cli();
 
-  // the commented out stuff here is the full complete solution
-  // that is equivalent to analogWrite -- first it checks if the value
-  // is either 0 or 255 and just passes through to digitalWrite, then
-  // if the value is not 0 or 255 it enables the analog PWM output.
-  //
-  // However in practice I can only seem to get the analog PWM output
-  // working and the 'digitalWrite' part for 0 and 255 doesn't seem to
-  // be working. This is likely the source of the 'glow' that is seen when
-  // the led is supposed to be off, it's because the pin is not dropping
-  // entirely to 0 as it would normally from digitalWrite(0)
-
-  if (m_realColor.red <= 0) {
-    // this is digitalWrite(0, LOW);
-    TCCR0A &= ~(1 << COM0A1);
-    PORTB &= ~(1 << PWM_PIN_R);
-  } else {
-    // this is analogWrite(0, realColor.red);
-    TCCR0A |= (1 << COM0A1);
-    OCR0A = m_realColor.red;
-  }
-
-  // TODO: uncommenting this section would be the correct way to
-  //       disable the green LED when the output value g = 0 however
-  //       it seems to break everything when I do this, I've tried all
-  //       kinds of things but nothing seems to make it work
-  //
-  //if (m_realColor.green <= 0) {
-  //  // this is digitalWrite(1, LOW);
-  //  TCCR0A &= ~(1 << COM0B1);
-  //  PORTB &= ~(1 << PWM_PIN_G);
-  //} else {
-      // this is analogWrite(1, realColor.green);
-      TCCR0A |= (1 << COM0B1);
-      OCR0B = m_realColor.green;
-  //}
-
-  if (m_realColor.blue <= 0) {
-    // this is digitalWrite(4, LOW);
-    GTCCR &= ~(1 << COM1B1);
-    PORTB &= ~(1 << PWM_PIN_B);
-  } else {
-    // this is analogWrite(4, realColor.blue);
-    GTCCR |= (1 << COM1B1);
-    OCR1B = m_realColor.blue;
-  }
+  // set the PWM for R/G/B output
+  setPWM(PWM_PIN_R, m_realColor.red, TCCR0A, (1 << COM0A1), OCR0A);
+  setPWM(PWM_PIN_G, m_realColor.green, TCCR0A, (1 << COM0B1), OCR0B);
+  setPWM(PWM_PIN_B, m_realColor.blue, GTCCR, (1 << COM1B1), OCR1B);
 
   // turn interrupts back on
   SREG = oldSREG;

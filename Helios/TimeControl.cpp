@@ -49,10 +49,14 @@ void Time::tickClock()
   // tick clock forward
   m_curTick++;
 
+  Time::delayMicroseconds(500);
+
 #ifdef HELIOS_CLI
   if (!m_enableTimestep) {
     return;
   }
+#endif
+
   // the rest of this only runs inside vortexlib because on the duo the tick runs in the
   // tcb timer callback instead of in a busy loop constantly checking microseconds()
   // perform timestep
@@ -77,8 +81,14 @@ void Time::tickClock()
 
   // store current time
   m_prevTime = microseconds();
-#endif
 }
+
+#ifdef HELIOS_EMBEDDED
+volatile uint32_t timer0_overflow_count = 0;
+ISR(TIMER0_OVF_vect) {
+  timer0_overflow_count++;  // Increment on each overflow
+}
+#endif
 
 uint32_t Time::microseconds()
 {
@@ -91,29 +101,22 @@ uint32_t Time::microseconds()
 #ifdef HELIOS_ARDUINO
   return micros();
 #else
-  // TODO: microseconds on attiny85
-
-  // Here is kinda how attinycore does it, but incomplete
-  //unsigned long m;
-  //uint8_t t;
-  //uint8_t oldSREG = SREG;
-  //cli();
-  //m = millis_timer_overflow_count;
-  //t = TCNT0;
-  //if ((TIFR & _BV(TOV0)) && (t < 255)) {
-  //  m++;
-  //}
-  //SREG = oldSREG;
-  //#define clockCyclesPerMicrosecond() (F_CPU / 1000000UL)
-  //return ((m << 8) + t) * (MillisTimerPrescaleValue / clockCyclesPerMicrosecond());
-
   // The only reason that micros() is actually necessary is if Helios::tick()
   // cannot be called in a 1Khz ISR. If Helios::tick() cannot be reliably called
   // by an interrupt then Time::tickClock() must perform manual timestep via micros().
-  //
   // If Helios::tick() is called by an interrupt then you don't need this function and
   // should always just rely on the current tick to perform operations
-  return 0;
+  uint8_t oldSREG = SREG;
+  cli();
+  // Each overflow happens after 256 counts, and each count represents 1/8 microsecond
+  // So one overflow represents 256 * 1/8 microseconds
+  // Add the current timer value, also scaled by 8
+  // We can avoid the division by multiplying everything by 8 and then shifting by 3 at the end
+  uint32_t micros = (timer0_overflow_count * (256 * 8)) + (TCNT0 * 8);
+  // Restore global interrupt flag
+  SREG = oldSREG;
+  // Convert from 1/8 microseconds to microseconds by shifting right by 3
+  return micros >> 3;
 #endif
 #endif
 }
