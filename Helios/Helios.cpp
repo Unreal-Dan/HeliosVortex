@@ -82,21 +82,37 @@ bool Helios::init()
   load_cur_mode();
 
 #ifdef HELIOS_EMBEDDED
-  // Timer0 setup for 1 kHz interrupt
-  TCCR0A |= (1 << WGM01);
-#if F_CPU == 16000000L
-  // 1ms at 16MHz clock with prescaler of 64
-  OCR0A = 249;
-#elif F_CPU == 8000000L
-  // 1ms at 8mhz clock with prescaler of 64
-  OCR0A = 124;
-#elif F_CPU == 1000000L
-  // 1ms at 1mhz clock with prescaler of 64
-  OCR0A = 15; // Adjusted value for 1 MHz clock
-#endif
-  TIMSK |= (1 << OCIE0A);
-  // Start timer with prescaler of 64
-  TCCR0B |= (1 << CS01) | (1 << CS00);
+  //  // Timer0 setup for 1 kHz interrupt
+  //  TCCR0A |= (1 << WGM01);
+  //#if F_CPU == 16000000L
+  //  // 1ms at 16MHz clock with prescaler of 64
+  //  OCR0A = 249;
+  //#elif F_CPU == 8000000L
+  //  // 1ms at 8mhz clock with prescaler of 64
+  //  OCR0A = 124;
+  //#elif F_CPU == 1000000L
+  //  // 1ms at 1mhz clock with prescaler of 64
+  //  OCR0A = 15; // Adjusted value for 1 MHz clock
+  //#endif
+  //  TIMSK |= (1 << OCIE0A);
+  //  // Start timer with prescaler of 64
+  //  TCCR0B |= (1 << CS01) | (1 << CS00);
+
+  // Set PB0, PB1, PB4 as output
+  DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
+
+  // Timer0 Configuration for PWM
+  TCCR0A = (1 << WGM01) | (1 << WGM00) | (1 << COM0A1) | (1 << COM0B1); // Fast PWM, Non-inverting
+  TCCR0B = (1 << CS00); // No prescaler
+
+  // Timer1 Configuration for PWM and interrupt
+  TCCR1 = (1 << PWM1A) | (1 << COM1A1) | (1 << CS12) | (1 << CS10); // Fast PWM, Non-inverting, Prescaler set to 64
+  GTCCR = (1 << PWM1B) | (1 << COM1B1);
+  OCR1A = 124;  // 1 millisecond compare value (1000 Hz)
+
+  // Enable Timer1 Compare Match Interrupt
+  TIMSK |= (1 << OCIE1A);
+
   // enable interrupts
   sei();
 #endif
@@ -105,7 +121,7 @@ bool Helios::init()
 }
 
 #ifdef HELIOS_EMBEDDED
-ISR(TIM0_COMPA_vect) {
+ISR(TIMER1_COMPA_vect) {
   // 1 kHz system tick
   Helios::tick();
 }
@@ -122,9 +138,8 @@ void Helios::tick()
   // state by checking button globals, then run the appropriate logic
   handle_state();
 
-  // NOTE: Do not update the LED here anymore, instead we call Led::update()
-  //       in the tight loop inside main() where it can perform software PWM
-  //       on the LED pins at a much higher frequency
+  // Update the Leds once per frame
+  Led::update();
 
   // finally tick the clock forward and then sleep till the entire
   // tick duration has been consumed
