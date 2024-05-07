@@ -32,13 +32,15 @@ NM = ${BINDIR}avr-nm
 AVRDUDE = ${AVRDUDEDIR}avrdude
 
 AVRDUDE_CONF = avrdude.conf
-AVRDUDE_PROGRAMMER = atmelice_isp
-AVRDUDE_BAUDRATE = 115200
 AVRDUDE_CHIP = attiny85
 
 ifeq ($(OS),Windows_NT) # Windows
+    AVRDUDE_PROGRAMMER = atmelice_isp
+    AVRDUDE_BAUDRATE = 115200
     AVRDUDE_PORT = usb
 else ifeq ($(OS),Darwin)
+    AVRDUDE_PROGRAMMER = stk500v1
+    AVRDUDE_BAUDRATE = 19200
     AVRDUDE_PORT = /dev/tty.usbmodem214401
 endif
 
