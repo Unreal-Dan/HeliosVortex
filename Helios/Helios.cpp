@@ -792,7 +792,7 @@ void Helios::handle_state_shift_mode()
 void Helios::handle_state_randomize()
 {
   if (Button::onShortClick()) {
-    uint32_t seed = crc32((const uint8_t *)&pat, PATTERN_SIZE);
+    uint32_t seed = crc32((const uint8_t *)&pat.colorset(), COLORSET_SIZE);
     Random ctx(seed);
     Colorset &cur_set = pat.colorset();
     uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
