@@ -41,7 +41,7 @@ bool Led::init()
   pinMode(4, OUTPUT);
 #else
   // Set pins as outputs
-  DDRB |= (1 << 0) | (1 << 1) | (1 << 4);
+  //DDRB |= (1 << 0) | (1 << 1) | (1 << 4);
   // Timer/Counter0 in Fast PWM mode
   //TCCR0A |= (1 << WGM01) | (1 << WGM00);
   // Clear OC0A and OC0B on compare match, set at BOTTOM (non-inverting mode)
@@ -51,6 +51,21 @@ bool Led::init()
 
   //TCCR1 |= (1 << PWM1A) | (1 << COM1A1) | (1 << PWM1B) | (1 << COM1B1);
   //GTCCR |= (1 << PWM1B);
+
+
+  //// Set the DDR to enable output on the corresponding pins
+  //DDRB |= (1 << DDB0);  // PB0 as output (OC0A)
+  //DDRB |= (1 << DDB1);  // PB1 as output (OC0B)
+  //DDRB |= (1 << DDB4);  // PB4 as output (OC1B)
+
+  //// Timer0 Configuration for Fast PWM
+  //TCCR0A = (1 << WGM01) | (1 << WGM00);  // Fast PWM
+  //TCCR0A |= (1 << COM0A1) | (1 << COM0B1);  // Non-inverting mode
+  //TCCR0B = (1 << CS00);  // No prescaling
+
+  //// Timer1 Configuration for Fast PWM
+  //TCCR1 = (1 << PWM1A) | (1 << COM1A1) | (1 << CS10);  // Fast PWM on OC1A, No prescaling
+  //GTCCR = (1 << PWM1B) | (1 << COM1B1);  // Enable PWM for OC1B
 #endif
 #endif
   return true;
@@ -122,25 +137,58 @@ void Led::update()
   analogWrite(PWM_PIN_G, m_realColor.green);
   analogWrite(PWM_PIN_B, m_realColor.blue);
 #else
-  // a counter to keep track of milliseconds for the PWM
-  static uint8_t counter = 0;
-  counter++;
-  // run the software PWM on each pin
-  if (counter < m_realColor.red) {
-    PORTB |= (1 << PWM_PIN_R);
-  } else {
+  // backup SREG and turn off interrupts
+  uint8_t oldSREG = SREG;
+  cli();
+
+  // the commented out stuff here is the full complete solution
+  // that is equivalent to analogWrite -- first it checks if the value
+  // is either 0 or 255 and just passes through to digitalWrite, then
+  // if the value is not 0 or 255 it enables the analog PWM output.
+  //
+  // However in practice I can only seem to get the analog PWM output
+  // working and the 'digitalWrite' part for 0 and 255 doesn't seem to
+  // be working. This is likely the source of the 'glow' that is seen when
+  // the led is supposed to be off, it's because the pin is not dropping
+  // entirely to 0 as it would normally from digitalWrite(0)
+
+  if (m_realColor.red <= 0) {
+    // this is digitalWrite(0, LOW);
+    TCCR0A &= ~(1 << COM0A1);
     PORTB &= ~(1 << PWM_PIN_R);
-  }
-  if (counter < m_realColor.green) {
-    PORTB |= (1 << PWM_PIN_G);
   } else {
-    PORTB &= ~(1 << PWM_PIN_G);
+    // this is analogWrite(0, realColor.red);
+    TCCR0A |= (1 << COM0A1);
+    OCR0A = m_realColor.red;
   }
-  if (counter < m_realColor.blue) {
-    PORTB |= (1 << PWM_PIN_B);
-  } else {
+
+  // TODO: uncommenting this section would be the correct way to
+  //       disable the green LED when the output value g = 0 however
+  //       it seems to break everything when I do this, I've tried all
+  //       kinds of things but nothing seems to make it work
+  //
+  //if (m_realColor.green <= 0) {
+  //  // this is digitalWrite(1, LOW);
+  //  TCCR0A &= ~(1 << COM0B1);
+  //  PORTB &= ~(1 << PWM_PIN_G);
+  //} else {
+      // this is analogWrite(1, realColor.green);
+      TCCR0A |= (1 << COM0B1);
+      OCR0B = m_realColor.green;
+  //}
+
+  if (m_realColor.blue <= 0) {
+    // this is digitalWrite(4, LOW);
+    GTCCR &= ~(1 << COM1B1);
     PORTB &= ~(1 << PWM_PIN_B);
+  } else {
+    // this is analogWrite(4, realColor.blue);
+    GTCCR |= (1 << COM1B1);
+    OCR1B = m_realColor.blue;
   }
+
+  // turn interrupts back on
+  SREG = oldSREG;
 #endif
 #endif
 }
