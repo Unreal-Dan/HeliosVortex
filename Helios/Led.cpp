@@ -40,32 +40,7 @@ bool Led::init()
   pinMode(1, OUTPUT);
   pinMode(4, OUTPUT);
 #else
-  // Set pins as outputs
-  //DDRB |= (1 << 0) | (1 << 1) | (1 << 4);
-  // Timer/Counter0 in Fast PWM mode
-  //TCCR0A |= (1 << WGM01) | (1 << WGM00);
-  // Clear OC0A and OC0B on compare match, set at BOTTOM (non-inverting mode)
-  //TCCR0A |= (1 << COM0A1) | (1 << COM0B1);
-  // Use clk/8 prescaler (adjust as needed)
-  //TCCR0B |= (1 << CS01);
-
-  //TCCR1 |= (1 << PWM1A) | (1 << COM1A1) | (1 << PWM1B) | (1 << COM1B1);
-  //GTCCR |= (1 << PWM1B);
-
-
-  //// Set the DDR to enable output on the corresponding pins
-  //DDRB |= (1 << DDB0);  // PB0 as output (OC0A)
-  //DDRB |= (1 << DDB1);  // PB1 as output (OC0B)
-  //DDRB |= (1 << DDB4);  // PB4 as output (OC1B)
-
-  //// Timer0 Configuration for Fast PWM
-  //TCCR0A = (1 << WGM01) | (1 << WGM00);  // Fast PWM
-  //TCCR0A |= (1 << COM0A1) | (1 << COM0B1);  // Non-inverting mode
-  //TCCR0B = (1 << CS00);  // No prescaling
-
-  //// Timer1 Configuration for Fast PWM
-  //TCCR1 = (1 << PWM1A) | (1 << COM1A1) | (1 << CS10);  // Fast PWM on OC1A, No prescaling
-  //GTCCR = (1 << PWM1B) | (1 << COM1B1);  // Enable PWM for OC1B
+  // pin ctrl done in Helios::init
 #endif
 #endif
   return true;
@@ -132,9 +107,15 @@ void Led::setPWM(uint8_t pwmPin, uint8_t pwmValue, volatile uint8_t &controlRegi
     uint8_t controlBit, volatile uint8_t &compareRegister)
 {
   if (pwmValue == 0) {
+    // digitalWrite(pin, LOW)
     controlRegister &= ~controlBit;  // Disable PWM
     PORTB &= ~(1 << pwmPin);  // Set the pin low
+  } else if (pwmValue == 255) {
+    // digitalWrite(pin, HIGH)
+    controlRegister &= ~controlBit;  // Disable PWM
+    PORTB |= (1 << pwmPin);  // Set the pin high
   } else {
+    // analogWrite(pin, value)
     controlRegister |= controlBit;  // Enable PWM
     compareRegister = pwmValue;  // Set PWM duty cycle
   }

@@ -93,7 +93,7 @@ bool Helios::init()
   TCCR1 = (1 << PWM1A) | (1 << COM1A1) | (1 << CS10);  // Fast PWM, Non-inverting, No prescaler
   GTCCR = (1 << PWM1B) | (1 << COM1B1);  // Enable PWM on OC1B
 
-  //// Enable Timer1 Compare Match Interrupt
+  // Enable Timer0 overflow interrupt
   TIMSK |= (1 << TOIE0);
 
   // enable interrupts
