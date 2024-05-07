@@ -16,7 +16,8 @@ else ifeq ($(OS),Linux)
     DEVICE_DIR=~/atmel_setup/gcc/dev/attiny85
     INCLUDE_DIR=~/atmel_setup/include/
 else ifeq ($(OS),Darwin)
-    BINDIR=/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin/
+		BINDIR=/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin/
+    AVRDUDEDIR=/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin/
     INCLUDE_DIR=""
 else
     # ??? unknown OS
