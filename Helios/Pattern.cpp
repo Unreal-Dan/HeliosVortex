@@ -169,7 +169,7 @@ replay:
 // set args
 void Pattern::setArgs(const PatternArgs &args)
 {
-  memcpy(&m_onDuration, &(args.on_dur), 7);
+  memcpy(&m_onDuration, &(args.on_dur), sizeof(PatternArgs));
 }
 
 void Pattern::onBlinkOn()
