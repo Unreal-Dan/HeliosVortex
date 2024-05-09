@@ -48,6 +48,9 @@ public:
   static void update();
 
 private:
+  static void setPWM(uint8_t pwmPin, uint8_t pwmValue, volatile uint8_t &controlRegister,
+      uint8_t controlBit, volatile uint8_t &compareRegister);
+
   // the global brightness
   static uint8_t m_brightness;
   // led color
