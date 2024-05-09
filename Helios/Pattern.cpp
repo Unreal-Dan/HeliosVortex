@@ -38,19 +38,21 @@ static void printState(PatternState state)
 #endif
 
 Pattern::Pattern(uint8_t onDur, uint8_t offDur, uint8_t gap,
-    uint8_t dash, uint8_t group) :
-  m_args(onDur, offDur, gap, dash, group),
+          uint8_t dash, uint8_t group, uint8_t blend) :
+  m_args(onDur, offDur, gap, dash, group, blend),
   m_patternFlags(0),
   m_colorset(),
   m_groupCounter(0),
   m_state(STATE_BLINK_ON),
-  m_blinkTimer()
+  m_blinkTimer(),
+  m_cur(),
+  m_next()
 {
 }
 
 Pattern::Pattern(const PatternArgs &args) :
   Pattern(args.on_dur, args.off_dur, args.gap_dur,
-      args.dash_dur, args.group_size)
+      args.dash_dur, args.group_size, args.blend_speed)
 {
 }
 
@@ -74,6 +76,12 @@ void Pattern::init()
     m_state = STATE_DISABLED;
   }
   m_groupCounter = m_args.group_size ? m_args.group_size : (m_colorset.numColors() - (m_args.dash_dur != 0));
+
+  if (m_args.blend_speed > 0) {
+    // convert current/next colors to HSV but only if we are doing a blend
+    m_cur = m_colorset.getNext();
+    m_next = m_colorset.getNext();
+  }
 }
 
 void Pattern::play()
@@ -171,6 +179,10 @@ void Pattern::setArgs(const PatternArgs &args)
 void Pattern::onBlinkOn()
 {
   PRINT_STATE(STATE_ON);
+  if (isBlend()) {
+    blendBlinkOn();
+    return;
+  }
   Led::set(m_colorset.getNext());
 }
 
@@ -233,3 +245,28 @@ void Pattern::updateColor(uint8_t index, const RGBColor &col)
   init();
 }
 
+void Pattern::blendBlinkOn()
+{
+  // if we reached the next color, then cycle the colorset
+  // like normal and begin playing the next color
+  if (m_cur == m_next) {
+    m_next = m_colorset.getNext();
+  }
+  // interpolate to the next color
+  interpolate(m_cur.red, m_next.red);
+  interpolate(m_cur.green, m_next.green);
+  interpolate(m_cur.blue, m_next.blue);
+  // set the color
+  Led::set(m_cur);
+}
+
+void Pattern::interpolate(uint8_t &current, const uint8_t next)
+{
+  if (current < next) {
+    uint8_t step = (next - current) > m_args.blend_speed ? m_args.blend_speed : (next - current);
+    current += step;
+  } else if (current > next) {
+    uint8_t step = (current - next) > m_args.blend_speed ? m_args.blend_speed : (current - next);
+    current -= step;
+  }
+}
