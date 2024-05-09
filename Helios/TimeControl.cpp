@@ -53,6 +53,8 @@ void Time::tickClock()
   if (!m_enableTimestep) {
     return;
   }
+#endif
+
   // the rest of this only runs inside vortexlib because on the duo the tick runs in the
   // tcb timer callback instead of in a busy loop constantly checking microseconds()
   // perform timestep
@@ -77,8 +79,14 @@ void Time::tickClock()
 
   // store current time
   m_prevTime = microseconds();
-#endif
 }
+
+#ifdef HELIOS_EMBEDDED
+volatile uint32_t timer0_overflow_count = 0;
+ISR(TIMER0_OVF_vect) {
+  timer0_overflow_count++;  // Increment on each overflow
+}
+#endif
 
 uint32_t Time::microseconds()
 {
@@ -91,8 +99,18 @@ uint32_t Time::microseconds()
 #ifdef HELIOS_ARDUINO
   return micros();
 #else
-  // TODO: microseconds on attiny85
-  return 0;
+  // The only reason that micros() is actually necessary is if Helios::tick()
+  // cannot be called in a 1Khz ISR. If Helios::tick() cannot be reliably called
+  // by an interrupt then Time::tickClock() must perform manual timestep via micros().
+  // If Helios::tick() is called by an interrupt then you don't need this function and
+  // should always just rely on the current tick to perform operations
+  uint8_t oldSREG = SREG;
+  cli();
+  // multiply by 8 early to avoid floating point math or division
+  uint32_t micros = (timer0_overflow_count * (256 * 8)) + (TCNT0 * 8);
+  SREG = oldSREG;
+  // then shift right to counteract the multiplication by 8
+  return micros >> 6;
 #endif
 #endif
 }
