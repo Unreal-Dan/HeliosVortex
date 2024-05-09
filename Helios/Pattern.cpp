@@ -38,7 +38,7 @@ static void printState(PatternState state)
 #endif
 
 Pattern::Pattern(uint8_t onDur, uint8_t offDur, uint8_t gap,
-          uint8_t dash, uint8_t group, uint8_t blend, uint8_t flips) :
+          uint8_t dash, uint8_t group, uint8_t blend) :
   m_args(),
   m_patternFlags(0),
   m_colorset(),
@@ -46,14 +46,13 @@ Pattern::Pattern(uint8_t onDur, uint8_t offDur, uint8_t gap,
   m_state(STATE_BLINK_ON),
   m_blinkTimer(),
   m_cur(),
-  m_next(),
-  m_flip(0)
+  m_next()
 {
 }
 
 Pattern::Pattern(const PatternArgs &args) :
   Pattern(args.on_dur, args.off_dur, args.gap_dur,
-      args.dash_dur, args.group_size, args.blend_speed, args.num_flips)
+      args.dash_dur, args.group_size, args.blend_speed)
 {
 }
 
@@ -83,8 +82,6 @@ void Pattern::init()
     m_cur = m_colorset.getNext();
     m_next = m_colorset.getNext();
   }
-  // reset the flip count
-  m_flip = 0;
 }
 
 void Pattern::play()
@@ -250,30 +247,17 @@ void Pattern::updateColor(uint8_t index, const RGBColor &col)
 
 void Pattern::blendBlinkOn()
 {
+  // if we reached the next color, then cycle the colorset
+  // like normal and begin playing the next color
   if (m_cur == m_next) {
     m_next = m_colorset.getNext();
   }
+  // interpolate to the next color
   interpolate(m_cur.red, m_next.red);
   interpolate(m_cur.green, m_next.green);
   interpolate(m_cur.blue, m_next.blue);
-  RGBColor col = m_cur;
-  if (m_flip) {
-    // convert to hsv
-    HSVColor hsvCol = m_cur;
-    // shift the hue by a flip size
-    hsvCol.hue += (m_flip * (127 / m_args.num_flips));
-    // convert the hsv color back to RGB
-    col = hsvCol;
-  }
   // set the color
-  Led::set(col);
-  // increment the flip count
-  m_flip++;
-  // modulate the flip count DO NOT USE MODULO OPERATOR BECAUSE
-  // THE FLIP COUNT COULD BE 0 THAT WILL DIVIDE BY ZERO
-  if (m_flip > m_args.num_flips) {
-    m_flip = 0;
-  }
+  Led::set(m_cur);
 }
 
 void Pattern::interpolate(uint8_t &current, const uint8_t next)
