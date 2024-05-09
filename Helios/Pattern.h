@@ -59,11 +59,7 @@ public:
 protected:
   // ==================================
   //  Pattern Parameters
-  uint8_t m_onDuration;
-  uint8_t m_offDuration;
-  uint8_t m_gapDuration;
-  uint8_t m_dashDuration;
-  uint8_t m_groupSize;
+  PatternArgs m_args;
 
   // ==================================
   //  Pattern Members
