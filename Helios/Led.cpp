@@ -15,11 +15,10 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #endif
-#endif
-
 #define PWM_PIN_R PB0 // Red channel (pin 5)
 #define PWM_PIN_G PB1 // Green channel (pin 6)
 #define PWM_PIN_B PB4 // Blue channel (pin 3)
+#endif
 
 #define SCALE8(i, scale)  (((uint16_t)i * (uint16_t)(scale)) >> 8)
 
@@ -40,17 +39,7 @@ bool Led::init()
   pinMode(1, OUTPUT);
   pinMode(4, OUTPUT);
 #else
-  // Set pins as outputs
-  DDRB |= (1 << 0) | (1 << 1) | (1 << 4);
-  // Timer/Counter0 in Fast PWM mode
-  //TCCR0A |= (1 << WGM01) | (1 << WGM00);
-  // Clear OC0A and OC0B on compare match, set at BOTTOM (non-inverting mode)
-  //TCCR0A |= (1 << COM0A1) | (1 << COM0B1);
-  // Use clk/8 prescaler (adjust as needed)
-  //TCCR0B |= (1 << CS01);
-
-  //TCCR1 |= (1 << PWM1A) | (1 << COM1A1) | (1 << PWM1B) | (1 << COM1B1);
-  //GTCCR |= (1 << PWM1B);
+  // pin ctrl done in Helios::init
 #endif
 #endif
   return true;
@@ -113,6 +102,26 @@ void Led::hold(RGBColor col)
   Time::delayMilliseconds(250);
 }
 
+void Led::setPWM(uint8_t pwmPin, uint8_t pwmValue, volatile uint8_t &controlRegister,
+    uint8_t controlBit, volatile uint8_t &compareRegister)
+{
+#ifdef HELIOS_EMBEDDED
+  if (pwmValue == 0) {
+    // digitalWrite(pin, LOW)
+    controlRegister &= ~controlBit;  // Disable PWM
+    PORTB &= ~(1 << pwmPin);  // Set the pin low
+  } else if (pwmValue == 255) {
+    // digitalWrite(pin, HIGH)
+    controlRegister &= ~controlBit;  // Disable PWM
+    PORTB |= (1 << pwmPin);  // Set the pin high
+  } else {
+    // analogWrite(pin, value)
+    controlRegister |= controlBit;  // Enable PWM
+    compareRegister = pwmValue;  // Set PWM duty cycle
+  }
+#endif
+}
+
 void Led::update()
 {
 #ifdef HELIOS_EMBEDDED
@@ -122,25 +131,17 @@ void Led::update()
   analogWrite(PWM_PIN_G, m_realColor.green);
   analogWrite(PWM_PIN_B, m_realColor.blue);
 #else
-  // a counter to keep track of milliseconds for the PWM
-  static uint8_t counter = 0;
-  counter++;
-  // run the software PWM on each pin
-  if (counter < m_realColor.red) {
-    PORTB |= (1 << PWM_PIN_R);
-  } else {
-    PORTB &= ~(1 << PWM_PIN_R);
-  }
-  if (counter < m_realColor.green) {
-    PORTB |= (1 << PWM_PIN_G);
-  } else {
-    PORTB &= ~(1 << PWM_PIN_G);
-  }
-  if (counter < m_realColor.blue) {
-    PORTB |= (1 << PWM_PIN_B);
-  } else {
-    PORTB &= ~(1 << PWM_PIN_B);
-  }
+  // backup SREG and turn off interrupts
+  uint8_t oldSREG = SREG;
+  cli();
+
+  // set the PWM for R/G/B output
+  setPWM(PWM_PIN_R, m_realColor.red, TCCR0A, (1 << COM0A1), OCR0A);
+  setPWM(PWM_PIN_G, m_realColor.green, TCCR0A, (1 << COM0B1), OCR0B);
+  setPWM(PWM_PIN_B, m_realColor.blue, GTCCR, (1 << COM1B1), OCR1B);
+
+  // turn interrupts back on
+  SREG = oldSREG;
 #endif
 #endif
 }
