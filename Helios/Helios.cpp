@@ -134,6 +134,7 @@ void Helios::tick()
 void Helios::enter_sleep()
 {
 #ifdef HELIOS_EMBEDDED
+  // Turn off LED before sleeping
   // Set all pins to output
   DDRB = 0xFF;
   // Set all pins low
