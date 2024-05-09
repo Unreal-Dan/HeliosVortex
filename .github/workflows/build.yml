@@ -24,7 +24,7 @@ jobs:
         run: chmod +x ./runtests.sh
         working-directory: tests
       - name: Run general tests
-        run: ./runtests.sh -v -t=109
+        run: ./runtests.sh
         working-directory: tests
 
   embedded:
