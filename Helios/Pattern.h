@@ -60,18 +60,12 @@ public:
   bool hasFlags(uint32_t flags) const { return (m_patternFlags & flags) != 0; }
 
   // whether blend speed is non 0
-  bool isBlend() const { return m_blendSpeed > 0; }
+  bool isBlend() const { return m_args.blend_speed > 0; }
 
 protected:
   // ==================================
   //  Pattern Parameters
-  uint8_t m_onDuration;
-  uint8_t m_offDuration;
-  uint8_t m_gapDuration;
-  uint8_t m_dashDuration;
-  uint8_t m_groupSize;
-  uint8_t m_blendSpeed;
-  uint8_t m_numFlips;
+  PatternArgs m_args;
 
   // ==================================
   //  Pattern Members
