@@ -141,6 +141,30 @@ void Patterns::make_pattern(PatternID id, Pattern &pat)
     args.off_dur = 250;
     break;
 
+  case PATTERN_MORPH:
+    args.on_dur = 9;
+    args.blend_speed = 5;
+    break;
+
+  case PATTERN_MORPH_STROBE:
+    args.on_dur = 5;
+    args.off_dur = 8;
+    args.blend_speed = 10;
+    break;
+
+  case PATTERN_MORPH_STROBIE:
+    args.on_dur = 3;
+    args.off_dur = 23;
+    args.blend_speed = 10;
+    break;
+
+  case PATTERN_MORPH_GLOW:
+    args.on_dur = 1;
+    args.off_dur = 3;
+    args.gap_dur = 40;
+    args.blend_speed = 30;
+    break;
+
   case PATTERN_DASH_DOPS:
     args.on_dur = 1;
     args.off_dur = 9;
@@ -158,6 +182,13 @@ void Patterns::make_pattern(PatternID id, Pattern &pat)
     args.on_dur = 1;
     args.off_dur = 9;
     args.dash_dur = 5;
+    break;
+
+  case PATTERN_LIGHTSPEED:
+    args.on_dur = 2;
+    args.off_dur = 3;
+    args.dash_dur = 24;
+    args.blend_speed = 10;
     break;
   }
 
