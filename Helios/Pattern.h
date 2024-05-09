@@ -60,7 +60,7 @@ public:
   bool hasFlags(uint32_t flags) const { return (m_patternFlags & flags) != 0; }
 
   // whether blend speed is non 0
-  bool isBlend() const { return m_blendSpeed > 0; }
+  bool isBlend() const { return m_args.blend_speed > 0; }
 
 protected:
   // ==================================

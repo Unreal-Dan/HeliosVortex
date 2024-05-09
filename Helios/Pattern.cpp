@@ -78,7 +78,7 @@ void Pattern::init()
   }
   m_groupCounter = m_args.group_size ? m_args.group_size : (m_colorset.numColors() - (m_args.dash_dur != 0));
 
-  if (m_blendSpeed > 0) {
+  if (m_args.blend_speed > 0) {
     // convert current/next colors to HSV but only if we are doing a blend
     m_cur = m_colorset.getNext();
     m_next = m_colorset.getNext();
@@ -222,8 +222,8 @@ bool Pattern::equals(const Pattern *other)
   if (!m_colorset.equals(&other->m_colorset)) {
     return false;
   }
-  // then compare each arg
-  if (m_args != other->m_args) {
+  // compare the args of each pattern for equality
+  if (memcmp(&m_args, &other->m_args, sizeof(PatternArgs)) == 0) {
     return false;
   }
   // if those match then it's effectively the same
@@ -261,7 +261,7 @@ void Pattern::blendBlinkOn()
     // convert to hsv
     HSVColor hsvCol = m_cur;
     // shift the hue by a flip size
-    hsvCol.hue += (m_flip * (127 / m_numFlips));
+    hsvCol.hue += (m_flip * (127 / m_args.num_flips));
     // convert the hsv color back to RGB
     col = hsvCol;
   }
@@ -271,7 +271,7 @@ void Pattern::blendBlinkOn()
   m_flip++;
   // modulate the flip count DO NOT USE MODULO OPERATOR BECAUSE
   // THE FLIP COUNT COULD BE 0 THAT WILL DIVIDE BY ZERO
-  if (m_flip > m_numFlips) {
+  if (m_flip > m_args.num_flips) {
     m_flip = 0;
   }
 }
@@ -279,10 +279,10 @@ void Pattern::blendBlinkOn()
 void Pattern::interpolate(uint8_t &current, const uint8_t next)
 {
   if (current < next) {
-    uint8_t step = (next - current) > m_blendSpeed ? m_blendSpeed : (next - current);
+    uint8_t step = (next - current) > m_args.blend_speed ? m_args.blend_speed : (next - current);
     current += step;
   } else if (current > next) {
-    uint8_t step = (current - next) > m_blendSpeed ? m_blendSpeed : (current - next);
+    uint8_t step = (current - next) > m_args.blend_speed ? m_args.blend_speed : (current - next);
     current -= step;
   }
 }
