@@ -15,11 +15,10 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #endif
-#endif
-
 #define PWM_PIN_R PB0 // Red channel (pin 5)
 #define PWM_PIN_G PB1 // Green channel (pin 6)
 #define PWM_PIN_B PB4 // Blue channel (pin 3)
+#endif
 
 #define SCALE8(i, scale)  (((uint16_t)i * (uint16_t)(scale)) >> 8)
 
@@ -106,6 +105,7 @@ void Led::hold(RGBColor col)
 void Led::setPWM(uint8_t pwmPin, uint8_t pwmValue, volatile uint8_t &controlRegister,
     uint8_t controlBit, volatile uint8_t &compareRegister)
 {
+#ifdef HELIOS_EMBEDDED
   if (pwmValue == 0) {
     // digitalWrite(pin, LOW)
     controlRegister &= ~controlBit;  // Disable PWM
@@ -119,6 +119,7 @@ void Led::setPWM(uint8_t pwmPin, uint8_t pwmValue, volatile uint8_t &controlRegi
     controlRegister |= controlBit;  // Enable PWM
     compareRegister = pwmValue;  // Set PWM duty cycle
   }
+#endif
 }
 
 void Led::update()
