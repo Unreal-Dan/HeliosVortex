@@ -93,18 +93,25 @@
 // ============================================================================
 //  Storage Constants
 //
-//  These are various storage sizes of data and some math to
-//  help calculate sizes or space requirements
+//  These are various storage sizes of data and some math to help 
+//  calculate sizes or space requirements, note these will produce
+//  compiler errors unless you include the respective headers
 
 // Colorset Size
 //
 // the colorset is just an array of colors but it also has a num colors val
 #define COLORSET_SIZE ((sizeof(RGBColor) * NUM_COLOR_SLOTS) + 1)
 
+// Pattern Args Size
+//
+// There is currently 6 args for a pattern: on, off, gap, dash, group, blend
+// Each takes up 1 byte currently
+#define PAT_ARGS_SIZE (sizeof(PatternArgs))
+
 // Pattern Size
 //
-// The actual pattern storage size is the size of the colorset + 7 params + 1 pat flags
-#define PATTERN_SIZE (COLORSET_SIZE + 7 + 1)
+// The actual pattern storage size is the size of the colorset + params + 1 pat flags
+#define PATTERN_SIZE (COLORSET_SIZE + PAT_ARGS_SIZE + 1)
 
 // Slot Size
 //
