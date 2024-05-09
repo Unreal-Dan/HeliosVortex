@@ -1,4 +1,4 @@
-uame: Helios Build
+name: Helios Build
 
 on:
   push:
