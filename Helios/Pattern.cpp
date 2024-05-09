@@ -38,7 +38,7 @@ static void printState(PatternState state)
 #endif
 
 Pattern::Pattern(uint8_t onDur, uint8_t offDur, uint8_t gap,
-          uint8_t dash, uint8_t group) :
+    uint8_t dash, uint8_t group) :
   m_args(),
   m_patternFlags(0),
   m_colorset(),
