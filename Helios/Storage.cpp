@@ -1,6 +1,7 @@
 #include "Storage.h"
 
 #include "Colorset.h"
+#include "Pattern.h"
 
 #ifdef HELIOS_EMBEDDED
 #include <avr/io.h>
