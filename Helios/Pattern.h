@@ -9,15 +9,13 @@
 // for specifying things like default args
 struct PatternArgs {
   PatternArgs() : on_dur(0), off_dur(0), gap_dur(0), dash_dur(0),
-    group_size(0), blend_speed(0), num_flips(0)
+    group_size(0)
   {}
   uint8_t on_dur;
   uint8_t off_dur;
   uint8_t gap_dur;
   uint8_t dash_dur;
   uint8_t group_size;
-  uint8_t blend_speed;
-  uint8_t num_flips;
 };
 
 class Pattern
@@ -25,8 +23,7 @@ class Pattern
 public:
   // try to not set on duration to 0
   Pattern(uint8_t onDur = 1, uint8_t offDur = 0, uint8_t gap = 0,
-          uint8_t dash = 0, uint8_t group = 0, uint8_t blend = 0,
-          uint8_t flips = 0);
+          uint8_t dash = 0, uint8_t group = 0);
   Pattern(const PatternArgs &args);
   ~Pattern();
 
@@ -58,9 +55,6 @@ public:
   // get the pattern flags
   uint32_t getFlags() const { return m_patternFlags; }
   bool hasFlags(uint32_t flags) const { return (m_patternFlags & flags) != 0; }
-
-  // whether blend speed is non 0
-  bool isBlend() const { return m_args.blend_speed > 0; }
 
 protected:
   // ==================================
@@ -118,20 +112,6 @@ protected:
 
   // the blink timer used to measure blink timings
   Timer m_blinkTimer;
-
-  // ==================================
-  //  Blend Members
-
-  // current color and target blend color
-  RGBColor m_cur;
-  RGBColor m_next;
-
-  // the current flip counter
-  uint8_t m_flip;
-
-  // apis for blend
-  void blendBlinkOn();
-  void interpolate(uint8_t &current, const uint8_t next);
 };
 
 #endif
