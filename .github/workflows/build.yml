@@ -2,30 +2,30 @@ name: Helios Build
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
   workflow_dispatch: # manual trigger
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout current repository
-      uses: actions/checkout@v3
-    - name: Update Package Lists
-      run: sudo apt-get update
-    - name: Install Dependencies
-      run: sudo apt-get install valgrind g++ make --fix-missing
-    - name: Build
-      run: make -j
-      working-directory: HeliosCLI
-    - name: Set execute permissions for test script
-      run: chmod +x ./runtests.sh
-      working-directory: tests
-    - name: Run general tests
-      run: ./runtests.sh
-      working-directory: tests
+      - name: Checkout current repository
+        uses: actions/checkout@v3
+      - name: Update Package Lists
+        run: sudo apt-get update
+      - name: Install Dependencies
+        run: sudo apt-get install valgrind g++ make --fix-missing
+      - name: Build
+        run: make -j
+        working-directory: HeliosCLI
+      - name: Set execute permissions for test script
+        run: chmod +x ./runtests.sh
+        working-directory: tests
+      - name: Run general tests
+        run: ./runtests.sh -v -t=109
+        working-directory: tests
 
   embedded:
     needs: test
@@ -35,7 +35,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: '3.x'
+          python-version: "3.x"
       - name: Install Dependencies
         run: make install
         working-directory: HeliosEmbedded
