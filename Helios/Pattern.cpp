@@ -39,7 +39,7 @@ static void printState(PatternState state)
 
 Pattern::Pattern(uint8_t onDur, uint8_t offDur, uint8_t gap,
     uint8_t dash, uint8_t group) :
-  m_args(),
+  m_args(onDur, offDur, gap, dash, group),
   m_patternFlags(0),
   m_colorset(),
   m_groupCounter(0),
