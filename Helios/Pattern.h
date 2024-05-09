@@ -57,9 +57,6 @@ public:
   uint32_t getFlags() const { return m_patternFlags; }
   bool hasFlags(uint32_t flags) const { return (m_patternFlags & flags) != 0; }
 
-  // whether blend speed is non 0
-  bool isBlend() const { return m_args.blend_speed > 0; }
-
 protected:
   // ==================================
   //  Pattern Parameters

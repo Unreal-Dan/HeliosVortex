@@ -179,10 +179,6 @@ void Pattern::setArgs(const PatternArgs &args)
 void Pattern::onBlinkOn()
 {
   PRINT_STATE(STATE_ON);
-  if (isBlend()) {
-    blendBlinkOn();
-    return;
-  }
   Led::set(m_colorset.getNext());
 }
 
