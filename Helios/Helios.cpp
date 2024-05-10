@@ -87,18 +87,7 @@ bool Helios::init()
 
   // Timer0 Configuration for PWM
   TCCR0A = (1 << WGM01) | (1 << WGM00) | (1 << COM0A1) | (1 << COM0B1); // Fast PWM, Non-inverting
-  #if F_CPU == 16000000L
-  // 16 MHz clock speed
   TCCR0B = (1 << CS00); // No prescaler
-  #elif F_CPU == 8000000L
-  // 8 MHz clock speed
-  TCCR0B = (1 << CS00); // No prescaler
-  #elif F_CPU == 1000000L
-  // 1 MHz clock speed
-  TCCR0B = (1 << CS00); // No prescaler
-  #else
-  #error "Unsupported clock speed"
-  #endif
 
   // Timer1 Configuration for PWM on PB4
   TCCR1 = (1 << PWM1A) | (1 << COM1A1) | (1 << CS10);  // Fast PWM, Non-inverting, No prescaler

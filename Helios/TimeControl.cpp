@@ -118,8 +118,7 @@ uint32_t Time::microseconds()
     micros >>= 6;
   #elif F_CPU == 1000000L
     // 1 MHz clock speed
-    micros = (timer0_overflow_count * (256 * 64)) + (TCNT0 * 64);
-    micros >>= 6;
+    micros = (timer0_overflow_count * 256) + TCNT0;
   #else
     #error "Unsupported clock speed"
   #endif
