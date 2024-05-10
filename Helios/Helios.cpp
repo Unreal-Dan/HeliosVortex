@@ -82,41 +82,38 @@ bool Helios::init()
   load_cur_mode();
 
 #ifdef HELIOS_EMBEDDED
-// Set PB0, PB1, PB4 as output
-DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
+  // Set PB0, PB1, PB4 as output
+  DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
 
-// Timer0 Configuration for PWM
-TCCR0A = (1 << WGM01) | (1 << WGM00) | (1 << COM0A1) | (1 << COM0B1); // Fast PWM, Non-inverting
+  // Timer0 Configuration for PWM
+  TCCR0A = (1 << WGM01) | (1 << WGM00) | (1 << COM0A1) | (1 << COM0B1); // Fast PWM, Non-inverting
+  #if F_CPU == 16000000L
+  // 16 MHz clock speed
+  TCCR0B = (1 << CS00); // No prescaler
+  #elif F_CPU == 8000000L
+  // 8 MHz clock speed
+  TCCR0B = (1 << CS00); // No prescaler
+  #elif F_CPU == 1000000L
+  // 1 MHz clock speed
+  TCCR0B = (1 << CS00); // No prescaler
+  #else
+  #error "Unsupported clock speed"
+  #endif
 
-// Timer1 Configuration for PWM on PB4
-TCCR1 = (1 << PWM1A) | (1 << COM1A1); // Fast PWM, Non-inverting
-GTCCR = (1 << PWM1B) | (1 << COM1B1); // Enable PWM on OC1B
+  // Timer1 Configuration for PWM on PB4
+  TCCR1 = (1 << PWM1A) | (1 << COM1A1) | (1 << CS10);  // Fast PWM, Non-inverting, No prescaler
+  GTCCR = (1 << PWM1B) | (1 << COM1B1);  // Enable PWM on OC1B
 
-// Configure timer prescalers based on clock speed
-#if F_CPU == 16000000L
-// 16 MHz clock speed
-TCCR0B = (1 << CS01) | (1 << CS00); // Prescaler of 64 for Timer0
-TCCR1 |= (1 << CS11) | (1 << CS10); // Prescaler of 64 for Timer1
-#elif F_CPU == 8000000L
-// 8 MHz clock speed
-TCCR0B = (1 << CS01) | (1 << CS00); // Prescaler of 64 for Timer0
-TCCR1 |= (1 << CS11) | (1 << CS10); // Prescaler of 64 for Timer1
-#elif F_CPU == 1000000L
-// 1 MHz clock speed
-TCCR0B = (1 << CS02); // Prescaler of 256 for Timer0
-TCCR1 |= (1 << CS12); // Prescaler of 256 for Timer1
-#else
-#error "Unsupported clock speed"
+  // Enable Timer0 overflow interrupt
+  TIMSK |= (1 << TOIE0);
+
+  // enable interrupts
+  sei();
 #endif
 
-// Enable Timer0 overflow interrupt
-TIMSK |= (1 << TOIE0);
-
-// Enable interrupts
-sei();
-#endif
-return true;
+  return true;
 }
+
 
 void Helios::tick()
 {

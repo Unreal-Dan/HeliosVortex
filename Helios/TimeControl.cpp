@@ -87,40 +87,44 @@ ISR(TIMER0_OVF_vect) {
   timer0_overflow_count++;  // Increment on each overflow
 }
 #endif
-uint32_t Time::microseconds() {
-    #ifdef HELIOS_CLI
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-    uint64_t us = SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
-    return (unsigned long)us;
-    #else
-    #ifdef HELIOS_ARDUINO
-    return micros();
-    #else
-    uint8_t oldSREG = SREG;
-    cli();
-    uint32_t micros;
+uint32_t Time::microseconds()
+{
+#ifdef HELIOS_CLI
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+  uint64_t us = SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
+  return (unsigned long)us;
+#else
+#ifdef HELIOS_ARDUINO
+  return micros();
+#else
+  // The only reason that micros() is actually necessary is if Helios::tick()
+  // cannot be called in a 1Khz ISR. If Helios::tick() cannot be reliably called
+  // by an interrupt then Time::tickClock() must perform manual timestep via micros().
+  // If Helios::tick() is called by an interrupt then you don't need this function and
+  // should always just rely on the current tick to perform operations
+  uint8_t oldSREG = SREG;
+  cli();
+  // multiply by 8 early to avoid floating point math or division
+  uint32_t micros;
 
-    #if F_CPU == 16000000L
-    // 16 MHz clock speed
-    micros = (timer0_overflow_count * (64 * 4)) + (TCNT0 * 4);
-    micros >>= 8;
-    #elif F_CPU == 8000000L
-    // 8 MHz clock speed
-    micros = (timer0_overflow_count * (64 * 8)) + (TCNT0 * 8);
-    micros >>= 8;
-    #elif F_CPU == 1000000L
-    // 1 MHz clock speed
-    micros = (timer0_overflow_count * (64 * 64)) + (TCNT0 * 64);
-    micros >>= 12;
-    #else
-    #error "Unsupported clock speed"
-    #endif
-
-    SREG = oldSREG;
-    return micros;
-    #endif
-    #endif
+  #if F_CPU == 16000000L
+  // 16 MHz clock speed
+  micros = (timer0_overflow_count * (256 * 4)) + (TCNT0 * 4);
+  #elif F_CPU == 8000000L
+  // 8 MHz clock speed
+  micros = (timer0_overflow_count * (256 * 8)) + (TCNT0 * 8);
+  #elif F_CPU == 1000000L
+  // 1 MHz clock speed
+  micros = (timer0_overflow_count * (256 * 64)) + (TCNT0 * 64);
+  #else
+  #error "Unsupported clock speed"
+  #endif
+  SREG = oldSREG;
+  // then shift right to counteract the multiplication by 8
+  return micros >> 6;
+#endif
+#endif
 }
 
 
