@@ -103,7 +103,6 @@ bool Helios::init()
   return true;
 }
 
-
 void Helios::tick()
 {
   // sample the button and re-calculate all button globals
