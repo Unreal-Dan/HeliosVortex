@@ -207,15 +207,6 @@ void Helios::set_mode_index(uint8_t mode_index)
 
 void Helios::handle_state()
 {
-  static uint32_t lastClickTime = 0;
-  // ESD protection: Ignore button clicks that occur faster than a single tick
-  if (Button::onRelease()) {
-    if (Time::getCurtime() - lastClickTime < TICKRATE) {
-      // Ignore the click
-      return;
-    }
-    lastClickTime = Time::getCurtime();
-  }
   // check for the force sleep button hold regardless of which state we're in
   if (Button::holdDuration() > FORCE_SLEEP_TIME) {
     // when released the device will just sleep
@@ -278,6 +269,12 @@ void Helios::handle_state_modes()
 {
   // whether they have released the button since turning on
   bool hasReleased = (Button::releaseCount() > 0);
+
+  // ESD protection: Ignore button clicks that occur faster than a single tick
+  if (hasReleased && Time::getCurtime() < 2) {
+    enter_sleep();
+    return;
+  }
 
   if (Button::releaseCount() > 1 && Button::onShortClick()) {
     if (has_flag(FLAG_CONJURE)) {
