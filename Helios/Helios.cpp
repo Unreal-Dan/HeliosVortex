@@ -207,11 +207,6 @@ void Helios::set_mode_index(uint8_t mode_index)
 
 void Helios::handle_state()
 {
-  if (Time::getCurtime() > AUTO_SLEEP_TIME) {
-    enter_sleep();
-    return;
-  }
-
   static uint32_t lastClickTime = 0;
   // ESD protection: Ignore button clicks that occur faster than a single tick
   if (Button::onRelease()) {

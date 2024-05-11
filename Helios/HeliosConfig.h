@@ -63,12 +63,6 @@
 // sleep at any location in the menus
 #define FORCE_SLEEP_TIME 7000
 
-// Auto Sleep Time
-//
-// The duration in ms/ticks to hold the button to force the chip to
-// sleep at any location in the menus
-#define AUTO_SLEEP_TIME 1800000
-
 // Delete Color Time
 //
 // How long to hold button on a color to start the delete color flash
