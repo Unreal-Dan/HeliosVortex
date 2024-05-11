@@ -207,6 +207,9 @@ void Helios::set_mode_index(uint8_t mode_index)
 
 void Helios::handle_state()
 {
+  if (Time::getCurtime() > AUTO_SLEEP_TIME) {
+    enter_sleep();
+  }
   // check for the force sleep button hold regardless of which state we're in
   if (Button::holdDuration() > FORCE_SLEEP_TIME) {
     // when released the device will just sleep
