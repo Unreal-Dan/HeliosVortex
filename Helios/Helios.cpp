@@ -209,6 +209,17 @@ void Helios::handle_state()
 {
   if (Time::getCurtime() > AUTO_SLEEP_TIME) {
     enter_sleep();
+    return;
+  }
+
+  static uint32_t lastClickTime = 0;
+  // ESD protection: Ignore button clicks that occur faster than a single tick
+  if (Button::onRelease()) {
+    if (Time::getCurtime() - lastClickTime < TICKRATE) {
+      // Ignore the click
+      return;
+    }
+    lastClickTime = Time::getCurtime();
   }
   // check for the force sleep button hold regardless of which state we're in
   if (Button::holdDuration() > FORCE_SLEEP_TIME) {
