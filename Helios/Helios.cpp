@@ -40,8 +40,6 @@ bool Helios::sleeping;
 
 bool Helios::init()
 {
-  // Add a small delay before initializing the device
-  Time::delayMilliseconds(10);
   // initialize the time control and led control
   if (!Time::init()) {
     return false;
@@ -90,7 +88,7 @@ bool Helios::init()
 #ifdef HELIOS_EMBEDDED
   // Set PB0, PB1, PB4 as output
   DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
-
+  
   // Set the PWM output registers to 0
   OCR0A = 0;
   OCR0B = 0;
@@ -137,13 +135,10 @@ void Helios::tick()
 void Helios::enter_sleep()
 {
 #ifdef HELIOS_EMBEDDED
-  // Disable the PWM outputs
-  TCCR0A &= ~((1 << COM0A1) | (1 << COM0B1));
-  TCCR1 &= ~(1 << COM1A1);
-  GTCCR &= ~(1 << COM1B1);
-
-  // Set the PWM pins to input mode
-  DDRB &= ~((1 << DDB0) | (1 << DDB1) | (1 << DDB4));
+  // Set all pins to output
+  DDRB = 0xFF;
+  // Set all pins low
+  PORTB = 0x00;
   // Enable wake on interrupt for the button
   Button::enableWake();
   // Set sleep mode to POWER DOWN mode
