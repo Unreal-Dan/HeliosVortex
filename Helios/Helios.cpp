@@ -58,6 +58,15 @@ bool Helios::init()
   Led::clear();
   Led::update();
 
+  PORTB &= ~(1 << PB0);
+  TCCR0A &= ~(1 << COM0A1); 
+
+  PORTB &= ~(1 << PB1);
+  TCCR0A &= ~(1 << COM0B1);
+
+  PORTB &= ~(1 << PB4);
+  GTCCR &= ~(1 << COM1B1); 
+
   // initialize globals
   cur_state = STATE_MODES;
   menu_selection = 0;
@@ -88,12 +97,6 @@ bool Helios::init()
 #ifdef HELIOS_EMBEDDED
   // Set PB0, PB1, PB4 as output
   DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
-  
-  // Set the PWM output registers to 0
-  OCR0A = 0;
-  OCR0B = 0;
-  OCR1A = 0;
-  OCR1B = 0;
 
   // Timer0 Configuration for PWM
   TCCR0A = (1 << WGM01) | (1 << WGM00) | (1 << COM0A1) | (1 << COM0B1); // Fast PWM, Non-inverting
