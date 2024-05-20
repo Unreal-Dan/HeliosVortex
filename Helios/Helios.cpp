@@ -65,30 +65,25 @@ void Helios::tick()
   Time::tickClock();
 }
 
-void Helios::enterSleep() {
+void Helios::enterSleep() 
+{
 #ifdef HELIOS_EMBEDDED
   // Set all pins to input
   DDRB &= ~((1 << DDB0) | (1 << DDB1) | (1 << DDB4));
-
   // Enable wake on interrupt for the button
   Button::enableWake();
-
   // Set sleep mode to POWER DOWN mode
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-
-  // Enter sleep
+  // enter sleep
   sleep_mode();
-
   // ... interrupt will make us wake here
   // wakeup here, re-init
   init();
-
   // Set PB0, PB1, PB4 as output
   DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
-
 #else
   cur_state = STATE_SLEEP;
-  // Enable the sleep bool
+  // enable the sleep bool
   sleeping = true;
 #endif
 }
@@ -276,7 +271,6 @@ void Helios::handle_state()
 #endif
   }
 }
-
 
 void Helios::handle_state_modes()
 {
