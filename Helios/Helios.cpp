@@ -39,10 +39,10 @@ bool Helios::sleeping;
 #endif
 
 bool Helios::init() {
-  Helios::initializeComponents();
-  Helios::initializeGlobals();
-  Helios::readGlobalFlags();
-  Helios::loadCurrentMode();
+  initializeComponents();
+  initializeGlobals();
+  readGlobalFlags();
+  loadCurrentMode();
   return true;
 }
 
@@ -81,7 +81,7 @@ void Helios::enterSleep() {
 
   // ... interrupt will make us wake here
 
-  Helios::init();
+  init();
 
   // Set PB0, PB1, PB4 as output
   DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
@@ -132,6 +132,7 @@ bool Helios::initializeComponents() {
   {
     return false;
   }
+  return true;
 }
 
 void Helios::initializeGlobals() {
@@ -183,7 +184,7 @@ void Helios::load_next_mode()
   // increment current mode and wrap around
   cur_mode = (uint8_t)(cur_mode + 1) % NUM_MODE_SLOTS;
   // now load current mode again
-  Helios::loadCurrentMode();
+  loadCurrentMode();
 }
 
 void Helios::loadCurrentMode()
@@ -213,7 +214,7 @@ void Helios::writeGlobalFlags()
 void Helios::set_mode_index(uint8_t mode_index) {
   cur_mode = (uint8_t)mode_index % NUM_MODE_SLOTS;
   // now load current mode again
-  Helios::loadCurrentMode();
+  loadCurrentMode();
 }
 
 void Helios::handle_state()
@@ -698,7 +699,7 @@ void Helios::handle_state_toggle_flag(Flags flag)
   // toggle the conjure flag
   toggle_flag(flag);
   // write out the new global flags and the current mode
-  Helios::writeGlobalFlags();
+  writeGlobalFlags();
   // switch back to modes
   cur_state = STATE_MODES;
 }
@@ -729,9 +730,9 @@ void Helios::handle_state_set_defaults()
       global_flags = FLAG_NONE;
       cur_mode = 0;
       // save global flags
-      Helios::writeGlobalFlags();
+      writeGlobalFlags();
       // re-load current mode
-      Helios::loadCurrentMode();
+      loadCurrentMode();
     }
     cur_state = STATE_MODES;
   }

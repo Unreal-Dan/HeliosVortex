@@ -19,6 +19,7 @@ public:
   static void load_next_mode();
   static void save_cur_mode();
   static void set_mode_index(uint8_t mode_index);
+  static void initializeHardware();
 
 #ifdef HELIOS_CLI
   static bool is_asleep() { return sleeping; }
@@ -72,7 +73,6 @@ private:
   static void initializeGlobals();
   static void readGlobalFlags();
   static void writeGlobalFlags();
-  static void initializeHardware();
   static void loadCurrentMode();
 
   enum State : uint8_t {
