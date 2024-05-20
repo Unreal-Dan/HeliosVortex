@@ -80,7 +80,7 @@ void Helios::enterSleep() {
   sleep_mode();
 
   // ... interrupt will make us wake here
-
+  // wakeup here, re-init
   init();
 
   // Set PB0, PB1, PB4 as output
