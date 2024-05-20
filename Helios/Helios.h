@@ -19,7 +19,7 @@ public:
   static void load_next_mode();
   static void save_cur_mode();
   static void set_mode_index(uint8_t mode_index);
-  static void initializeHardware();
+  static void initialize_hardware();
 
 #ifdef HELIOS_CLI
   static bool is_asleep() { return sleeping; }

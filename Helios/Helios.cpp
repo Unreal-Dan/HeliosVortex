@@ -136,7 +136,7 @@ void Helios::initialize_globals() {
 }
 
 
-void Helios::initializeHardware() {
+void Helios::initialize_hardware() {
 #ifdef HELIOS_EMBEDDED
   // Set PB0, PB1, PB4 as output
   DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
