@@ -54,19 +54,7 @@ bool Helios::init()
     return false;
   }
 
-  // Clear the LED color and update the LED state
-  Led::clear();
-  Led::update();
-
-  PORTB &= ~(1 << PB0);
-  TCCR0A &= ~(1 << COM0A1); 
-
-  PORTB &= ~(1 << PB1);
-  TCCR0A &= ~(1 << COM0B1);
-
-  PORTB &= ~(1 << PB4);
-  GTCCR &= ~(1 << COM1B1); 
-
+ 
   // initialize globals
   cur_state = STATE_MODES;
   menu_selection = 0;
@@ -138,10 +126,8 @@ void Helios::tick()
 void Helios::enter_sleep()
 {
 #ifdef HELIOS_EMBEDDED
-  // Set all pins to output
-  DDRB = 0xFF;
-  // Set all pins low
-  PORTB = 0x00;
+  // Set all pins to input
+  DDRB &= ~((1 << DDB0) | (1 << DDB1) | (1 << DDB4));
   // Enable wake on interrupt for the button
   Button::enableWake();
   // Set sleep mode to POWER DOWN mode
@@ -150,7 +136,59 @@ void Helios::enter_sleep()
   sleep_mode();
   // ... interrupt will make us wake here
   // wakeup here, re-init
-  init();
+  // init();
+  // initialize the time control and led control
+  Time::init();
+  Led::init();
+  Storage::init();
+  Button::init();
+
+ 
+  // initialize globals
+  cur_state = STATE_MODES;
+  menu_selection = 0;
+  cur_mode = 0;
+  selected_slot = 0;
+  selected_base_quad = 0;
+  keepgoing = true;
+#ifdef HELIOS_CLI
+  sleeping = false;
+#endif
+
+  // read the global flags from index 0 config
+  global_flags = (Flags)Storage::read_global_flags();
+  if (has_flag(FLAG_CONJURE)) {
+    // if conjure is enabled then load the current mode index from storage
+    cur_mode = Storage::read_current_mode();
+  }
+  // read the global brightness from index 2 config
+  uint8_t saved_brightness = Storage::read_brightness();
+  // If brightness is set in storage, use it
+  if (saved_brightness > 0) {
+    Led::setBrightness(saved_brightness);
+  }
+
+  // load the current mode from store and initialize it
+  load_cur_mode();
+
+#ifdef HELIOS_EMBEDDED
+  // Set PB0, PB1, PB4 as output
+  DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
+
+  // // Timer0 Configuration for PWM
+  // TCCR0A = (1 << WGM01) | (1 << WGM00) | (1 << COM0A1) | (1 << COM0B1); // Fast PWM, Non-inverting
+  // TCCR0B = (1 << CS00); // No prescaler
+
+  // Timer1 Configuration for PWM on PB4
+  TCCR1 = (1 << PWM1A) | (1 << COM1A1) | (1 << CS10);  // Fast PWM, Non-inverting, No prescaler
+  GTCCR = (1 << PWM1B) | (1 << COM1B1);  // Enable PWM on OC1B
+
+  // Enable Timer0 overflow interrupt
+  TIMSK |= (1 << TOIE0);
+
+  // enable interrupts
+  sei();
+#endif
 #else
   cur_state = STATE_SLEEP;
   // enable the sleep bool
@@ -796,14 +834,14 @@ void Helios::handle_state_shift_mode()
 void Helios::handle_state_randomize()
 {
   if (Button::onShortClick()) {
-    uint32_t seed = crc32((const uint8_t *)&pat.colorset(), COLORSET_SIZE);
-    Random ctx(seed);
-    Colorset &cur_set = pat.colorset();
-    uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
+    // uint32_t seed = crc32((const uint8_t *)&pat.colorset(), COLORSET_SIZE);
+    // Random ctx(seed);
+    // Colorset &cur_set = pat.colorset();
+    // uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
 
-    cur_set.randomizeColors(ctx, num_cols);
-    Patterns::make_pattern((PatternID)(ctx.next8() % PATTERN_COUNT), pat);
-    pat.init();
+    // cur_set.randomizeColors(ctx, num_cols);
+    // Patterns::make_pattern((PatternID)(ctx.next8() % PATTERN_COUNT), pat);
+    // pat.init();
   }
   if (Button::onLongClick()) {
     save_cur_mode();
