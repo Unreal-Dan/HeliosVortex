@@ -39,11 +39,10 @@ bool Helios::sleeping;
 #endif
 
 bool Helios::init() {
-  initializeModules();
-  initializeGlobals();
-  readGlobalConfig();
-  load_cur_mode();
-  initializeHardware();
+  Helios::initializeComponents();
+  Helios::initializeGlobals();
+  Helios::readGlobalFlags();
+  Helios::loadCurrentMode();
   return true;
 }
 
@@ -66,7 +65,7 @@ void Helios::tick()
   Time::tickClock();
 }
 
-void Helios::enter_sleep() {
+void Helios::enterSleep() {
 #ifdef HELIOS_EMBEDDED
   // Set all pins to input
   DDRB &= ~((1 << DDB0) | (1 << DDB1) | (1 << DDB4));
@@ -82,10 +81,7 @@ void Helios::enter_sleep() {
 
   // ... interrupt will make us wake here
 
-  initializeModules();
-  initializeGlobals();
-  readGlobalConfig();
-  load_cur_mode();
+  Helios::init();
 
   // Set PB0, PB1, PB4 as output
   DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
@@ -118,11 +114,24 @@ void Helios::wakeup()
 #endif
 }
 
-void Helios::initializeModules() {
-  Time::init();
-  Led::init();
-  Storage::init();
-  Button::init();
+bool Helios::initializeComponents() {
+  // initialize the time control and led control
+  if (!Time::init())
+  {
+    return false;
+  }
+  if (!Led::init())
+  {
+    return false;
+  }
+  if (!Storage::init())
+  {
+    return false;
+  }
+  if (!Button::init())
+  {
+    return false;
+  }
 }
 
 void Helios::initializeGlobals() {
@@ -137,7 +146,7 @@ void Helios::initializeGlobals() {
 #endif
 }
 
-void Helios::readGlobalConfig() {
+void Helios::readGlobalFlags() {
   global_flags = (Flags)Storage::read_global_flags();
   if (has_flag(FLAG_CONJURE)) {
     cur_mode = Storage::read_current_mode();
@@ -174,10 +183,10 @@ void Helios::load_next_mode()
   // increment current mode and wrap around
   cur_mode = (uint8_t)(cur_mode + 1) % NUM_MODE_SLOTS;
   // now load current mode again
-  load_cur_mode();
+  Helios::loadCurrentMode();
 }
 
-void Helios::load_cur_mode()
+void Helios::loadCurrentMode()
 {
   // read pattern from storage at cur mode index
   if (!Storage::read_pattern(cur_mode, pat)) {
@@ -195,17 +204,16 @@ void Helios::save_cur_mode()
   Storage::write_pattern(cur_mode, pat);
 }
 
-void Helios::save_global_flags()
+void Helios::writeGlobalFlags()
 {
   Storage::write_global_flags(global_flags);
   Storage::write_current_mode(cur_mode);
 }
 
-void Helios::set_mode_index(uint8_t mode_index)
-{
+void Helios::set_mode_index(uint8_t mode_index) {
   cur_mode = (uint8_t)mode_index % NUM_MODE_SLOTS;
   // now load current mode again
-  load_cur_mode();
+  Helios::loadCurrentMode();
 }
 
 void Helios::handle_state()
@@ -214,7 +222,7 @@ void Helios::handle_state()
   if (Button::holdDuration() > FORCE_SLEEP_TIME) {
     // when released the device will just sleep
     if (Button::onRelease()) {
-      enter_sleep();
+      enterSleep();
       // ALWAYS RETURN AFTER SLEEP! WE WILL WAKE HERE!
       return;
     }
@@ -268,6 +276,7 @@ void Helios::handle_state()
   }
 }
 
+
 void Helios::handle_state_modes()
 {
   // whether they have released the button since turning on
@@ -275,7 +284,7 @@ void Helios::handle_state_modes()
 
   if (Button::releaseCount() > 1 && Button::onShortClick()) {
     if (has_flag(FLAG_CONJURE)) {
-      enter_sleep();
+      enterSleep();
     } else {
       load_next_mode();
     }
@@ -284,7 +293,7 @@ void Helios::handle_state_modes()
 
   // check for lock and go back to sleep
   if (has_flag(FLAG_LOCKED) && hasReleased && !Button::onRelease()) {
-    enter_sleep();
+    enterSleep();
     // ALWAYS RETURN AFTER SLEEP! WE WILL WAKE HERE!
     return;
   }
@@ -354,7 +363,7 @@ void Helios::handle_off_menu(uint8_t mag, bool past)
         break;
       default:
         // just go back to sleep in hold-past off menu
-        enter_sleep();
+        enterSleep();
         // ALWAYS RETURN AFTER SLEEP! WE WILL WAKE HERE!
     }
     // in this case we return either way, since we're locked
@@ -375,7 +384,7 @@ void Helios::handle_off_menu(uint8_t mag, bool past)
       return; // RETURN HERE
     default:
       // just go back to sleep in hold-past off menu
-      enter_sleep();
+      enterSleep();
       // ALWAYS RETURN AFTER SLEEP! WE WILL WAKE HERE!
       return;
   }
@@ -387,7 +396,7 @@ void Helios::handle_on_menu(uint8_t mag, bool past)
     case 0:  // off
       // but only if we held for more than a short click
       if (past) {
-        enter_sleep();
+        enterSleep();
         // ALWAYS RETURN AFTER SLEEP! WE WILL WAKE HERE!
         return;
       }
@@ -689,7 +698,7 @@ void Helios::handle_state_toggle_flag(Flags flag)
   // toggle the conjure flag
   toggle_flag(flag);
   // write out the new global flags and the current mode
-  save_global_flags();
+  Helios::writeGlobalFlags();
   // switch back to modes
   cur_state = STATE_MODES;
 }
@@ -720,9 +729,9 @@ void Helios::handle_state_set_defaults()
       global_flags = FLAG_NONE;
       cur_mode = 0;
       // save global flags
-      save_global_flags();
+      Helios::writeGlobalFlags();
       // re-load current mode
-      load_cur_mode();
+      Helios::loadCurrentMode();
     }
     cur_state = STATE_MODES;
   }
