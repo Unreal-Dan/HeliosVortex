@@ -174,20 +174,6 @@ void Helios::enter_sleep()
 #ifdef HELIOS_EMBEDDED
   // Set PB0, PB1, PB4 as output
   DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
-
-  // Timer0 Configuration for PWM
-  // TCCR0A = (1 << WGM01) | (1 << WGM00) | (1 << COM0A1) | (1 << COM0B1); // Fast PWM, Non-inverting
-  TCCR0B = (1 << CS00); // No prescaler
-
-  // Timer1 Configuration for PWM on PB4
-  TCCR1 = (1 << PWM1A) | (1 << COM1A1) | (1 << CS10);  // Fast PWM, Non-inverting, No prescaler
-  GTCCR = (1 << PWM1B) | (1 << COM1B1);  // Enable PWM on OC1B
-
-  // Enable Timer0 overflow interrupt
-  TIMSK |= (1 << TOIE0);
-
-  // enable interrupts
-  sei();
 #endif
 #else
   cur_state = STATE_SLEEP;
@@ -834,14 +820,14 @@ void Helios::handle_state_shift_mode()
 void Helios::handle_state_randomize()
 {
   if (Button::onShortClick()) {
-    // uint32_t seed = crc32((const uint8_t *)&pat.colorset(), COLORSET_SIZE);
-    // Random ctx(seed);
-    // Colorset &cur_set = pat.colorset();
-    // uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
+    uint32_t seed = crc32((const uint8_t *)&pat.colorset(), COLORSET_SIZE);
+    Random ctx(seed);
+    Colorset &cur_set = pat.colorset();
+    uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
 
-    // cur_set.randomizeColors(ctx, num_cols);
-    // Patterns::make_pattern((PatternID)(ctx.next8() % PATTERN_COUNT), pat);
-    // pat.init();
+    cur_set.randomizeColors(ctx, num_cols);
+    Patterns::make_pattern((PatternID)(ctx.next8() % PATTERN_COUNT), pat);
+    pat.init();
   }
   if (Button::onLongClick()) {
     save_cur_mode();
