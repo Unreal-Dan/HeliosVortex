@@ -134,15 +134,12 @@ void Helios::enter_sleep()
   // enter sleep
   sleep_mode();
   // ... interrupt will make us wake here
-  // wakeup here, re-init
-  // init();
   // initialize the time control and led control
   Time::init();
   Led::init();
   Storage::init();
   Button::init();
 
- 
   // initialize globals
   cur_state = STATE_MODES;
   menu_selection = 0;
