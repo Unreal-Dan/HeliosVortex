@@ -10,7 +10,7 @@ public:
   static bool init();
   static void tick();
 
-  static void enterSleep();
+  static void enter_sleep();
   static void wakeup();
 
   static bool keep_going() { return keepgoing; }
@@ -69,11 +69,11 @@ private:
   static void show_long_selection(RGBColor color);
   static void show_selection(RGBColor color);
 
-  static bool initializeComponents();
-  static void initializeGlobals();
-  static void readGlobalFlags();
-  static void writeGlobalFlags();
-  static void loadCurrentMode();
+  static bool initialize_components();
+  static void initialize_globals();
+  static void read_global_flags();
+  static void save_global_flags();
+  static void load_cur_mode();
 
   enum State : uint8_t {
     STATE_MODES,

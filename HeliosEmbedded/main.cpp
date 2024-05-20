@@ -7,8 +7,8 @@
 // this is the main thread for non-arduino embedded builds
 int main(int argc, char *argv[])
 {
-  Helios::initializeHardware();
   Helios::init();
+  Helios::initializeHardware();
   // the main thread just initializes Helios then continuously calls tick
   while (Helios::keep_going()) {
     Helios::tick();
