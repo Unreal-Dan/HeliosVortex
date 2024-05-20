@@ -54,7 +54,6 @@ bool Helios::init()
     return false;
   }
 
- 
   // initialize globals
   cur_state = STATE_MODES;
   menu_selection = 0;
