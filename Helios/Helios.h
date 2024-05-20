@@ -27,7 +27,8 @@ public:
 #endif
 
 private:
-  enum Flags : uint8_t {
+  enum Flags : uint8_t 
+  {
     FLAG_NONE = 0,
     FLAG_LOCKED = (1 << 0),
     FLAG_CONJURE = (1 << 1),
@@ -43,7 +44,8 @@ private:
   static void handle_state_modes();
 
   // the slot selection returns this info for internal menu logic
-  enum ColorSelectOption {
+  enum ColorSelectOption 
+  {
     OPTION_NONE = 0,
 
     SELECTED_ADD,
@@ -75,7 +77,8 @@ private:
   static void save_global_flags();
   static void load_cur_mode();
 
-  enum State : uint8_t {
+  enum State : uint8_t 
+  {
     STATE_MODES,
     STATE_COLOR_SELECT_SLOT,
     STATE_COLOR_SELECT_QUADRANT,
