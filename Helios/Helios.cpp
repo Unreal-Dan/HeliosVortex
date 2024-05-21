@@ -38,7 +38,7 @@ bool Helios::keepgoing;
 bool Helios::sleeping;
 #endif
 
-bool Helios::init() 
+bool Helios::init()
 {
   initialize_components();
   initialize_globals();
@@ -47,7 +47,7 @@ bool Helios::init()
   return true;
 }
 
-void Helios::tick() 
+void Helios::tick()
 {
   // sample the button and re-calculate all button globals
   // the button globals should not change anywhere else
@@ -66,7 +66,7 @@ void Helios::tick()
   Time::tickClock();
 }
 
-void Helios::enter_sleep() 
+void Helios::enter_sleep()
 {
 #ifdef HELIOS_EMBEDDED
   // Set all pins to input
@@ -89,7 +89,7 @@ void Helios::enter_sleep()
 #endif
 }
 
-void Helios::wakeup() 
+void Helios::wakeup()
 {
 #ifdef HELIOS_EMBEDDED
   // nothing needed here, this interrupt firing will make the mainthread resume
@@ -110,7 +110,7 @@ void Helios::wakeup()
 #endif
 }
 
-bool Helios::initialize_components() 
+bool Helios::initialize_components()
 {
   // initialize the time control and led control
   if (!Time::init()) {
@@ -128,7 +128,7 @@ bool Helios::initialize_components()
   return true;
 }
 
-void Helios::initialize_globals() 
+void Helios::initialize_globals()
 {
   cur_state = STATE_MODES;
   menu_selection = 0;
@@ -142,7 +142,7 @@ void Helios::initialize_globals()
 }
 
 
-void Helios::initialize_hardware() 
+void Helios::initialize_hardware()
 {
 #ifdef HELIOS_EMBEDDED
   // Set PB0, PB1, PB4 as output
@@ -164,7 +164,7 @@ void Helios::initialize_hardware()
 #endif
 }
 
-void Helios::load_next_mode() 
+void Helios::load_next_mode()
 {
   // increment current mode and wrap around
   cur_mode = (uint8_t)(cur_mode + 1) % NUM_MODE_SLOTS;
@@ -172,7 +172,7 @@ void Helios::load_next_mode()
   load_cur_mode();
 }
 
-void Helios::load_cur_mode() 
+void Helios::load_cur_mode()
 {
   // read pattern from storage at cur mode index
   if (!Storage::read_pattern(cur_mode, pat)) {
@@ -185,12 +185,12 @@ void Helios::load_cur_mode()
   pat.init();
 }
 
-void Helios::save_cur_mode() 
+void Helios::save_cur_mode()
 {
   Storage::write_pattern(cur_mode, pat);
 }
 
-void Helios::read_global_flags() 
+void Helios::read_global_flags()
 {
   global_flags = (Flags)Storage::read_global_flags();
   if (has_flag(FLAG_CONJURE)) {
@@ -202,7 +202,7 @@ void Helios::read_global_flags()
   }
 }
 
-void Helios::save_global_flags() 
+void Helios::save_global_flags()
 {
   Storage::write_global_flags(global_flags);
   Storage::write_current_mode(cur_mode);
@@ -214,7 +214,7 @@ void Helios::set_mode_index(uint8_t mode_index) {
   load_cur_mode();
 }
 
-void Helios::handle_state() 
+void Helios::handle_state()
 {
   // check for the force sleep button hold regardless of which state we're in
   if (Button::holdDuration() > FORCE_SLEEP_TIME) {
@@ -274,7 +274,7 @@ void Helios::handle_state()
   }
 }
 
-void Helios::handle_state_modes() 
+void Helios::handle_state_modes()
 {
   // whether they have released the button since turning on
   bool hasReleased = (Button::releaseCount() > 0);
@@ -427,7 +427,7 @@ void Helios::handle_on_menu(uint8_t mag, bool past)
   }
 }
 
-void Helios::handle_state_col_select() 
+void Helios::handle_state_col_select()
 {
   uint8_t num_cols = pat.colorset().numColors();
   if (Button::onShortClick()) {
@@ -563,7 +563,7 @@ bool Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
   return true;
 }
 
-struct ColorsMenuData 
+struct ColorsMenuData
 {
   uint8_t hues[4];
 };
@@ -577,7 +577,7 @@ static const ColorsMenuData color_menu_data[4] = {
   { HUE_PURPLE,     HUE_PINK,         HUE_HOT_PINK, HUE_MAGENTA },
 };
 
-bool Helios::handle_state_col_select_quadrant() 
+bool Helios::handle_state_col_select_quadrant()
 {
   uint8_t hue_quad = (menu_selection - 2) % 4;
 
@@ -646,13 +646,13 @@ bool Helios::handle_state_col_select_quadrant()
   return true;
 }
 
-void Helios::handle_col_select_show_hue_sat_val() 
+void Helios::handle_col_select_show_hue_sat_val()
 {
   // render current selection
   Led::set(HSVColor(selected_hue, selected_sat, selected_val));
 }
 
-void Helios::handle_state_col_select_hue() 
+void Helios::handle_state_col_select_hue()
 {
   selected_hue = color_menu_data[selected_base_quad].hues[menu_selection];
   handle_col_select_show_hue_sat_val();
@@ -660,7 +660,7 @@ void Helios::handle_state_col_select_hue()
   show_long_selection(current_color);
 }
 
-void Helios::handle_state_col_select_sat() 
+void Helios::handle_state_col_select_sat()
 {
   static const uint8_t saturation_values[4] = {HSV_SAT_HIGH, HSV_SAT_MEDIUM, HSV_SAT_LOW, HSV_SAT_LOWEST};
   selected_sat = saturation_values[menu_selection];
@@ -669,14 +669,14 @@ void Helios::handle_state_col_select_sat()
   show_long_selection(current_color);
 }
 
-void Helios::handle_state_col_select_val() 
+void Helios::handle_state_col_select_val()
 {
   static const uint8_t hsv_values[4] = {HSV_VAL_HIGH, HSV_VAL_MEDIUM, HSV_VAL_LOW, HSV_VAL_LOWEST};
   selected_val = hsv_values[menu_selection];
   handle_col_select_show_hue_sat_val();
 }
 
-void Helios::handle_state_pat_select() 
+void Helios::handle_state_pat_select()
 {
   if (Button::onLongClick()) {
     save_cur_mode();
@@ -701,7 +701,7 @@ void Helios::handle_state_toggle_flag(Flags flag)
   cur_state = STATE_MODES;
 }
 
-void Helios::handle_state_set_defaults() 
+void Helios::handle_state_set_defaults()
 {
   if (Button::onShortClick()) {
     menu_selection = !menu_selection;
@@ -736,7 +736,7 @@ void Helios::handle_state_set_defaults()
   show_selection(RGB_WHITE_BRI_LOW);
 }
 
-void Helios::handle_state_set_global_brightness() 
+void Helios::handle_state_set_global_brightness()
 {
   if (Button::onShortClick()) {
     menu_selection = (menu_selection + 1) % NUM_BRIGHTNESS_OPTIONS;
@@ -782,7 +782,7 @@ inline uint32_t crc32(const uint8_t *data, uint8_t size)
   return hash;
 }
 
-void Helios::handle_state_shift_mode() 
+void Helios::handle_state_shift_mode()
 {
   uint8_t new_mode = cur_mode ? (uint8_t)(cur_mode - 1) : (uint8_t)(NUM_MODE_SLOTS - 1);
   Storage::swap_pattern(cur_mode, new_mode);
@@ -790,7 +790,7 @@ void Helios::handle_state_shift_mode()
   cur_state = STATE_MODES;
 }
 
-void Helios::handle_state_randomize() 
+void Helios::handle_state_randomize()
 {
   if (Button::onShortClick()) {
     uint32_t seed = crc32((const uint8_t *)&pat.colorset(), COLORSET_SIZE);
