@@ -136,9 +136,7 @@ void Helios::initialize_globals()
 #ifdef HELIOS_CLI
   sleeping = false;
 #endif
-
 }
-
 
 void Helios::initialize_hardware() 
 {
