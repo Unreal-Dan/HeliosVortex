@@ -19,8 +19,8 @@ public:
   static void load_next_mode();
   static void load_cur_mode();
   static void save_cur_mode();
+  static void load_global_flags();
   static void save_global_flags();
-  static void initialize_hardware();
   static void set_mode_index(uint8_t mode_index);
 
 #ifdef HELIOS_CLI
@@ -40,6 +40,10 @@ private:
   static bool has_flag(Flags flag) { return (global_flags & flag) == flag; }
   static void clear_flag(Flags flag) { global_flags = (Flags)(global_flags & ~flag); }
   static void toggle_flag(Flags flag) { global_flags = (Flags)(global_flags ^ flag); }
+
+#ifdef HELIOS_EMBEDDED
+  static bool init_components()
+#endif
 
   static void handle_state();
   static void handle_state_modes();
@@ -70,9 +74,6 @@ private:
   static void handle_state_randomize();
   static void show_long_selection(RGBColor color);
   static void show_selection(RGBColor color);
-  static bool initialize_components();
-  static void initialize_globals();
-  static void read_global_flags();
 
   enum State : uint8_t {
     STATE_MODES,
