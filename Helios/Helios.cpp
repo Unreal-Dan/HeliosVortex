@@ -40,7 +40,11 @@ bool Helios::sleeping;
 
 bool Helios::init()
 {
-  // first initialize the hardware for embedded helios
+  // first initialize all the components of helios
+  if (!init_components()) {
+    return false;
+  }
+  // then initialize the hardware for embedded helios
 #ifdef HELIOS_EMBEDDED
   // Set PB0, PB1, PB4 as output
   DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
@@ -57,8 +61,7 @@ bool Helios::init()
   // Enable interrupts
   sei();
 #endif
-  // then initialize all the components of helios
-  return init_components();
+  return true;
 }
 
 bool Helios::init_components()
