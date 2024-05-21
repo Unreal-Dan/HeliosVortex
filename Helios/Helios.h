@@ -35,15 +35,14 @@ private:
     FLAG_CONJURE = (1 << 1),
   };
 
+  // initialize the various components of helios
+  static bool init_components();
+
   // get/set global flags
   static void set_flag(Flags flag) { global_flags = (Flags)(global_flags | flag); }
   static bool has_flag(Flags flag) { return (global_flags & flag) == flag; }
   static void clear_flag(Flags flag) { global_flags = (Flags)(global_flags & ~flag); }
   static void toggle_flag(Flags flag) { global_flags = (Flags)(global_flags ^ flag); }
-
-#ifdef HELIOS_EMBEDDED
-  static bool init_components();
-#endif
 
   static void handle_state();
   static void handle_state_modes();
