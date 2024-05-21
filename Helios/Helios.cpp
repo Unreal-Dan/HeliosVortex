@@ -42,7 +42,7 @@ bool Helios::init()
 {
   initialize_components();
   initialize_globals();
-  read_global_flags();
+  load_global_flags();
   load_cur_mode();
   return true;
 }
@@ -186,7 +186,7 @@ void Helios::save_cur_mode()
   Storage::write_pattern(cur_mode, pat);
 }
 
-void Helios::read_global_flags() 
+void Helios::load_global_flags() 
 {
   // read the global flags from index 0 config
   global_flags = (Flags)Storage::read_global_flags();

@@ -72,7 +72,7 @@ private:
   static void show_selection(RGBColor color);
   static bool initialize_components();
   static void initialize_globals();
-  static void read_global_flags();
+  static void load_global_flags();
 
   enum State : uint8_t {
     STATE_MODES,
