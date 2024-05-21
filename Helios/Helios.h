@@ -42,7 +42,7 @@ private:
   static void toggle_flag(Flags flag) { global_flags = (Flags)(global_flags ^ flag); }
 
 #ifdef HELIOS_EMBEDDED
-  static bool init_components()
+  static bool init_components();
 #endif
 
   static void handle_state();
