@@ -8,6 +8,7 @@
 int main(int argc, char *argv[])
 {
   Helios::init();
+  Helios::initialize_hardware();
   // the main thread just initializes Helios then continuously calls tick
   while (Helios::keep_going()) {
     Helios::tick();
