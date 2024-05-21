@@ -1,4 +1,4 @@
-.PHONY: all upload set_fuses set_default_fuses
+.PHONY: all upload set_fuses set_default_fuses set_16mhz_fuses set_8mhz_fuses set_1mhz_fuses get_fuses extract_hex upload_hex
 
 ifneq ($(OS),Windows_NT)
     OS = $(shell uname -s)

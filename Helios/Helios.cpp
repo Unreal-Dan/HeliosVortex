@@ -40,66 +40,10 @@ bool Helios::sleeping;
 
 bool Helios::init()
 {
-  // initialize the time control and led control
-  if (!Time::init()) {
-    return false;
-  }
-  if (!Led::init()) {
-    return false;
-  }
-  if (!Storage::init()) {
-    return false;
-  }
-  if (!Button::init()) {
-    return false;
-  }
-
-  // initialize globals
-  cur_state = STATE_MODES;
-  menu_selection = 0;
-  cur_mode = 0;
-  selected_slot = 0;
-  selected_base_quad = 0;
-  keepgoing = true;
-#ifdef HELIOS_CLI
-  sleeping = false;
-#endif
-
-  // read the global flags from index 0 config
-  global_flags = (Flags)Storage::read_global_flags();
-  if (has_flag(FLAG_CONJURE)) {
-    // if conjure is enabled then load the current mode index from storage
-    cur_mode = Storage::read_current_mode();
-  }
-  // read the global brightness from index 2 config
-  uint8_t saved_brightness = Storage::read_brightness();
-  // If brightness is set in storage, use it
-  if (saved_brightness > 0) {
-    Led::setBrightness(saved_brightness);
-  }
-
-  // load the current mode from store and initialize it
+  initialize_components();
+  initialize_globals();
+  read_global_flags();
   load_cur_mode();
-
-#ifdef HELIOS_EMBEDDED
-  // Set PB0, PB1, PB4 as output
-  DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
-
-  // Timer0 Configuration for PWM
-  TCCR0A = (1 << WGM01) | (1 << WGM00) | (1 << COM0A1) | (1 << COM0B1); // Fast PWM, Non-inverting
-  TCCR0B = (1 << CS00); // No prescaler
-
-  // Timer1 Configuration for PWM on PB4
-  TCCR1 = (1 << PWM1A) | (1 << COM1A1) | (1 << CS10);  // Fast PWM, Non-inverting, No prescaler
-  GTCCR = (1 << PWM1B) | (1 << COM1B1);  // Enable PWM on OC1B
-
-  // Enable Timer0 overflow interrupt
-  TIMSK |= (1 << TOIE0);
-
-  // enable interrupts
-  sei();
-#endif
-
   return true;
 }
 
@@ -133,40 +77,7 @@ void Helios::enter_sleep()
   sleep_mode();
   // ... interrupt will make us wake here
   // wakeup here, re-init
-  // initialize the time control and led control
-  Time::init();
-  Led::init();
-  Storage::init();
-  Button::init();
-
-  // initialize globals
-  cur_state = STATE_MODES;
-  menu_selection = 0;
-  cur_mode = 0;
-  selected_slot = 0;
-  selected_base_quad = 0;
-  keepgoing = true;
-#ifdef HELIOS_CLI
-  sleeping = false;
-#endif
-
-  // read the global flags from index 0 config
-  global_flags = (Flags)Storage::read_global_flags();
-  if (has_flag(FLAG_CONJURE)) {
-    // if conjure is enabled then load the current mode index from storage
-    cur_mode = Storage::read_current_mode();
-  }
-  // read the global brightness from index 2 config
-  uint8_t saved_brightness = Storage::read_brightness();
-  // If brightness is set in storage, use it
-  if (saved_brightness > 0) {
-    Led::setBrightness(saved_brightness);
-  }
-
-  // load the current mode from store and initialize it
-  load_cur_mode();
-
-
+  init();
 #else
   cur_state = STATE_SLEEP;
   // enable the sleep bool
@@ -195,6 +106,62 @@ void Helios::wakeup()
 #endif
 }
 
+bool Helios::initialize_components() 
+{
+  // initialize the time control and led control
+  if (!Time::init()) {
+    return false;
+  }
+  if (!Led::init()) {
+    return false;
+  }
+  if (!Storage::init()) {
+    return false;
+  }
+  if (!Button::init()) {
+    return false;
+  }
+  return true;
+}
+
+void Helios::initialize_globals() 
+{
+  // initialize globals
+  cur_state = STATE_MODES;
+  menu_selection = 0;
+  cur_mode = 0;
+  selected_slot = 0;
+  selected_base_quad = 0;
+  keepgoing = true;
+#ifdef HELIOS_CLI
+  sleeping = false;
+#endif
+
+}
+
+
+void Helios::initialize_hardware() 
+{
+#ifdef HELIOS_EMBEDDED
+  // Set PB0, PB1, PB4 as output
+  DDRB |= (1 << DDB0) | (1 << DDB1) | (1 << DDB4);
+
+  // Timer0 Configuration for PWM
+  TCCR0A = (1 << WGM01) | (1 << WGM00) | (1 << COM0A1) | (1 << COM0B1); // Fast PWM, Non-inverting
+  TCCR0B = (1 << CS00); // No prescaler
+
+  // Timer1 Configuration for PWM on PB4
+  TCCR1 = (1 << PWM1A) | (1 << COM1A1) | (1 << CS10); // Fast PWM, Non-inverting, No prescaler
+  GTCCR = (1 << PWM1B) | (1 << COM1B1); // Enable PWM on OC1B
+
+  // Enable Timer0 overflow interrupt
+  TIMSK |= (1 << TOIE0);
+
+  // Enable interrupts
+  sei();
+#endif
+}
+
 void Helios::load_next_mode()
 {
   // increment current mode and wrap around
@@ -219,6 +186,22 @@ void Helios::load_cur_mode()
 void Helios::save_cur_mode()
 {
   Storage::write_pattern(cur_mode, pat);
+}
+
+void Helios::read_global_flags() 
+{
+  // read the global flags from index 0 config
+  global_flags = (Flags)Storage::read_global_flags();
+  if (has_flag(FLAG_CONJURE)) {
+    // if conjure is enabled then load the current mode index from storage
+    cur_mode = Storage::read_current_mode();
+  }
+  // read the global brightness from index 2 config
+  uint8_t saved_brightness = Storage::read_brightness();
+  // If brightness is set in storage, use it
+  if (saved_brightness > 0) {
+    Led::setBrightness(saved_brightness);
+  }
 }
 
 void Helios::save_global_flags()

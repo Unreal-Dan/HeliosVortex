@@ -20,6 +20,7 @@ public:
   static void load_cur_mode();
   static void save_cur_mode();
   static void save_global_flags();
+  static void initialize_hardware();
   static void set_mode_index(uint8_t mode_index);
 
 #ifdef HELIOS_CLI
@@ -69,6 +70,9 @@ private:
   static void handle_state_randomize();
   static void show_long_selection(RGBColor color);
   static void show_selection(RGBColor color);
+  static bool initialize_components();
+  static void initialize_globals();
+  static void read_global_flags();
 
   enum State : uint8_t {
     STATE_MODES,
