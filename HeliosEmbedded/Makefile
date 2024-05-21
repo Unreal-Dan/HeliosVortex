@@ -1,4 +1,4 @@
-.PHONY: all upload set_fuses set_default_fuses
+.PHONY: all upload set_fuses set_default_fuses set_16mhz_fuses set_8mhz_fuses set_1mhz_fuses get_fuses extract_hex upload_hex
 
 ifneq ($(OS),Windows_NT)
     OS = $(shell uname -s)
@@ -42,7 +42,7 @@ ifeq ($(OS),Windows_NT) # Windows
 else ifeq ($(OS),Darwin)
     AVRDUDE_PROGRAMMER = stk500v1
     AVRDUDE_BAUDRATE = 19200
-    AVRDUDE_PORT = /dev/tty.usbmodem214401
+    AVRDUDE_PORT = /dev/cu.usbmodem2101
 endif
 
 AVRDUDE_FLAGS = -C$(AVRDUDE_CONF) \

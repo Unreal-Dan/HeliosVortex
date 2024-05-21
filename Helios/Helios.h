@@ -19,6 +19,7 @@ public:
   static void load_next_mode();
   static void load_cur_mode();
   static void save_cur_mode();
+  static void load_global_flags();
   static void save_global_flags();
   static void set_mode_index(uint8_t mode_index);
 
@@ -33,6 +34,9 @@ private:
     FLAG_LOCKED = (1 << 0),
     FLAG_CONJURE = (1 << 1),
   };
+
+  // initialize the various components of helios
+  static bool init_components();
 
   // get/set global flags
   static void set_flag(Flags flag) { global_flags = (Flags)(global_flags | flag); }
