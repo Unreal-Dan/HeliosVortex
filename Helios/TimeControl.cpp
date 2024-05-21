@@ -87,7 +87,6 @@ ISR(TIMER0_OVF_vect) {
   timer0_overflow_count++;  // Increment on each overflow
 }
 #endif
-
 uint32_t Time::microseconds()
 {
 #ifdef HELIOS_CLI
@@ -107,13 +106,29 @@ uint32_t Time::microseconds()
   uint8_t oldSREG = SREG;
   cli();
   // multiply by 8 early to avoid floating point math or division
-  uint32_t micros = (timer0_overflow_count * (256 * 8)) + (TCNT0 * 8);
+  uint32_t micros;
+
+  #if F_CPU == 16000000L
+    // 16 MHz clock speed
+    micros = (timer0_overflow_count * (256 * 8)) + (TCNT0 * 8);
+    micros >>= 7;  // Adjusted shift to scale the ticks directly to microseconds
+  #elif F_CPU == 8000000L
+    // 8 MHz clock speed
+    micros = (timer0_overflow_count * (256 * 8)) + (TCNT0 * 8);
+    micros >>= 6;
+  #elif F_CPU == 1000000L
+    // 1 MHz clock speed
+    micros = (timer0_overflow_count * 256) + (TCNT0);
+  #else
+    #error "Unsupported clock speed"
+  #endif
   SREG = oldSREG;
   // then shift right to counteract the multiplication by 8
-  return micros >> 6;
+  return micros;
 #endif
 #endif
 }
+
 
 #ifdef HELIOS_EMBEDDED
 __attribute__((noinline))
