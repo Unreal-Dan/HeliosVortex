@@ -642,6 +642,12 @@ static void dump_eeprom(const std::string& filename)
   bool conjure = (flags & Helios::FLAG_CONJURE) != 0;
   uint8_t modeIdx = (uint8_t)memory[CONFIG_START_INDEX - STORAGE_CURRENT_MODE_INDEX];
   uint8_t brightness = (uint8_t)memory[CONFIG_START_INDEX - STORAGE_BRIGHTNESS_INDEX];
+  // The default brightness in the save file is actually 0, and only if
+  // the user adjusts the brightness will it have a different value. When
+  // the brightness is stored as 0 the Helios engine will use 255 instead
+  if (!brightness) {
+    brightness = 255;
+  }
   printf("Brightness: %u\n", brightness);
   printf("Mode Index: %u\n", modeIdx);
   printf("Flags: 0x%02X (locked=%u conjure=%u)\n", flags, locked, conjure);
