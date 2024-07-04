@@ -210,6 +210,17 @@ void Pattern::nextState(uint8_t timing)
   m_state = (PatternState)(m_state + 1);
 }
 
+// change the colorset
+void Pattern::setColorset(const Colorset &set)
+{
+  m_colorset = set;
+}
+
+void Pattern::clearColorset()
+{
+  m_colorset.clear();
+}
+
 bool Pattern::equals(const Pattern *other)
 {
   if (!other) {
@@ -226,17 +237,6 @@ bool Pattern::equals(const Pattern *other)
   // if those match then it's effectively the same
   // pattern even if anything else is different
   return true;
-}
-
-// change the colorset
-void Pattern::setColorset(const Colorset &set)
-{
-  m_colorset = set;
-}
-
-void Pattern::clearColorset()
-{
-  m_colorset.clear();
 }
 
 void Pattern::updateColor(uint8_t index, const RGBColor &col)

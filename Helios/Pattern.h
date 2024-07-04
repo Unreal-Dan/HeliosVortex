@@ -33,14 +33,11 @@ public:
   // pure virtual must override the play function
   void play();
 
-  // set args
+  // set/get args
   void setArgs(const PatternArgs &args);
-
-  // comparison to other pattern
-  // NOTE: That may cause problems because the parameter is still a Pattern *
-  //       which means comparison would need to cast the other upwards first
-  // NOTE2: Removing virtual because this probably shouldn't be overridden
-  bool equals(const Pattern *other);
+  const PatternArgs getArgs() const { return m_args; }
+  PatternArgs getArgs() { return m_args; }
+  PatternArgs &args() { return m_args; }
 
   // change the colorset
   const Colorset getColorset() const { return m_colorset; }
@@ -48,6 +45,12 @@ public:
   Colorset &colorset() { return m_colorset; }
   void setColorset(const Colorset &set);
   void clearColorset();
+
+  // comparison to other pattern
+  // NOTE: That may cause problems because the parameter is still a Pattern *
+  //       which means comparison would need to cast the other upwards first
+  // NOTE2: Removing virtual because this probably shouldn't be overridden
+  bool equals(const Pattern *other);
 
   // set a color in the colorset and re-initialize
   void updateColor(uint8_t index, const RGBColor &col);

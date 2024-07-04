@@ -28,21 +28,21 @@ public:
   static Pattern &cur_pattern() { return pat; }
 #endif
 
-private:
   enum Flags : uint8_t {
     FLAG_NONE = 0,
     FLAG_LOCKED = (1 << 0),
     FLAG_CONJURE = (1 << 1),
   };
 
-  // initialize the various components of helios
-  static bool init_components();
-
   // get/set global flags
   static void set_flag(Flags flag) { global_flags = (Flags)(global_flags | flag); }
   static bool has_flag(Flags flag) { return (global_flags & flag) == flag; }
   static void clear_flag(Flags flag) { global_flags = (Flags)(global_flags & ~flag); }
   static void toggle_flag(Flags flag) { global_flags = (Flags)(global_flags ^ flag); }
+
+private:
+  // initialize the various components of helios
+  static bool init_components();
 
   static void handle_state();
   static void handle_state_modes();

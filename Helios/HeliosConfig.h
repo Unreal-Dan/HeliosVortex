@@ -17,6 +17,7 @@
 //
 // The maximum length a long click can be
 #define LONG_CLICK_THRESHOLD (SHORT_CLICK_THRESHOLD + TIME_TILL_LONG_CLICK_FLASH)
+
 // Max Color Slots
 //
 // The number of slots in a colorset
@@ -96,6 +97,13 @@
 //  These are various storage sizes of data and some math to help 
 //  calculate sizes or space requirements, note these will produce
 //  compiler errors unless you include the respective headers
+
+// Storage Size
+//
+// The total size of storage where modes and global settings are saved.
+// The EEPROM on attiny85 is 512 bytes, but due to limitations on flash
+// only the lower half of the eeprom is being used
+#define STORAGE_SIZE 256
 
 // Colorset Size
 //

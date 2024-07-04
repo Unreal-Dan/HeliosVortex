@@ -16,11 +16,6 @@
 #define STORAGE_FILENAME "Helios.storage"
 #endif
 
-// the index of the crc of the config bytes
-#define CONFIG_CRC_INDEX 255
-// the index of the last config byte (or first counting down)
-#define CONFIG_START_INDEX 254
-
 #ifdef HELIOS_CLI
 // whether storage is enabled, default enabled
 bool Storage::m_enableStorage = true;

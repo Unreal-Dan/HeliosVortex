@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
@@ -48,6 +49,7 @@ bool lockstep = false;
 bool storage = false;
 bool timestep = true;
 bool eeprom = false;
+std::string eeprom_file;
 bool generate_bmp = false;
 std::vector<RGBColor> colorBuffer;
 uint32_t num_cycles = 0;
@@ -68,6 +70,8 @@ static void restore_terminal();
 static void set_terminal_nonblocking();
 static bool writeBMP(const std::string& filename, const std::vector<RGBColor>& colors);
 static void print_usage(const char* program_name);
+static bool parse_eep_file(const std::string& filename, std::vector<uint8_t>& memory);
+static void dump_eeprom(const std::string& filename);
 
 int main(int argc, char *argv[])
 {
@@ -75,6 +79,12 @@ int main(int argc, char *argv[])
   parse_options(argc, argv);
   // set the terminal to instantly receive key presses
   set_terminal_nonblocking();
+  // if parsing an eeprom then no need to initialize helios
+  if (eeprom_file.length() > 0) {
+    // print out the contents of the eeprom file
+    dump_eeprom(eeprom_file);
+    return 0;
+  }
   // toggle timestep in the engine based on the cli input
   Time::enableTimestep(timestep);
   // toggle storage in the engine based on cli input
@@ -195,10 +205,11 @@ static void parse_options(int argc, char *argv[])
     {"mode-index", required_argument, nullptr, 'I'},
     {"bmp", optional_argument, nullptr, 'b'},
     {"eeprom", no_argument, nullptr, 'E'},
+    {"parse-save", required_argument, nullptr, 'S'},
     {"help", no_argument, nullptr, 'h'},
     {nullptr, 0, nullptr, 0}
   };
-  while ((opt = getopt_long(argc, argv, "xcqltisyamC:P:I:b::Eh", long_options, &option_index)) != -1) {
+  while ((opt = getopt_long(argc, argv, "xcqltisyamC:P:I:b::ES:h", long_options, &option_index)) != -1) {
     switch (opt) {
     case 'x':
       // if the user wants pretty colors or hex codes
@@ -295,6 +306,9 @@ static void parse_options(int argc, char *argv[])
       break;
     case 'E':
       eeprom = true;
+      break;
+    case 'S':
+      eeprom_file = optarg;
       break;
     case 'h':
       // print usage and exit
@@ -521,6 +535,7 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "Other Options:\n");
   fprintf(stderr, "  -b, --bmp [file]         Specify a bitmap file to generate (default: " DEFAULT_BMP_FILENAME ")\n");
   fprintf(stderr, "  -E, --eeprom             Generate an eeprom file for flashing\n");
+  fprintf(stderr, "  -S, --parse-save <file>  Parse an eeprom storage dump from Microchip Studio\n");
   fprintf(stderr, "  -h, --help               Display this help message\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Input Commands (pass to stdin):");
@@ -544,3 +559,91 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "   ./helios -ci\n");
   fprintf(stderr, "   ./helios -cl <<< 300wcw300wcp1500wr300wq\n");
 }
+
+static bool parse_eep_file(const std::string& filename, std::vector<uint8_t>& memory)
+{
+  printf("Dumping EEPROM File: [%s]\n", filename.c_str());
+  std::ifstream infile(filename);
+  if (!infile.is_open()) {
+    printf("Failed to open file\n");
+    return false;
+  }
+
+  uint32_t baseAddress = 0;
+  std::string line;
+  while (std::getline(infile, line)) {
+    if (line[0] != ':') {
+      printf("Invalid start code\n");
+      return false;
+    }
+
+    int byteCount = std::stoi(line.substr(1, 2), nullptr, 16);
+    int address = std::stoi(line.substr(3, 4), nullptr, 16);
+    int recordType = std::stoi(line.substr(7, 2), nullptr, 16);
+
+    switch (recordType) {
+      case 0x00: // Data record
+        for (int i = 0; i < byteCount; ++i) {
+          int byte = std::stoi(line.substr(9 + i * 2, 2), nullptr, 16);
+          if (baseAddress + address + i < memory.size()) {
+            memory[baseAddress + address + i] = static_cast<uint8_t>(byte);
+          }
+        }
+        break;
+      case 0x02: // Extended segment address record
+        baseAddress = std::stoi(line.substr(9, 4), nullptr, 16) << 4;
+        break;
+      case 0x04: // Extended linear address record
+        baseAddress = std::stoi(line.substr(9, 4), nullptr, 16) << 16;
+        break;
+      case 0x01: // End of file record
+        break;
+      default:
+        // Unknown record type
+        break;
+    }
+  }
+
+  infile.close();
+  return true;
+}
+
+static void dump_eeprom(const std::string& filename)
+{
+  std::vector<uint8_t> memory(512, 0xFF); // Initialize memory with 0xFF
+  if (!parse_eep_file(filename, memory)) {
+    return;
+  }
+
+  for (size_t slot = 0; slot < NUM_MODE_SLOTS; ++slot) {
+    size_t pos = slot * SLOT_SIZE;
+
+    Pattern pat;
+    memcpy((void*)&pat, &memory[pos], sizeof(Pattern));
+
+    printf("Slot %zu:\n", slot);
+    printf("  Colorset: ");
+    for (size_t i = 0; i < pat.getColorset().numColors(); ++i) {
+      RGBColor color = pat.getColorset()[i];
+      char hexCode[8];
+      snprintf(hexCode, sizeof(hexCode), "#%02X%02X%02X", color.red, color.green, color.blue);
+      printf("\033[48;2;%d;%d;%dm  \033[0m (%s) ", color.red, color.green, color.blue, hexCode);
+    }
+    printf("\n");
+
+    PatternArgs args = pat.getArgs();
+    printf("  Args: on_dur=%d, off_dur=%d, gap_dur=%d, dash_dur=%d, group_size=%d, blend_speed=%d\n",
+        args.on_dur, args.off_dur, args.gap_dur, args.dash_dur, args.group_size, args.blend_speed);
+    printf("  Flags: %02X\n", pat.getFlags());
+  }
+
+  uint8_t flags = (uint8_t)memory[CONFIG_START_INDEX - STORAGE_GLOBAL_FLAG_INDEX];
+  bool locked = (flags & Helios::FLAG_LOCKED) != 0;
+  bool conjure = (flags & Helios::FLAG_CONJURE) != 0;
+  uint8_t modeIdx = (uint8_t)memory[CONFIG_START_INDEX - STORAGE_CURRENT_MODE_INDEX];
+  uint8_t brightness = (uint8_t)memory[CONFIG_START_INDEX - STORAGE_BRIGHTNESS_INDEX];
+  printf("Brightness: %u\n", brightness);
+  printf("Mode Index: %u\n", modeIdx);
+  printf("Flags: 0x%02X (locked=%u conjure=%u)\n", flags, locked, conjure);
+}
+
