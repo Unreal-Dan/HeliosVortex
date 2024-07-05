@@ -608,13 +608,53 @@ static bool parse_eep_file(const std::string& filename, std::vector<uint8_t>& me
   return true;
 }
 
-static void dump_eeprom(const std::string& filename)
-{
-  std::vector<uint8_t> memory(512, 0xFF); // Initialize memory with 0xFF
-  if (!parse_eep_file(filename, memory)) {
-    return;
-  }
+static bool parse_csv_hex(const std::string& filename, std::vector<uint8_t>& memory) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        printf("Failed to open file\n");
+        return false;
+    }
 
+    std::string line;
+    std::getline(file, line);
+    std::istringstream iss(line);
+    std::string token;
+
+    while (std::getline(iss, token, ',')) {
+        // Remove leading/trailing whitespace and "0x" prefix if present
+        token.erase(0, token.find_first_not_of(" \t"));
+        token.erase(token.find_last_not_of(" \t") + 1);
+        if (token.substr(0, 2) == "0x") {
+            token = token.substr(2);
+        }
+
+        // Convert hex string to integer
+        uint8_t value = std::stoi(token, nullptr, 16);
+        memory.push_back(value);
+    }
+
+    return true;
+}
+
+static void dump_eeprom(const std::string& filename) {
+    std::vector<uint8_t> memory(512, 0xFF); // Initialize memory with 0xFF
+
+    // Get file extension
+    std::string extension = filename.substr(filename.find_last_of(".") + 1);
+    std::transform(extension.begin(), extension.end(), extension.begin(),
+                   [](unsigned char c){ return std::tolower(c); });
+
+    bool parse_success;
+    if (extension == "eep") {
+        parse_success = parse_eep_file(filename, memory);
+    } else {
+        parse_success = parse_csv_hex(filename, memory);
+    }
+
+    if (!parse_success) {
+      printf("Failed to parse file\n");
+      return;
+    }
   for (size_t slot = 0; slot < NUM_MODE_SLOTS; ++slot) {
     size_t pos = slot * SLOT_SIZE;
 
