@@ -98,6 +98,12 @@
 //  calculate sizes or space requirements, note these will produce
 //  compiler errors unless you include the respective headers
 
+
+// Storage Name
+//
+// This is mainly used by the CLI tool as a filename for simulated eeprom
+#define STORAGE_FILENAME "Helios.storage"
+
 // Storage Size
 //
 // The total size of storage where modes and global settings are saved.

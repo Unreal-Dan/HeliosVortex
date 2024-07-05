@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
-#define STORAGE_FILENAME "Helios.storage"
 #endif
 
 #ifdef HELIOS_CLI
@@ -62,8 +61,8 @@ void Storage::swap_pattern(uint8_t slot1, uint8_t slot2)
   uint8_t pos1 = slot1 * SLOT_SIZE;
   uint8_t pos2 = slot2 * SLOT_SIZE;
   for (uint8_t i = 0; i < SLOT_SIZE; ++i) {
-    uint8_t b1 = read_byte(pos1 + i);
-    uint8_t b2 = read_byte(pos2 + i);
+    volatile uint8_t b1 = read_byte(pos1 + i);
+    volatile uint8_t b2 = read_byte(pos2 + i);
     write_byte(pos1 + i, b2);
     write_byte(pos2 + i, b1);
   }
