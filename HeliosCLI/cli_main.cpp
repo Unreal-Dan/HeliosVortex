@@ -73,6 +73,8 @@ static void set_terminal_nonblocking();
 static bool writeBMP(const std::string& filename, const std::vector<RGBColor>& colors);
 static void print_usage(const char* program_name);
 static bool parse_eep_file(const std::string& filename, std::vector<uint8_t>& memory);
+static bool parse_csv_hex(const std::string& filename, std::vector<uint8_t>& memory);
+static bool parse_bin_storage(const std::string& filename, std::vector<uint8_t>& memory);
 static void dump_eeprom(const std::string& filename);
 
 int main(int argc, char *argv[])
@@ -198,7 +200,7 @@ static void parse_options(int argc, char *argv[])
     {"lockstep", no_argument, nullptr, 'l'},
     {"no-timestep", no_argument, nullptr, 't'},
     {"in-place", no_argument, nullptr, 'i'},
-    {"no-storage", no_argument, nullptr, 's'},
+    {"storage", no_argument, nullptr, 's'},
     {"cycle", optional_argument, nullptr, 'y'},
     {"brightness-scale", required_argument, nullptr, 'a'},
     {"min-brightness", required_argument, nullptr, 'm'},
@@ -238,7 +240,7 @@ static void parse_options(int argc, char *argv[])
       break;
     case 's':
       // TODO: implement storage filename
-      storage = false;
+      storage = true;
       break;
     case 'y':
       // set the number of cycles to default 1
@@ -524,7 +526,7 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "  -l, --lockstep           Only step once each time an input is received\n");
   fprintf(stderr, "  -t, --no-timestep        Run as fast as possible without managing timestep\n");
   fprintf(stderr, "  -i, --in-place           Print the output in-place (interactive mode)\n");
-  fprintf(stderr, "  -s, --no-storage         Disable persistent storage to file (FlashStorage.flash)\n");
+  fprintf(stderr, "  -s, --storage            Enable persistent storage to file (" STORAGE_FILENAME ")\n");
   fprintf(stderr, "  -y, --cycle [N]          Run N cycles of the first mode, default 1 (to gen pattern images)\n");
   fprintf(stderr, "  -a, --brightness-scale   Set the brightness scale of the output colors (2.0 is 100%% brighter)\n");
   fprintf(stderr, "  -m, --min-brightness     Set the minimum brightness the output colors can be\n");
@@ -610,7 +612,8 @@ static bool parse_eep_file(const std::string& filename, std::vector<uint8_t>& me
   return true;
 }
 
-static bool parse_csv_hex(const std::string& filename, std::vector<uint8_t>& memory) {
+static bool parse_csv_hex(const std::string& filename, std::vector<uint8_t>& memory)
+{
   std::ifstream file(filename);
   if (!file.is_open()) {
     printf("Failed to open file\n");
@@ -640,22 +643,40 @@ static bool parse_csv_hex(const std::string& filename, std::vector<uint8_t>& mem
   return true;
 }
 
-static void dump_eeprom(const std::string& filename) {
+static bool parse_bin_storage(const std::string& filename, std::vector<uint8_t>& memory)
+{
+  FILE *f = fopen(filename.c_str(), "rb"); // Open file for reading in binary mode
+  if (!f) {
+		// this error is ok, just means no storage
+    perror("Error opening file for read");
+    return false;
+  }
+  // Read a byte of data
+  if (!fread(&memory[0], sizeof(uint8_t), memory.size(), f)) {
+    perror("Failed to read data");
+  }
+  fclose(f); // Close the file
+  return true;
+}
+
+static void dump_eeprom(const std::string& filename)
+{
   if (!filename.length()) {
     printf("Must provide an eeprom filename\n");
     return;
   }
-
   std::vector<uint8_t> memory(EEPROM_SIZE, 0xFF); // Initialize memory with 0xFF
   // Get file extension as lowercase
   std::string extension = filename.substr(filename.find_last_of(".") + 1);
   std::transform(extension.begin(), extension.end(), extension.begin(),
       [](unsigned char c){ return std::tolower(c); });
   bool parse_success;
-  if (extension == "eep") {
+  if (extension == "eep") { // intel hex
     parse_success = parse_eep_file(filename, memory);
-  } else if (extension == "csv") {
+  } else if (extension == "csv") { // csv of hex bytes
     parse_success = parse_csv_hex(filename, memory);
+  } else if (extension == "storage") { // raw binary (cli storage)
+    parse_success = parse_bin_storage(filename, memory);
   } else {
     printf("File format not supported, only .eep or .csv supported\n");
     return;
