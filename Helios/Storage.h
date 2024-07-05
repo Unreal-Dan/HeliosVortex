@@ -52,8 +52,8 @@ private:
   static uint8_t read_crc(uint8_t pos);
   static bool check_crc(uint8_t pos);
   static void write_crc(uint8_t pos);
-  static void write_byte(uint8_t address, uint8_t data);
-  static uint8_t read_byte(uint8_t address);
+  static void write_byte(uint8_t address, volatile uint8_t data);
+  static volatile uint8_t read_byte(uint8_t address);
 
 #ifdef HELIOS_CLI
   // whether storage is enabled

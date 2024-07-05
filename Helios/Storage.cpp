@@ -61,8 +61,8 @@ void Storage::swap_pattern(uint8_t slot1, uint8_t slot2)
   uint8_t pos1 = slot1 * SLOT_SIZE;
   uint8_t pos2 = slot2 * SLOT_SIZE;
   for (uint8_t i = 0; i < SLOT_SIZE; ++i) {
-    volatile uint8_t b1 = read_byte(pos1 + i);
-    volatile uint8_t b2 = read_byte(pos2 + i);
+    uint8_t b1 = read_byte(pos1 + i);
+    uint8_t b2 = read_byte(pos2 + i);
     write_byte(pos1 + i, b2);
     write_byte(pos2 + i, b1);
   }
@@ -111,7 +111,7 @@ void Storage::write_crc(uint8_t pos)
   write_byte(pos + PATTERN_SIZE, crc_pos(pos));
 }
 
-void Storage::write_byte(uint8_t address, uint8_t data)
+void Storage::write_byte(uint8_t address, volatile uint8_t data)
 {
 #ifdef HELIOS_EMBEDDED
   /* Wait for completion of previous write */
@@ -149,14 +149,14 @@ void Storage::write_byte(uint8_t address, uint8_t data)
     fclose(f);
     return;
   }
-  if (!fwrite(&data, sizeof(uint8_t), 1, f)) {
+  if (!fwrite((const void *)&data, sizeof(uint8_t), 1, f)) {
     return;
   }
   fclose(f); // Close the file
 #endif
 }
 
-uint8_t Storage::read_byte(uint8_t address)
+volatile uint8_t Storage::read_byte(uint8_t address)
 {
 #ifdef HELIOS_EMBEDDED
   /* Wait for completion of previous write */
