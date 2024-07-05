@@ -634,6 +634,7 @@ static bool parse_csv_hex(const std::string& filename, std::vector<uint8_t>& mem
     // Convert hex string to integer
     uint8_t value = std::stoi(token, nullptr, 16);
     memory[pos] = value;
+    pos++;
   }
 
   return true;
@@ -653,8 +654,11 @@ static void dump_eeprom(const std::string& filename) {
   bool parse_success;
   if (extension == "eep") {
     parse_success = parse_eep_file(filename, memory);
-  } else {
+  } else if (extension == "csv") {
     parse_success = parse_csv_hex(filename, memory);
+  } else {
+    printf("File format not supported, only .eep or .csv supported\n");
+    return;
   }
   if (!parse_success) {
     printf("Failed to parse file\n");
