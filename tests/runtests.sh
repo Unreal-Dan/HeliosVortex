@@ -104,7 +104,7 @@ function run_tests() {
       echo "Test: $TESTNUM"
       echo "-----------------------------"
     fi
-    $VALGRIND $HELIOS $ARGS --no-storage --no-timestep --hex <<< $INPUT &> $OUTPUT
+    $VALGRIND $HELIOS $ARGS --no-timestep --hex <<< $INPUT &> $OUTPUT
     $DIFF --brief $EXPECTED $OUTPUT &> $DIFFOUT
     RESULT=$?
     if [ $VERBOSE -eq 1 ]; then

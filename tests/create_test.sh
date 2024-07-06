@@ -95,7 +95,7 @@ while true; do
   if [ $INTERACTIVE -eq 1 ]; then
     # Run the Helios program
     # TODO: implement --record in helios to get interactive mode
-    $HELIOS $ARGS --no-storage --color --in-place --record
+    $HELIOS $ARGS --color --in-place --record
 
     # Check if the output file exists and read the result from it
     if [ ! -f "$OUTPUT_FILE" ]; then
@@ -169,7 +169,7 @@ while true; do
   echo "--------------------------------------------------------------------------------" >> "$TEST_FILE"
 
   # generate the history for the test and append it to the test file
-  echo "${NEW_INPUT}" | ../$HELIOS $ARGS --no-storage --hex --no-timestep >> "$TEST_FILE"
+  echo "${NEW_INPUT}" | ../$HELIOS $ARGS --hex --no-timestep >> "$TEST_FILE"
 
   # strip any \r in case this was run on windows
   sed -i 's/\r//g' $TEST_FILE
