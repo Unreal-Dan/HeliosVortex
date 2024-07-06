@@ -23,6 +23,9 @@ bool Storage::m_enableStorage = true;
 bool Storage::init()
 {
 #ifdef HELIOS_CLI
+  if (!m_enableStorage) {
+    return true;
+  }
   // if the storage filename doesn't exist then create it
   if (access(STORAGE_FILENAME, O_RDWR) != 0 && errno == ENOENT) {
     // The file doesn't exist, so try creating it
