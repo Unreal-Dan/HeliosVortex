@@ -13,13 +13,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
-#define STORAGE_FILENAME "Helios.storage"
 #endif
-
-// the index of the crc of the config bytes
-#define CONFIG_CRC_INDEX 255
-// the index of the last config byte (or first counting down)
-#define CONFIG_START_INDEX 254
 
 #ifdef HELIOS_CLI
 // whether storage is enabled, default enabled
@@ -29,8 +23,24 @@ bool Storage::m_enableStorage = true;
 bool Storage::init()
 {
 #ifdef HELIOS_CLI
-  // may want this for cli tool
-  //unlink(STORAGE_FILENAME);
+  if (!m_enableStorage) {
+    return true;
+  }
+  // if the storage filename doesn't exist then create it
+  if (access(STORAGE_FILENAME, O_RDWR) != 0 && errno == ENOENT) {
+    // The file doesn't exist, so try creating it
+    FILE *f = fopen(STORAGE_FILENAME, "w+b");
+    if (!f) {
+      perror("Error creating storage file for write");
+      return false;
+    }
+    // fill the storage with 0s
+    for (uint32_t i = 0; i < STORAGE_SIZE; ++i){
+      uint8_t b = 0x0;
+      fwrite(&b, 1, sizeof(uint8_t), f);
+    }
+    fclose(f);
+  }
 #endif
   return true;
 }
@@ -117,7 +127,7 @@ void Storage::write_crc(uint8_t pos)
   write_byte(pos + PATTERN_SIZE, crc_pos(pos));
 }
 
-void Storage::write_byte(uint8_t address, uint8_t data)
+void Storage::write_byte(uint8_t address, volatile uint8_t data)
 {
 #ifdef HELIOS_EMBEDDED
   /* Wait for completion of previous write */
@@ -138,16 +148,8 @@ void Storage::write_byte(uint8_t address, uint8_t data)
   }
   FILE *f = fopen(STORAGE_FILENAME, "r+b");
   if (!f) {
-    if (errno != ENOENT) {
-      perror("Error opening storage file");
-      return;
-    }
-    // The file doesn't exist, so try creating it
-    f = fopen(STORAGE_FILENAME, "w+b");
-    if (!f) {
-      perror("Error creating storage file for write");
-      return;
-    }
+    perror("Error opening storage file");
+    return;
   }
   // Seek to the specified address
   if (fseek(f, address, SEEK_SET) != 0) {
@@ -155,14 +157,14 @@ void Storage::write_byte(uint8_t address, uint8_t data)
     fclose(f);
     return;
   }
-  if (!fwrite(&data, sizeof(uint8_t), 1, f)) {
+  if (!fwrite((const void *)&data, sizeof(uint8_t), 1, f)) {
     return;
   }
   fclose(f); // Close the file
 #endif
 }
 
-uint8_t Storage::read_byte(uint8_t address)
+volatile uint8_t Storage::read_byte(uint8_t address)
 {
 #ifdef HELIOS_EMBEDDED
   /* Wait for completion of previous write */
@@ -179,7 +181,7 @@ uint8_t Storage::read_byte(uint8_t address)
     return 0;
   }
   uint8_t val = 0;
-  if (!access(STORAGE_FILENAME, O_RDONLY)) {
+  if (access(STORAGE_FILENAME, O_RDONLY) != 0) {
     return val;
   }
   FILE *f = fopen(STORAGE_FILENAME, "rb"); // Open file for reading in binary mode

@@ -41,7 +41,7 @@ echo "Args=${ARGS}" >> "$TEMP_FILE"
 echo "--------------------------------------------------------------------------------" >> "$TEMP_FILE"
 
 # strip any \r in case this was run on windows
-$HELIOS $ARGS --no-storage --no-timestep --hex <<< $INPUT >> $TEMP_FILE
+$HELIOS $ARGS --no-timestep --hex <<< $INPUT >> $TEMP_FILE
 
 sed -i 's/\r//g' $TEMP_FILE
 # Replace the original file with the modified temp file
@@ -52,7 +52,7 @@ else
   echo -n "."
 fi
 if [ "$VALIDATE" -eq 1 ]; then
-  $HELIOS $ARGS --no-storage --no-timestep --color <<< $INPUT
+  $HELIOS $ARGS --no-timestep --color <<< $INPUT
   echo -e "\e[31mRecorded \e[33m[\e[97m$BRIEF\e[33m] \e[33m[\e[97m$ARGS\e[33m]\e[0m"
   echo -en "${YELLOW}Is this correct? (Y/n):${WHITE} "
   read -e CONFIRM

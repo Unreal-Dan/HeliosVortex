@@ -190,8 +190,12 @@ get_fuses:
 extract_hex:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:r:attiny_firmware.hex:i
 
+extract_eeprom:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:r:-:h > eeprom_dump.csv
+
 upload_hex:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:w:apollo_firmware.hex:i
+
 clean:
 	rm -f $(OBJS) $(TARGET).elf $(TARGET).hex $(DFILES) $(TARGET).bin $(TARGET).eep $(TARGET).lst $(TARGET).map
 

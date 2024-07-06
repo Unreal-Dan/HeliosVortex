@@ -28,7 +28,7 @@ create_test() {
     echo "--------------------------------------------------------------------------------" >> "$test_file"
 
     # Append history to the test file
-    echo "$input" | $HELIOS --no-storage --hex --no-timestep >> "$test_file"
+    echo "$input" | $HELIOS --hex --no-timestep >> "$test_file"
 
     # Strip any \r in case this was run on windows
     sed -i 's/\r//g' $test_file

@@ -1,14 +1,17 @@
-# Ignore everything
+# Ignore everything (stupid)
 *
 
 # But not directories
 !*/
 
-# Re-include .sh scripts
+# Re-include stuff
 !*.sh
 !*.pattern
 !*.h
 !*.cpp
+!*.atsln
+!*.componentinfo.xml
+!*.cppproj
 
 # Ignore object files, dependency files, and other build artifacts
 *.o
