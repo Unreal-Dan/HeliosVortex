@@ -63,11 +63,7 @@ void Storage::write_pattern(uint8_t slot, const Pattern &pat)
   for (uint8_t i = 0; i < PATTERN_SIZE; ++i) {
     uint8_t val = ((uint8_t *)&pat)[i];
     uint8_t target = pos + i;
-    // reads out the byte of the eeprom first to see if it's different
-    // before writing out the byte -- this is faster than always writing
-    if (val != read_byte(target)) {
-      write_byte(target, val);
-    }
+    write_byte(target, val);
   }
   write_crc(pos);
 }
@@ -127,12 +123,17 @@ void Storage::write_crc(uint8_t pos)
   write_byte(pos + PATTERN_SIZE, crc_pos(pos));
 }
 
-void Storage::write_byte(uint8_t address, volatile uint8_t data)
+void Storage::write_byte(uint8_t address, uint8_t data)
 {
 #ifdef HELIOS_EMBEDDED
   /* Wait for completion of previous write */
   while(EECR & (1<<EEPE))
     ;
+  // reads out the byte of the eeprom first to see if it's different
+  // before writing out the byte -- this is faster than always writing
+  if (data == read_byte(address)) {
+    return;
+  }
   /* Set Programming mode */
   EECR = (0<<EEPM1)|(0<<EEPM0);
   /* Set up address and data registers */
@@ -164,7 +165,7 @@ void Storage::write_byte(uint8_t address, volatile uint8_t data)
 #endif
 }
 
-volatile uint8_t Storage::read_byte(uint8_t address)
+uint8_t Storage::read_byte(uint8_t address)
 {
 #ifdef HELIOS_EMBEDDED
   /* Wait for completion of previous write */
