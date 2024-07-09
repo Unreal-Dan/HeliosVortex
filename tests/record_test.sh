@@ -21,6 +21,15 @@ if [ "$NUMFILES" == "" ]; then
   NUMFILES=1
 fi
 
+# Clear the Helios.storage file before running the test
+if [[ "$ARGS" == *"-s"* ]]; then
+  rm -f Helios.storage
+  if [ "$QUIET" -eq 0 ]; then
+      echo -e "\e[33mCleared Helios.storage after test using -s argument\e[0m"
+  fi
+fi
+
+
 INPUT="$(grep "Input=" $FILE | cut -d= -f2)"
 BRIEF="$(grep "Brief=" $FILE | cut -d= -f2)"
 ARGS="$(grep "Args=" $FILE | cut -d= -f2)"
@@ -58,12 +67,5 @@ if [ "$VALIDATE" -eq 1 ]; then
   read -e CONFIRM
   if [[ $CONFIRM == [nN] || $CONFIRM == [nN][oO] ]]; then
     exit
-  fi
-fi
-# Clear the Helios.storage file
-if [[ "$ARGS" == *"-s"* ]]; then
-  rm -f Helios.storage
-  if [ "$QUIET" -eq 0 ]; then
-      echo -e "\e[33mCleared Helios.storage after test using -s argument\e[0m"
   fi
 fi
