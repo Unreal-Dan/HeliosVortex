@@ -27,7 +27,7 @@ ARGS="$(grep "Args=" $FILE | cut -d= -f2)"
 TESTNUM="$(echo $FILE | cut -d/ -f2 | cut -d_ -f1 | cut -d/ -f2)"
 TESTNUM=$((10#$TESTNUM))
 
-if [ "$QUIET" -eq 0 ]; then 
+if [ "$QUIET" -eq 0 ]; then
   echo -e -n "\e[31mRecording test ($TESTCOUNT/$NUMFILES) \e[33m[\e[97m$BRIEF\e[33m] \e[33m[\e[97m$ARGS\e[33m]...\e[0m"
 fi
 TEMP_FILE="tmp/${FILE}.out"
@@ -46,7 +46,7 @@ $HELIOS $ARGS --no-timestep --hex <<< $INPUT >> $TEMP_FILE
 sed -i 's/\r//g' $TEMP_FILE
 # Replace the original file with the modified temp file
 mv $TEMP_FILE $FILE
-if [ "$QUIET" -eq 0 ]; then 
+if [ "$QUIET" -eq 0 ]; then
   echo -e "\e[96mOK\e[0m"
 else
   echo -n "."
@@ -60,4 +60,10 @@ if [ "$VALIDATE" -eq 1 ]; then
     exit
   fi
 fi
-
+# Clear the Helios.storage file
+if [[ "$ARGS" == *"-s"* ]]; then
+  rm -f Helios.storage
+  if [ "$QUIET" -eq 0 ]; then
+      echo -e "\e[33mCleared Helios.storage after test using -s argument\e[0m"
+  fi
+fi
