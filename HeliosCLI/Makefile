@@ -108,6 +108,7 @@ clean:
 clean_storage:
 	@echo "Cleaning Helios storage file..."
 	@$(RM) Helios.storage
+	@$(RM) ../tests/Helios.storage
 	@echo "Helios storage file cleaned."
 
 # Now include our target dependency files
