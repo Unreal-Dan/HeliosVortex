@@ -21,6 +21,12 @@ if [ "$NUMFILES" == "" ]; then
   NUMFILES=1
 fi
 
+INPUT="$(grep "Input=" $FILE | cut -d= -f2)"
+BRIEF="$(grep "Brief=" $FILE | cut -d= -f2)"
+ARGS="$(grep "Args=" $FILE | cut -d= -f2)"
+TESTNUM="$(echo $FILE | cut -d/ -f2 | cut -d_ -f1 | cut -d/ -f2)"
+TESTNUM=$((10#$TESTNUM))
+
 # Clear the Helios.storage file before running the test
 if [[ "$ARGS" == *"-s"* ]]; then
   # Assuming the storage file is in the same directory as the Helios executable
@@ -43,15 +49,6 @@ if [[ "$ARGS" == *"-s"* ]]; then
     fi
   fi
 fi
-
-
-
-
-INPUT="$(grep "Input=" $FILE | cut -d= -f2)"
-BRIEF="$(grep "Brief=" $FILE | cut -d= -f2)"
-ARGS="$(grep "Args=" $FILE | cut -d= -f2)"
-TESTNUM="$(echo $FILE | cut -d/ -f2 | cut -d_ -f1 | cut -d/ -f2)"
-TESTNUM=$((10#$TESTNUM))
 
 if [ "$QUIET" -eq 0 ]; then
   echo -e -n "\e[31mRecording test ($TESTCOUNT/$NUMFILES) \e[33m[\e[97m$BRIEF\e[33m] \e[33m[\e[97m$ARGS\e[33m]...\e[0m"
