@@ -33,6 +33,26 @@ do
   fi
 done
 
+function clear_storage() {
+  if [[ "$1" == *"-s"* ]]; then
+    STORAGE_FILE=$(dirname "$HELIOS")/Helios.storage
+    if [ -f "$STORAGE_FILE" ]; then
+      rm -f "$STORAGE_FILE"
+      if [ -f "$STORAGE_FILE" ]; then
+        echo -e "\e[31mERROR: Failed to delete Helios.storage file at $STORAGE_FILE\e[0m"
+        exit 1
+      fi
+      if [ $VERBOSE -eq 1 ]; then
+        echo -e "\e[33mCleared Helios.storage before running test with -s argument\e[0m"
+      fi
+    else
+      if [ $VERBOSE -eq 1 ]; then
+        echo -e "\e[33mNo Helios.storage file found to clear\e[0m"
+      fi
+    fi
+  fi
+}
+
 function run_tests() {
   PROJECT="tests"
 
@@ -104,6 +124,7 @@ function run_tests() {
       echo "Test: $TESTNUM"
       echo "-----------------------------"
     fi
+    clear_storage "$ARGS"
     $VALGRIND $HELIOS $ARGS --no-timestep --hex <<< $INPUT &> $OUTPUT
     $DIFF --brief $EXPECTED $OUTPUT &> $DIFFOUT
     RESULT=$?
