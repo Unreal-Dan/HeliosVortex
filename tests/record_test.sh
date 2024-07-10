@@ -23,11 +23,28 @@ fi
 
 # Clear the Helios.storage file before running the test
 if [[ "$ARGS" == *"-s"* ]]; then
-  rm -f Helios.storage
-  if [ "$QUIET" -eq 0 ]; then
-      echo -e "\e[33mCleared Helios.storage after test using -s argument\e[0m"
+  # Assuming the storage file is in the same directory as the Helios executable
+  STORAGE_FILE=$(dirname "$HELIOS")/Helios.storage
+  if [ -f "$STORAGE_FILE" ]; then
+    rm -f "$STORAGE_FILE"
+
+    # Check if the file was successfully deleted
+    if [ -f "$STORAGE_FILE" ]; then
+      echo -e "\e[31mERROR: Failed to delete Helios.storage file at $STORAGE_FILE\e[0m"
+      exit 1
+    fi
+
+    if [ "$QUIET" -eq 0 ]; then
+      echo -e "\e[33mCleared Helios.storage before running test with -s argument\e[0m"
+    fi
+  else
+    if [ "$QUIET" -eq 0 ]; then
+      echo -e "\e[33mNo Helios.storage file found to clear\e[0m"
+    fi
   fi
 fi
+
+
 
 
 INPUT="$(grep "Input=" $FILE | cut -d= -f2)"
