@@ -73,9 +73,9 @@ function run_tests() {
   TESTCOUNT=0
 
   for FILE in $FILES; do
-    INPUT="$(grep "Input=" $FILE | cut -d= -f2)"
-    BRIEF="$(grep "Brief=" $FILE | cut -d= -f2)"
-    ARGS="$(grep "Args=" $FILE | cut -d= -f2)"
+    INPUT="$(grep "Input=" $FILE | cut --delimiter== --fields=2 | tr --delete '\n' | tr --delete '\r')"
+    BRIEF="$(grep "Brief=" $FILE | cut --delimiter== --fields=2 | tr --delete '\n' | tr --delete '\r')"
+    ARGS="$(grep "Args=" $FILE | cut --delimiter== --fields=2 | tr --delete '\n' | tr --delete '\r')"
     rm Helios.storage
     TESTNUM="$(echo $FILE | cut -d/ -f2 | cut -d_ -f1 | cut -d/ -f2)"
     TESTNUM=$((10#$TESTNUM))
