@@ -41,7 +41,7 @@ echo "Args=${ARGS}" >> "$TEMP_FILE"
 echo "--------------------------------------------------------------------------------" >> "$TEMP_FILE"
 
 # ensure there is no existing storage file
-rm --force Helios.storage
+rm -f Helios.storage
 
 # strip any \r in case this was run on windows
 $HELIOS $ARGS --no-timestep --hex <<< $INPUT >> $TEMP_FILE

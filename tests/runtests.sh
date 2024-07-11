@@ -105,7 +105,7 @@ function run_tests() {
       echo "-----------------------------"
     fi
     # ensure there is no leftover storage file
-    rm --force Helios.storage
+    rm -f Helios.storage
     # now run the test
     $VALGRIND $HELIOS $ARGS --no-timestep --hex <<< $INPUT &> $OUTPUT
     # and diff the result
