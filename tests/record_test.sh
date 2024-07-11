@@ -27,29 +27,6 @@ ARGS="$(grep "Args=" $FILE | cut -d= -f2)"
 TESTNUM="$(echo $FILE | cut -d/ -f2 | cut -d_ -f1 | cut -d/ -f2)"
 TESTNUM=$((10#$TESTNUM))
 
-# Clear the Helios.storage file before running the test
-if [[ "$ARGS" == *"-s"* ]]; then
-  # Assuming the storage file is in the same directory as the Helios executable
-  STORAGE_FILE=$(dirname "$HELIOS")/Helios.storage
-  if [ -f "$STORAGE_FILE" ]; then
-    rm -f "$STORAGE_FILE"
-
-    # Check if the file was successfully deleted
-    if [ -f "$STORAGE_FILE" ]; then
-      echo -e "\e[31mERROR: Failed to delete Helios.storage file at $STORAGE_FILE\e[0m"
-      exit 1
-    fi
-
-    if [ "$QUIET" -eq 0 ]; then
-      echo -e "\e[33mCleared Helios.storage before running test with -s argument\e[0m"
-    fi
-  else
-    if [ "$QUIET" -eq 0 ]; then
-      echo -e "\e[33mNo Helios.storage file found to clear\e[0m"
-    fi
-  fi
-fi
-
 if [ "$QUIET" -eq 0 ]; then
   echo -e -n "\e[31mRecording test ($TESTCOUNT/$NUMFILES) \e[33m[\e[97m$BRIEF\e[33m] \e[33m[\e[97m$ARGS\e[33m]...\e[0m"
 fi
@@ -83,3 +60,4 @@ if [ "$VALIDATE" -eq 1 ]; then
     exit
   fi
 fi
+
