@@ -76,7 +76,6 @@ function run_tests() {
     INPUT="$(grep "Input=" $FILE | cut --delimiter== --fields=2 | tr --delete '\n' | tr --delete '\r')"
     BRIEF="$(grep "Brief=" $FILE | cut --delimiter== --fields=2 | tr --delete '\n' | tr --delete '\r')"
     ARGS="$(grep "Args=" $FILE | cut --delimiter== --fields=2 | tr --delete '\n' | tr --delete '\r')"
-    rm Helios.storage
     TESTNUM="$(echo $FILE | cut -d/ -f2 | cut -d_ -f1 | cut -d/ -f2)"
     TESTNUM=$((10#$TESTNUM))
     TESTCOUNT=$((TESTCOUNT + 1))
@@ -105,7 +104,11 @@ function run_tests() {
       echo "Test: $TESTNUM"
       echo "-----------------------------"
     fi
+    # ensure there is no leftover storage file
+    rm --force Helios.storage
+    # now run the test
     $VALGRIND $HELIOS $ARGS --no-timestep --hex <<< $INPUT &> $OUTPUT
+    # and diff the result
     $DIFF --brief $EXPECTED $OUTPUT &> $DIFFOUT
     RESULT=$?
     if [ $VERBOSE -eq 1 ]; then
