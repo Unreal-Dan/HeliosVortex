@@ -1,6 +1,6 @@
 Input=300wc300wc300wc300wc300wc300wc300wc300wc300wp4500wr300wc300wc300wc300wc300wc300wc300wq
 Brief=Click and Hold until gray to shift third mode
-Args=-s
+Args=--storage
 --------------------------------------------------------------------------------
 FF0000
 FF0000
