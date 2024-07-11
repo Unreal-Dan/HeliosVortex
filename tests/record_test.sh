@@ -26,6 +26,7 @@ BRIEF="$(grep "Brief=" $FILE | cut -d= -f2)"
 ARGS="$(grep "Args=" $FILE | cut -d= -f2)"
 TESTNUM="$(echo $FILE | cut -d/ -f2 | cut -d_ -f1 | cut -d/ -f2)"
 TESTNUM=$((10#$TESTNUM))
+rm Helios.storage
 
 if [ "$QUIET" -eq 0 ]; then
   echo -e -n "\e[31mRecording test ($TESTCOUNT/$NUMFILES) \e[33m[\e[97m$BRIEF\e[33m] \e[33m[\e[97m$ARGS\e[33m]...\e[0m"

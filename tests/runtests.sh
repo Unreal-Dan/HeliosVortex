@@ -76,6 +76,7 @@ function run_tests() {
     INPUT="$(grep "Input=" $FILE | cut -d= -f2)"
     BRIEF="$(grep "Brief=" $FILE | cut -d= -f2)"
     ARGS="$(grep "Args=" $FILE | cut -d= -f2)"
+    rm Helios.storage
     TESTNUM="$(echo $FILE | cut -d/ -f2 | cut -d_ -f1 | cut -d/ -f2)"
     TESTNUM=$((10#$TESTNUM))
     TESTCOUNT=$((TESTCOUNT + 1))
