@@ -21,9 +21,9 @@ if [ "$NUMFILES" == "" ]; then
   NUMFILES=1
 fi
 
-INPUT="$(grep "Input=" $FILE | cut --delimiter== --fields=2 | tr --delete '\n' | tr --delete '\r')"
-BRIEF="$(grep "Brief=" $FILE | cut --delimiter== --fields=2 | tr --delete '\n' | tr --delete '\r')"
-ARGS="$(grep "Args=" $FILE | cut --delimiter== --fields=2 | tr --delete '\n' | tr --delete '\r')"
+INPUT="$(grep "Input=" $FILE | cut -d= --fields=2 | tr -d '\n' | tr -d '\r')"
+BRIEF="$(grep "Brief=" $FILE | cut -d= --fields=2 | tr -d '\n' | tr -d '\r')"
+ARGS="$(grep "Args=" $FILE | cut -d= --fields=2 | tr -d '\n' | tr -d '\r')"
 TESTNUM="$(echo $FILE | cut -d/ -f2 | cut -d_ -f1 | cut -d/ -f2)"
 TESTNUM=$((10#$TESTNUM))
 
@@ -41,7 +41,7 @@ echo "Args=${ARGS}" >> "$TEMP_FILE"
 echo "--------------------------------------------------------------------------------" >> "$TEMP_FILE"
 
 # ensure there is no existing storage file
-rm --force Helios.storage
+rm -f Helios.storage
 
 # strip any \r in case this was run on windows
 $HELIOS $ARGS --no-timestep --hex <<< $INPUT >> $TEMP_FILE
