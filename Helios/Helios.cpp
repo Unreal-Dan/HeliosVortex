@@ -783,9 +783,12 @@ inline uint32_t crc32(const uint8_t *data, uint8_t size)
 
 void Helios::handle_state_shift_mode()
 {
-  uint8_t new_mode = cur_mode ? (uint8_t)(cur_mode - 1) : (uint8_t)(NUM_MODE_SLOTS - 1);
-  Storage::swap_pattern(cur_mode, new_mode);
+  uint8_t new_mode = (cur_mode > 0) ? (uint8_t)(cur_mode - 1) : (uint8_t)(NUM_MODE_SLOTS - 1);
+  // copy the new mode into our current position
+  Storage::copy_slot(new_mode, cur_mode);
+  // point at the new mode slot
   cur_mode = new_mode;
+  save_cur_mode();
   cur_state = STATE_MODES;
 }
 

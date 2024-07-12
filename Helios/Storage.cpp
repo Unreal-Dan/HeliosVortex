@@ -72,16 +72,20 @@ void Storage::write_pattern(uint8_t slot, const Pattern &pat)
   write_crc(pos);
 }
 
-void Storage::swap_pattern(uint8_t slot1, uint8_t slot2)
+bool Storage::copy_slot(uint8_t srcSlot, uint8_t dstSlot)
 {
-  uint8_t pos1 = slot1 * SLOT_SIZE;
-  uint8_t pos2 = slot2 * SLOT_SIZE;
+  uint8_t src = srcSlot * SLOT_SIZE;
+  uint8_t dst = dstSlot * SLOT_SIZE;
   for (uint8_t i = 0; i < SLOT_SIZE; ++i) {
-    uint8_t b1 = read_byte(pos1 + i);
-    uint8_t b2 = read_byte(pos2 + i);
-    write_byte(pos1 + i, b2);
-    write_byte(pos2 + i, b1);
+    uint8_t b = read_byte(src + i);
+    if (read_byte(dst + i) != b) {
+      write_byte(dst + i, b);
+    }
   }
+  if (!check_crc(dst)) {
+    return false;
+  }
+  return true;
 }
 
 uint8_t Storage::read_config(uint8_t index)
