@@ -789,6 +789,7 @@ void Helios::handle_state_shift_mode()
   // point at the new mode slot
   cur_mode = new_mode;
   save_cur_mode();
+  save_cur_mode();
   cur_state = STATE_MODES;
 }
 
