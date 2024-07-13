@@ -783,9 +783,13 @@ inline uint32_t crc32(const uint8_t *data, uint8_t size)
 
 void Helios::handle_state_shift_mode()
 {
-  uint8_t new_mode = cur_mode ? (uint8_t)(cur_mode - 1) : (uint8_t)(NUM_MODE_SLOTS - 1);
-  Storage::swap_pattern(cur_mode, new_mode);
+  uint8_t new_mode = (cur_mode > 0) ? (uint8_t)(cur_mode - 1) : (uint8_t)(NUM_MODE_SLOTS - 1);
+  // copy the storage from the new position into our current position
+  Storage::copy_slot(new_mode, cur_mode);
+  // point at the new position
   cur_mode = new_mode;
+  // write out the current mode to the newly updated position
+  save_cur_mode();
   cur_state = STATE_MODES;
 }
 
@@ -796,7 +800,6 @@ void Helios::handle_state_randomize()
     Random ctx(seed);
     Colorset &cur_set = pat.colorset();
     uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
-
     cur_set.randomizeColors(ctx, num_cols);
     Patterns::make_pattern((PatternID)(ctx.next8() % PATTERN_COUNT), pat);
     pat.init();
