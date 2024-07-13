@@ -53,16 +53,8 @@ private:
   static bool check_crc(uint8_t pos);
   static void write_crc(uint8_t pos);
 
-  // The input/output data of read/write are 'volatile' because of an
-  // observed behaviour on the attiny85 where either read or write was
-  // failing for single bytes at weird times. Like only a single byte
-  // in the colorset wouldn't get swapped if you swapped mode 3 with
-  // mode 2, but the rest would swap fine. Adding volatility to read
-  // and write solved the problem but not much more time was spent on
-  // it, it may have been a result of hardware errata and more testing
-  // on various hardware could be necessary
-  static void write_byte(uint8_t address, volatile uint8_t data);
-  static volatile uint8_t read_byte(uint8_t address);
+  static void write_byte(uint8_t address, uint8_t data);
+  static uint8_t read_byte(uint8_t address);
 
 #ifdef HELIOS_CLI
   // whether storage is enabled

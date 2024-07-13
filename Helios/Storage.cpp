@@ -127,7 +127,7 @@ void Storage::write_crc(uint8_t pos)
   write_byte(pos + PATTERN_SIZE, crc_pos(pos));
 }
 
-void Storage::write_byte(uint8_t address, volatile uint8_t data)
+void Storage::write_byte(uint8_t address, uint8_t data)
 {
 #ifdef HELIOS_EMBEDDED
   /* Wait for completion of previous write */
@@ -164,7 +164,7 @@ void Storage::write_byte(uint8_t address, volatile uint8_t data)
 #endif
 }
 
-volatile uint8_t Storage::read_byte(uint8_t address)
+uint8_t Storage::read_byte(uint8_t address)
 {
 #ifdef HELIOS_EMBEDDED
   /* Wait for completion of previous write */

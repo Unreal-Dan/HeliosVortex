@@ -161,20 +161,21 @@ install:
 	@echo "Download and extraction complete. You'll find the toolchain and pack files in $(INSTALL_DIR)"
 endif
 
-set_fuses:
+set_fuses: # Brown Out Detection turned on - Low Fuse = Clock Speed | High Fuse = Brown Out Detection On | Extended Fuse N/A
 ifeq ($(CPU_SPEED),16000000L)
 	@echo "Setting fuses for 16MHz..."
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe1:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe1:m -U hfuse:w:0xde:m -U efuse:w:0xff:m
 else ifeq ($(CPU_SPEED),8000000L)
 	@echo "Setting fuses for 8MHz..."
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xE2:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xE2:m -U hfuse:w:0xde:m -U efuse:w:0xff:m
 else ifeq ($(CPU_SPEED),1000000L)
 	@echo "Setting fuses for 1MHz..."
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0x62:m -U hfuse:w:0xde:m -U efuse:w:0xff:m
 else
 	@echo "Unsupported CPU_SPEED for fuse settings."
 endif
 
+# Brown Out Detection turned off - Low Fuse = Clock Speed | High Fuse = Brown Out Detection Off | Extended Fuse N/A
 set_16mhz_fuses:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe1:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 
@@ -183,6 +184,9 @@ set_8mhz_fuses:
 
 set_1mhz_fuses:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+
+set_8mhz_fuses_bod_on:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xE2:m -U hfuse:w:0xde:m -U efuse:w:0xff:m
 
 get_fuses:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:r:-:h -U hfuse:r:-:h -U efuse:r:-:h
