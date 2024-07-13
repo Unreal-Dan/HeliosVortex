@@ -198,6 +198,11 @@ void Helios::load_global_flags()
   // If brightness is set in storage, use it
   if (saved_brightness > 0) {
     Led::setBrightness(saved_brightness);
+  } else {
+    // if the brightness was 0 then the storage was likely
+    // uninitialized or corrupt so write out the defaults
+    // TODO: Decide whether this should be done
+    //factory_reset();
   }
 }
 
@@ -715,24 +720,29 @@ void Helios::handle_state_set_defaults()
   if (Button::onLongClick()) {
     // if the user actually selected 'yes'
     if (menu_selection == 1) {
-      for (uint8_t i = 0; i < NUM_MODE_SLOTS; ++i) {
-        Patterns::make_default(i, pat);
-        Storage::write_pattern(i, pat);
-      }
-      // Reset global brightness to default
-      Led::setBrightness(DEFAULT_BRIGHTNESS);
-      Storage::write_brightness(DEFAULT_BRIGHTNESS);
-      // reset global flags
-      global_flags = FLAG_NONE;
-      cur_mode = 0;
-      // save global flags
-      save_global_flags();
-      // re-load current mode
-      load_cur_mode();
+      factory_reset();
     }
     cur_state = STATE_MODES;
   }
   show_selection(RGB_WHITE_BRI_LOW);
+}
+
+void Helios::factory_reset()
+{
+  for (uint8_t i = 0; i < NUM_MODE_SLOTS; ++i) {
+    Patterns::make_default(i, pat);
+    Storage::write_pattern(i, pat);
+  }
+  // Reset global brightness to default
+  Led::setBrightness(DEFAULT_BRIGHTNESS);
+  Storage::write_brightness(DEFAULT_BRIGHTNESS);
+  // reset global flags
+  global_flags = FLAG_NONE;
+  cur_mode = 0;
+  // save global flags
+  save_global_flags();
+  // re-load current mode
+  load_cur_mode();
 }
 
 void Helios::handle_state_set_global_brightness()
@@ -785,6 +795,11 @@ void Helios::handle_state_shift_mode()
 {
   uint8_t new_mode = (cur_mode > 0) ? (uint8_t)(cur_mode - 1) : (uint8_t)(NUM_MODE_SLOTS - 1);
   // copy the storage from the new position into our current position
+  // NOTE: there is a small chance the new position hasn't been initialized yet
+  //       and this will copy 'blank' data into the current slot. The correct
+  //       solution would be to default the slot somehow but space is limited
+  //       and the situation is rare and would only ever happen on default modes
+  //       so the user can just fac reset and from there it will never happen again
   Storage::copy_slot(new_mode, cur_mode);
   // point at the new position
   cur_mode = new_mode;

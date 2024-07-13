@@ -73,6 +73,7 @@ private:
   static void handle_state_randomize();
   static void show_long_selection(RGBColor color);
   static void show_selection(RGBColor color);
+  static void factory_reset();
 
   enum State : uint8_t {
     STATE_MODES,

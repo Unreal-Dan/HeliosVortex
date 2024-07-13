@@ -73,8 +73,7 @@ bool Storage::copy_slot(uint8_t srcSlot, uint8_t dstSlot)
   uint8_t src = srcSlot * SLOT_SIZE;
   uint8_t dst = dstSlot * SLOT_SIZE;
   for (uint8_t i = 0; i < SLOT_SIZE; ++i) {
-    uint8_t b = read_byte(src + i);
-    write_byte(dst + i, b);
+    write_byte(dst + i, read_byte(src + i));
   }
   if (!check_crc(dst)) {
     return false;
