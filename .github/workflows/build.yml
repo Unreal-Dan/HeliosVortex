@@ -91,6 +91,7 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.check_tag.outputs.skip_release == 'false'
+        id: create_release
         uses: actions/create-release@v1
         with:
           tag_name: ${{ steps.calc_version.outputs.new_version }}
@@ -99,11 +100,50 @@ jobs:
             Release of version ${{ steps.calc_version.outputs.new_version }}.
           draft: false
           prerelease: false
-          files: |
-            HeliosEmbedded/helios.bin
-            HeliosEmbedded/helios.elf
-            HeliosEmbedded/helios.map
-            HeliosEmbedded/helios.hex
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Assets
+        if: steps.check_tag.outputs.skip_release == 'false'
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: HeliosEmbedded/helios.bin
+          asset_name: helios.bin
+          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Assets
+        if: steps.check_tag.outputs.skip_release == 'false'
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: HeliosEmbedded/helios.elf
+          asset_name: helios.elf
+          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Assets
+        if: steps.check_tag.outputs.skip_release == 'false'
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: HeliosEmbedded/helios.map
+          asset_name: helios.map
+          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Assets
+        if: steps.check_tag.outputs.skip_release == 'false'
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: HeliosEmbedded/helios.hex
+          asset_name: helios.hex
+          asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
