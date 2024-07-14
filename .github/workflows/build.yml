@@ -202,9 +202,8 @@ jobs:
         if: env.skip_release == 'false'
         run: |
           for file in ./artifact/unzipped/helioscli/*; do
-            gh release upload ${{ steps.create_release.outputs.upload_url }} "$file" --clobber
+            gh release upload "${{ steps.create_release.outputs.upload_url }}" "$file" --clobber
           done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
