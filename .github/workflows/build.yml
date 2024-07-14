@@ -94,10 +94,10 @@ jobs:
       - name: Create GitHub Release
         if: env.skip_release == 'false'
         id: create_release
-        uses: actions/create-release@v1
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ env.new_version }}
-          release_name: Release ${{ env.new_version }}
+          tag: ${{ env.tag }}  # Use the latest tag created manually
+          name: Release ${{ env.new_version }}
           body: |
             Release of version ${{ env.new_version }}.
           draft: false
@@ -118,7 +118,7 @@ jobs:
 
       - name: Upload Release Assets (helios.bin)
         if: env.skip_release == 'false'
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v2
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./artifact/unzipped/helios.bin
@@ -129,7 +129,7 @@ jobs:
 
       - name: Upload Release Assets (helios.elf)
         if: env.skip_release == 'false'
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v2
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./artifact/unzipped/helios.elf
@@ -140,7 +140,7 @@ jobs:
 
       - name: Upload Release Assets (helios.map)
         if: env.skip_release == 'false'
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v2
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./artifact/unzipped/helios.map
@@ -151,7 +151,7 @@ jobs:
 
       - name: Upload Release Assets (helios.hex)
         if: env.skip_release == 'false'
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@v2
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./artifact/unzipped/helios.hex
