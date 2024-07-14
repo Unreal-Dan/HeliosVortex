@@ -68,17 +68,13 @@ void Storage::write_pattern(uint8_t slot, const Pattern &pat)
   write_crc(pos);
 }
 
-bool Storage::copy_slot(uint8_t srcSlot, uint8_t dstSlot)
+void Storage::copy_slot(uint8_t srcSlot, uint8_t dstSlot)
 {
   uint8_t src = srcSlot * SLOT_SIZE;
   uint8_t dst = dstSlot * SLOT_SIZE;
   for (uint8_t i = 0; i < SLOT_SIZE; ++i) {
     write_byte(dst + i, read_byte(src + i));
   }
-  if (!check_crc(dst)) {
-    return false;
-  }
-  return true;
 }
 
 uint8_t Storage::read_config(uint8_t index)
@@ -144,6 +140,17 @@ void Storage::write_byte(uint8_t address, uint8_t data)
   EECR |= (1<<EEMPE);
   // Start eeprom write by setting EEPE
   EECR |= (1<<EEPE);
+  // double check that shit
+  if (read_byte(address) != data) {
+    // do it again because eeprom is stupid
+    while (EECR & (1<<EEPE));
+    EECR = (0<<EEPM1)|(0<<EEPM0);
+    EEAR = address;
+    EEDR = data;
+    EECR |= (1<<EEMPE);
+    EECR |= (1<<EEPE);
+    // god forbid it doesn't write again
+  }
 #else // HELIOS_CLI
   if (!m_enableStorage) {
     return;
@@ -169,6 +176,8 @@ void Storage::write_byte(uint8_t address, uint8_t data)
 uint8_t Storage::read_byte(uint8_t address)
 {
 #ifdef HELIOS_EMBEDDED
+  uint8_t b1 = 0;
+  uint8_t b2 = 0;
   while (EECR & (1<<EEPE)) {
     // Wait for completion of previous write
   }
@@ -177,7 +186,20 @@ uint8_t Storage::read_byte(uint8_t address)
   // Start eeprom read by writing EERE
   EECR |= (1<<EERE);
   // Return data from data register
-  return EEDR;
+  b1 = EEDR;
+  while (EECR & (1<<EEPE)) {
+    // Wait for completion of previous write
+  }
+  // Set up address register
+  EEAR = address;
+  // Start eeprom read by writing EERE
+  EECR |= (1<<EERE);
+  // Return data from data register
+  b2 = EEDR;
+  if (b1 != b2) {
+    return 0;
+  }
+  return b1;
 #else
   if (!m_enableStorage) {
     return 0;

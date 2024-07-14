@@ -27,7 +27,7 @@ public:
   static bool read_pattern(uint8_t slot, Pattern &pat);
   static void write_pattern(uint8_t slot, const Pattern &pat);
 
-  static bool copy_slot(uint8_t srcSlot, uint8_t dstSlot);
+  static void copy_slot(uint8_t srcSlot, uint8_t dstSlot);
 
   static uint8_t read_config(uint8_t index);
   static void write_config(uint8_t index, uint8_t val);
