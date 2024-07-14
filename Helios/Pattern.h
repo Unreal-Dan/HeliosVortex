@@ -30,7 +30,7 @@ public:
   // init the pattern to initial state
   void init();
 
-  // pure virtual must override the play function
+  // play the pattern
   void play();
 
   // set/get args
@@ -47,9 +47,6 @@ public:
   void clearColorset();
 
   // comparison to other pattern
-  // NOTE: That may cause problems because the parameter is still a Pattern *
-  //       which means comparison would need to cast the other upwards first
-  // NOTE2: Removing virtual because this probably shouldn't be overridden
   bool equals(const Pattern *other);
 
   // set a color in the colorset and re-initialize

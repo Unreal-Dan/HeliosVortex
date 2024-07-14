@@ -63,24 +63,17 @@ void Storage::write_pattern(uint8_t slot, const Pattern &pat)
   for (uint8_t i = 0; i < PATTERN_SIZE; ++i) {
     uint8_t val = ((uint8_t *)&pat)[i];
     uint8_t target = pos + i;
-    // reads out the byte of the eeprom first to see if it's different
-    // before writing out the byte -- this is faster than always writing
-    if (val != read_byte(target)) {
-      write_byte(target, val);
-    }
+    write_byte(target, val);
   }
   write_crc(pos);
 }
 
-void Storage::swap_pattern(uint8_t slot1, uint8_t slot2)
+void Storage::copy_slot(uint8_t srcSlot, uint8_t dstSlot)
 {
-  uint8_t pos1 = slot1 * SLOT_SIZE;
-  uint8_t pos2 = slot2 * SLOT_SIZE;
+  uint8_t src = srcSlot * SLOT_SIZE;
+  uint8_t dst = dstSlot * SLOT_SIZE;
   for (uint8_t i = 0; i < SLOT_SIZE; ++i) {
-    uint8_t b1 = read_byte(pos1 + i);
-    uint8_t b2 = read_byte(pos2 + i);
-    write_byte(pos1 + i, b2);
-    write_byte(pos2 + i, b1);
+    write_byte(dst + i, read_byte(src + i));
   }
 }
 
@@ -127,21 +120,21 @@ void Storage::write_crc(uint8_t pos)
   write_byte(pos + PATTERN_SIZE, crc_pos(pos));
 }
 
-void Storage::write_byte(uint8_t address, volatile uint8_t data)
+void Storage::write_byte(uint8_t address, uint8_t data)
 {
 #ifdef HELIOS_EMBEDDED
-  /* Wait for completion of previous write */
-  while(EECR & (1<<EEPE))
-    ;
-  /* Set Programming mode */
-  EECR = (0<<EEPM1)|(0<<EEPM0);
-  /* Set up address and data registers */
-  EEAR = address;
-  EEDR = data;
-  /* Write logical one to EEMPE */
-  EECR |= (1<<EEMPE);
-  /* Start eeprom write by setting EEPE */
-  EECR |= (1<<EEPE);
+  // reads out the byte of the eeprom first to see if it's different
+  // before writing out the byte -- this is faster than always writing
+  if (read_byte(address) == data) {
+    return;
+  }
+  internal_write(address, data);
+  // double check that shit
+  if (read_byte(address) != data) {
+    // do it again because eeprom is stupid
+    internal_write(address, data);
+    // god forbid it doesn't write again
+  }
 #else // HELIOS_CLI
   if (!m_enableStorage) {
     return;
@@ -164,18 +157,23 @@ void Storage::write_byte(uint8_t address, volatile uint8_t data)
 #endif
 }
 
-volatile uint8_t Storage::read_byte(uint8_t address)
+uint8_t Storage::read_byte(uint8_t address)
 {
 #ifdef HELIOS_EMBEDDED
-  /* Wait for completion of previous write */
-  while(EECR & (1<<EEPE))
-    ;
-  /* Set up address register */
-  EEAR = address;
-  /* Start eeprom read by writing EERE */
-  EECR |= (1<<EERE);
-  /* Return data from data register */
-  return EEDR;
+  // do a three way read because the attiny85 eeprom basically doesn't work
+  uint8_t b1 = internal_read(address);
+  uint8_t b2 = internal_read(address);
+  if (b1 == b2) {
+    return b2;
+  }
+  uint8_t b3 = internal_read(address);
+  if (b3 == b1) {
+    return b1;
+  }
+  if (b3 == b2) {
+    return b2;
+  }
+  return 0;
 #else
   if (!m_enableStorage) {
     return 0;
@@ -205,3 +203,34 @@ volatile uint8_t Storage::read_byte(uint8_t address)
   return val;
 #endif
 }
+
+#ifdef HELIOS_EMBEDDED
+inline void Storage::internal_write(uint8_t address, uint8_t data)
+{
+  while (EECR & (1<<EEPE)) {
+    // Wait for completion of previous write
+  }
+  // Set Programming mode
+  EECR = (0<<EEPM1)|(0<<EEPM0);
+  // Set up address and data registers
+  EEAR = address;
+  EEDR = data;
+  // Write logical one to EEMPE
+  EECR |= (1<<EEMPE);
+  // Start eeprom write by setting EEPE
+  EECR |= (1<<EEPE);
+}
+
+inline uint8_t Storage::internal_read(uint8_t address)
+{
+  while (EECR & (1<<EEPE)) {
+    // Wait for completion of previous write
+  }
+  // Set up address register
+  EEAR = address;
+  // Start eeprom read by writing EERE
+  EECR |= (1<<EERE);
+  // Return data from data register
+  return EEDR;
+}
+#endif
