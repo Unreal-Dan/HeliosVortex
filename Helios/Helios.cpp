@@ -185,7 +185,7 @@ void Helios::save_cur_mode()
   Storage::write_pattern(cur_mode, pat);
 }
 
-void Helios::load_global_flags() 
+void Helios::load_global_flags()
 {
   // read the global flags from index 0 config
   global_flags = (Flags)Storage::read_global_flags();
@@ -198,6 +198,10 @@ void Helios::load_global_flags()
   // If brightness is set in storage, use it
   if (saved_brightness > 0) {
     Led::setBrightness(saved_brightness);
+  } else {
+    // if the brightness was 0 then the storage was likely
+    // uninitialized or corrupt so write out the defaults
+    factory_reset();
   }
 }
 
@@ -715,24 +719,29 @@ void Helios::handle_state_set_defaults()
   if (Button::onLongClick()) {
     // if the user actually selected 'yes'
     if (menu_selection == 1) {
-      for (uint8_t i = 0; i < NUM_MODE_SLOTS; ++i) {
-        Patterns::make_default(i, pat);
-        Storage::write_pattern(i, pat);
-      }
-      // Reset global brightness to default
-      Led::setBrightness(DEFAULT_BRIGHTNESS);
-      Storage::write_brightness(DEFAULT_BRIGHTNESS);
-      // reset global flags
-      global_flags = FLAG_NONE;
-      cur_mode = 0;
-      // save global flags
-      save_global_flags();
-      // re-load current mode
-      load_cur_mode();
+      factory_reset();
     }
     cur_state = STATE_MODES;
   }
   show_selection(RGB_WHITE_BRI_LOW);
+}
+
+void Helios::factory_reset()
+{
+  for (uint8_t i = 0; i < NUM_MODE_SLOTS; ++i) {
+    Patterns::make_default(i, pat);
+    Storage::write_pattern(i, pat);
+  }
+  // Reset global brightness to default
+  Led::setBrightness(DEFAULT_BRIGHTNESS);
+  Storage::write_brightness(DEFAULT_BRIGHTNESS);
+  // reset global flags
+  global_flags = FLAG_NONE;
+  cur_mode = 0;
+  // save global flags
+  save_global_flags();
+  // re-load current mode
+  load_cur_mode();
 }
 
 void Helios::handle_state_set_global_brightness()
@@ -783,9 +792,13 @@ inline uint32_t crc32(const uint8_t *data, uint8_t size)
 
 void Helios::handle_state_shift_mode()
 {
-  uint8_t new_mode = cur_mode ? (uint8_t)(cur_mode - 1) : (uint8_t)(NUM_MODE_SLOTS - 1);
-  Storage::swap_pattern(cur_mode, new_mode);
+  uint8_t new_mode = (cur_mode > 0) ? (uint8_t)(cur_mode - 1) : (uint8_t)(NUM_MODE_SLOTS - 1);
+  // copy the storage from the new position into our current position
+  Storage::copy_slot(new_mode, cur_mode);
+  // point at the new position
   cur_mode = new_mode;
+  // write out the current mode to the newly updated position
+  save_cur_mode();
   cur_state = STATE_MODES;
 }
 
@@ -796,7 +809,6 @@ void Helios::handle_state_randomize()
     Random ctx(seed);
     Colorset &cur_set = pat.colorset();
     uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
-
     cur_set.randomizeColors(ctx, num_cols);
     Patterns::make_pattern((PatternID)(ctx.next8() % PATTERN_COUNT), pat);
     pat.init();
