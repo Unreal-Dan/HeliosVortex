@@ -185,7 +185,7 @@ void Helios::save_cur_mode()
   Storage::write_pattern(cur_mode, pat);
 }
 
-void Helios::load_global_flags() 
+void Helios::load_global_flags()
 {
   // read the global flags from index 0 config
   global_flags = (Flags)Storage::read_global_flags();
@@ -201,8 +201,7 @@ void Helios::load_global_flags()
   } else {
     // if the brightness was 0 then the storage was likely
     // uninitialized or corrupt so write out the defaults
-    // TODO: Decide whether this should be done
-    //factory_reset();
+    factory_reset();
   }
 }
 
