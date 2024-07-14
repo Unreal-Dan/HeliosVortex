@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout current repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Update Package Lists
         run: sudo apt-get update
       - name: Install Dependencies
@@ -31,9 +31,10 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout current repository
+        uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: "3.x"
       - name: Install Dependencies
@@ -51,3 +52,58 @@ jobs:
             HeliosEmbedded/helios.elf
             HeliosEmbedded/helios.map
             HeliosEmbedded/helios.hex
+
+  release:
+    if: github.ref == 'refs/heads/master'
+    needs: embedded
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for calculating version
+
+      - name: Get the latest tag
+        id: get_tag
+        run: |
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1` 2>/dev/null || echo "none")
+          echo "::set-output name=tag::$latest_tag"
+
+      - name: Check for existing tags
+        id: check_tag
+        run: |
+          if [ "${{ steps.get_tag.outputs.tag }}" == "none" ]; then
+            echo "No tags found. Skipping release."
+            echo "::set-output name=skip_release::true"
+          else
+            echo "::set-output name=skip_release::false"
+          fi
+
+      - name: Calculate new version
+        if: steps.check_tag.outputs.skip_release == 'false'
+        id: calc_version
+        run: |
+          latest_tag=${{ steps.get_tag.outputs.tag }}
+          commits_since_tag=$(git rev-list $latest_tag..HEAD --count)
+          IFS='.' read -ra ADDR <<< "$latest_tag"
+          new_version="${ADDR[0]}.${ADDR[1]}.$((commits_since_tag))"
+          echo "::set-output name=new_version::$new_version"
+
+      - name: Create GitHub Release
+        if: steps.check_tag.outputs.skip_release == 'false'
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ steps.calc_version.outputs.new_version }}
+          release_name: Release ${{ steps.calc_version.outputs.new_version }}
+          body: |
+            Release of version ${{ steps.calc_version.outputs.new_version }}.
+          draft: false
+          prerelease: false
+          files: |
+            HeliosEmbedded/helios.bin
+            HeliosEmbedded/helios.elf
+            HeliosEmbedded/helios.map
+            HeliosEmbedded/helios.hex
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
