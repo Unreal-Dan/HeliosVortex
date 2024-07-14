@@ -164,13 +164,13 @@ endif
 set_fuses: # Brown Out Detection turned on - Low Fuse = Clock Speed | High Fuse = Brown Out Detection On | Extended Fuse N/A
 ifeq ($(CPU_SPEED),16000000L)
 	@echo "Setting fuses for 16MHz..."
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe1:m -U hfuse:w:0xde:m -U efuse:w:0xff:m
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe1:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 else ifeq ($(CPU_SPEED),8000000L)
 	@echo "Setting fuses for 8MHz..."
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xE2:m -U hfuse:w:0xde:m -U efuse:w:0xff:m
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xE2:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 else ifeq ($(CPU_SPEED),1000000L)
 	@echo "Setting fuses for 1MHz..."
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0x62:m -U hfuse:w:0xde:m -U efuse:w:0xff:m
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 else
 	@echo "Unsupported CPU_SPEED for fuse settings."
 endif
