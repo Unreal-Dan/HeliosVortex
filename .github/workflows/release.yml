@@ -106,7 +106,8 @@ jobs:
             latest_tag=${{ env.tag }}
             commits_since_tag=$(git rev-list $latest_tag..HEAD --count)
             IFS='.' read -ra ADDR <<< "$latest_tag"
-            new_version="${ADDR[0]}.${ADDR[1]}.$((commits_since_tag))"
+            patch=$((ADDR[2] + commits_since_tag))
+            new_version="${ADDR[0]}.${ADDR[1]}.$patch"
             echo "new_version=$new_version" >> $GITHUB_ENV
             echo "new_tag=$new_version" >> $GITHUB_ENV
           fi
@@ -217,3 +218,4 @@ jobs:
           asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
