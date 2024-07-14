@@ -1,4 +1,4 @@
-name: Helios Workflow
+name: Helios Build and Release
 
 on:
   push:
