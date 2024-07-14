@@ -128,27 +128,11 @@ void Storage::write_byte(uint8_t address, uint8_t data)
   if (read_byte(address) == data) {
     return;
   }
-  while (EECR & (1<<EEPE)) {
-    // Wait for completion of previous write
-  }
-  // Set Programming mode
-  EECR = (0<<EEPM1)|(0<<EEPM0);
-  // Set up address and data registers
-  EEAR = address;
-  EEDR = data;
-  // Write logical one to EEMPE
-  EECR |= (1<<EEMPE);
-  // Start eeprom write by setting EEPE
-  EECR |= (1<<EEPE);
+  internal_write(address, data);
   // double check that shit
   if (read_byte(address) != data) {
     // do it again because eeprom is stupid
-    while (EECR & (1<<EEPE));
-    EECR = (0<<EEPM1)|(0<<EEPM0);
-    EEAR = address;
-    EEDR = data;
-    EECR |= (1<<EEMPE);
-    EECR |= (1<<EEPE);
+    internal_write(address, data);
     // god forbid it doesn't write again
   }
 #else // HELIOS_CLI
@@ -176,39 +160,13 @@ void Storage::write_byte(uint8_t address, uint8_t data)
 uint8_t Storage::read_byte(uint8_t address)
 {
 #ifdef HELIOS_EMBEDDED
-  uint8_t b1 = 0;
-  uint8_t b2 = 0;
-  while (EECR & (1<<EEPE)) {
-    // Wait for completion of previous write
-  }
-  // Set up address register
-  EEAR = address;
-  // Start eeprom read by writing EERE
-  EECR |= (1<<EERE);
-  // Return data from data register
-  b1 = EEDR;
-  while (EECR & (1<<EEPE)) {
-    // Wait for completion of previous write
-  }
-  // Set up address register
-  EEAR = address;
-  // Start eeprom read by writing EERE
-  EECR |= (1<<EERE);
-  // Return data from data register
-  b2 = EEDR;
+  // do a three way read because the attiny85 eeprom basically doesn't work
+  uint8_t b1 = internal_read(address);
+  uint8_t b2 = internal_read(address);
   if (b1 == b2) {
     return b2;
   }
-  uint8_t b3 = 0;
-  while (EECR & (1<<EEPE)) {
-    // Wait for completion of previous write
-  }
-  // Set up address register
-  EEAR = address;
-  // Start eeprom read by writing EERE
-  EECR |= (1<<EERE);
-  // Return data from data register
-  b3 = EEDR;
+  uint8_t b3 = internal_read(address);
   if (b3 == b1) {
     return b1;
   }
@@ -245,3 +203,34 @@ uint8_t Storage::read_byte(uint8_t address)
   return val;
 #endif
 }
+
+#ifdef HELIOS_EMBEDDED
+inline void Storage::internal_write(uint8_t address, uint8_t data)
+{
+  while (EECR & (1<<EEPE)) {
+    // Wait for completion of previous write
+  }
+  // Set Programming mode
+  EECR = (0<<EEPM1)|(0<<EEPM0);
+  // Set up address and data registers
+  EEAR = address;
+  EEDR = data;
+  // Write logical one to EEMPE
+  EECR |= (1<<EEMPE);
+  // Start eeprom write by setting EEPE
+  EECR |= (1<<EEPE);
+}
+
+inline uint8_t Storage::internal_read(uint8_t address)
+{
+  while (EECR & (1<<EEPE)) {
+    // Wait for completion of previous write
+  }
+  // Set up address register
+  EEAR = address;
+  // Start eeprom read by writing EERE
+  EECR |= (1<<EERE);
+  // Return data from data register
+  return EEDR;
+}
+#endif

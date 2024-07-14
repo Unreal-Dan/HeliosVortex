@@ -56,6 +56,11 @@ private:
   static void write_byte(uint8_t address, uint8_t data);
   static uint8_t read_byte(uint8_t address);
 
+#ifdef HELIOS_EMBEDDED
+  static inline uint8_t internal_read(uint8_t address);
+  static inline void internal_write(uint8_t address, uint8_t data);
+#endif
+
 #ifdef HELIOS_CLI
   // whether storage is enabled
   static bool m_enableStorage;
