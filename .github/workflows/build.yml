@@ -198,12 +198,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload HeliosCLI Artifacts
+      - name: Upload HeliosCLI Artifact
         if: env.skip_release == 'false'
         run: |
-          for file in ./artifact/unzipped/helioscli/*; do
-            gh release upload "${{ steps.create_release.outputs.upload_url }}" "$file" --clobber
-          done
+          file=$(ls ./artifact/unzipped/helioscli/*)
+          echo "Uploading $file"
+          gh release upload "${{ steps.create_release.outputs.upload_url }}" "$file" --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
