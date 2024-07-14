@@ -69,44 +69,44 @@ jobs:
         id: get_tag
         run: |
           latest_tag=$(git describe --tags `git rev-list --tags --max-count=1` 2>/dev/null || echo "none")
-          echo "::set-output name=tag::$latest_tag"
+          echo "tag=$latest_tag" >> $GITHUB_ENV
 
       - name: Check for existing tags
         id: check_tag
         run: |
-          if [ "${{ steps.get_tag.outputs.tag }}" == "none" ]; then
+          if [ "${{ env.tag }}" == "none" ]; then
             echo "No tags found. Skipping release."
-            echo "::set-output name=skip_release::true"
+            echo "skip_release=true" >> $GITHUB_ENV
           else
-            echo "::set-output name=skip_release::false"
+            echo "skip_release=false" >> $GITHUB_ENV
           fi
 
       - name: Calculate new version
-        if: steps.check_tag.outputs.skip_release == 'false'
+        if: env.skip_release == 'false'
         id: calc_version
         run: |
-          latest_tag=${{ steps.get_tag.outputs.tag }}
+          latest_tag=${{ env.tag }}
           commits_since_tag=$(git rev-list $latest_tag..HEAD --count)
           IFS='.' read -ra ADDR <<< "$latest_tag"
           new_version="${ADDR[0]}.${ADDR[1]}.$((commits_since_tag))"
-          echo "::set-output name=new_version::$new_version"
+          echo "new_version=$new_version" >> $GITHUB_ENV
 
       - name: Create GitHub Release
-        if: steps.check_tag.outputs.skip_release == 'false'
+        if: env.skip_release == 'false'
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ steps.calc_version.outputs.new_version }}
-          release_name: Release ${{ steps.calc_version.outputs.new_version }}
+          tag_name: ${{ env.new_version }}
+          release_name: Release ${{ env.new_version }}
           body: |
-            Release of version ${{ steps.calc_version.outputs.new_version }}.
+            Release of version ${{ env.new_version }}.
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Assets (helios.bin)
-        if: steps.check_tag.outputs.skip_release == 'false'
+        if: env.skip_release == 'false'
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -117,7 +117,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Assets (helios.elf)
-        if: steps.check_tag.outputs.skip_release == 'false'
+        if: env.skip_release == 'false'
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -128,7 +128,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Assets (helios.map)
-        if: steps.check_tag.outputs.skip_release == 'false'
+        if: env.skip_release == 'false'
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -139,7 +139,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Assets (helios.hex)
-        if: steps.check_tag.outputs.skip_release == 'false'
+        if: env.skip_release == 'false'
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
