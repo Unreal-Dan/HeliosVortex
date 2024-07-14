@@ -198,10 +198,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload HeliosCLI Binary
+      - name: Upload Release Assets (Helios CLI)
         if: env.skip_release == 'false'
-        run: |
-          echo "Uploading Helios CLI Binary"
-          gh release upload "${{ steps.create_release.outputs.upload_url }}" "./artifact/unzipped/helioscli/helios" --clobber
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifact/unzipped/helioscli/helios
+          asset_name: helios
+          asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
