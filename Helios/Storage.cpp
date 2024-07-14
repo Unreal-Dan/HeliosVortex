@@ -196,10 +196,26 @@ uint8_t Storage::read_byte(uint8_t address)
   EECR |= (1<<EERE);
   // Return data from data register
   b2 = EEDR;
-  if (b1 != b2) {
-    return 0;
+  if (b1 == b2) {
+    return b2;
   }
-  return b1;
+  uint8_t b3 = 0;
+  while (EECR & (1<<EEPE)) {
+    // Wait for completion of previous write
+  }
+  // Set up address register
+  EEAR = address;
+  // Start eeprom read by writing EERE
+  EECR |= (1<<EERE);
+  // Return data from data register
+  b3 = EEDR;
+  if (b3 == b1) {
+    return b1;
+  }
+  if (b3 == b2) {
+    return b2;
+  }
+  return 0;
 #else
   if (!m_enableStorage) {
     return 0;
