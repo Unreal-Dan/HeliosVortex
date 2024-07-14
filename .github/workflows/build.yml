@@ -101,9 +101,9 @@ jobs:
           draft: false
           prerelease: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
-      - name: Upload Release Assets
+      - name: Upload Release Assets (helios.bin)
         if: steps.check_tag.outputs.skip_release == 'false'
         uses: actions/upload-release-asset@v1
         with:
@@ -112,9 +112,9 @@ jobs:
           asset_name: helios.bin
           asset_content_type: application/octet-stream
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
-      - name: Upload Release Assets
+      - name: Upload Release Assets (helios.elf)
         if: steps.check_tag.outputs.skip_release == 'false'
         uses: actions/upload-release-asset@v1
         with:
@@ -123,9 +123,9 @@ jobs:
           asset_name: helios.elf
           asset_content_type: application/octet-stream
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
-      - name: Upload Release Assets
+      - name: Upload Release Assets (helios.map)
         if: steps.check_tag.outputs.skip_release == 'false'
         uses: actions/upload-release-asset@v1
         with:
@@ -134,9 +134,9 @@ jobs:
           asset_name: helios.map
           asset_content_type: application/octet-stream
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
-      - name: Upload Release Assets
+      - name: Upload Release Assets (helios.hex)
         if: steps.check_tag.outputs.skip_release == 'false'
         uses: actions/upload-release-asset@v1
         with:
@@ -145,5 +145,5 @@ jobs:
           asset_name: helios.hex
           asset_content_type: application/octet-stream
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
