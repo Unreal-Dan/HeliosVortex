@@ -118,7 +118,7 @@ jobs:
 
       - name: Upload Release Assets (helios.bin)
         if: env.skip_release == 'false'
-        uses: actions/upload-release-asset@v2
+        uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./artifact/unzipped/helios.bin
@@ -129,7 +129,7 @@ jobs:
 
       - name: Upload Release Assets (helios.elf)
         if: env.skip_release == 'false'
-        uses: actions/upload-release-asset@v2
+        uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./artifact/unzipped/helios.elf
@@ -140,7 +140,7 @@ jobs:
 
       - name: Upload Release Assets (helios.map)
         if: env.skip_release == 'false'
-        uses: actions/upload-release-asset@v2
+        uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./artifact/unzipped/helios.map
@@ -151,7 +151,7 @@ jobs:
 
       - name: Upload Release Assets (helios.hex)
         if: env.skip_release == 'false'
-        uses: actions/upload-release-asset@v2
+        uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./artifact/unzipped/helios.hex
