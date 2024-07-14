@@ -23,13 +23,11 @@ jobs:
         run: |
           zip -r "helioscli.zip" .
         working-directory: HeliosCLI
-      - name: Cache HeliosCLI Artifact
-        uses: actions/cache@v4
+      - name: Upload HeliosCLI Artifact
+        uses: actions/upload-artifact@v4
         with:
+          name: helioscli-artifacts
           path: HeliosCLI/helioscli.zip
-          key: ${{ runner.os }}-helioscli-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-helioscli-
 
   tests:
     needs: build
@@ -37,13 +35,11 @@ jobs:
     steps:
       - name: Checkout current repository
         uses: actions/checkout@v4
-      - name: Restore HeliosCLI Artifact
-        uses: actions/cache@v4
+      - name: Download HeliosCLI Artifact
+        uses: actions/download-artifact@v4
         with:
-          path: HeliosCLI/helioscli.zip
-          key: ${{ runner.os }}-helioscli-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-helioscli-
+          name: helioscli-artifacts
+          path: ./HeliosCLI
       - name: Set execute permissions for test script
         run: chmod +x ./runtests.sh
         working-directory: tests
@@ -71,11 +67,9 @@ jobs:
         run: |
           zip -r "embedded-firmware.zip" .
         working-directory: HeliosEmbedded
-      - name: Cache HeliosEmbedded Artifact
-        uses: actions/cache@v4
+      - name: Upload HeliosEmbedded Artifact
+        uses: actions/upload-artifact@v4
         with:
+          name: embedded-firmware
           path: HeliosEmbedded/embedded-firmware.zip
-          key: ${{ runner.os }}-embedded-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-embedded-
 
