@@ -7,7 +7,7 @@ on:
     branches: ["master"]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout current repository
@@ -28,6 +28,18 @@ jobs:
         with:
           name: helioscli-artifacts
           path: HeliosCLI/helioscli.zip
+
+  tests:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current repository
+        uses: actions/checkout@v4
+      - name: Download HeliosCLI Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: helioscli-artifacts
+          path: HeliosCLI
       - name: Set execute permissions for test script
         run: chmod +x ./runtests.sh
         working-directory: tests
@@ -36,7 +48,7 @@ jobs:
         working-directory: tests
 
   embedded:
-    needs: test
+    needs: tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout current repository
@@ -60,3 +72,4 @@ jobs:
         with:
           name: embedded-firmware
           path: HeliosEmbedded/embedded\ firmware.zip
+
