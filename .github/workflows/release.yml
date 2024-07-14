@@ -53,22 +53,22 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: helioscli-artifacts
-          path: ./artifact
+          path: ./artifact/helioscli
 
       - name: Download HeliosEmbedded Artifact
         uses: actions/download-artifact@v4
         with:
           name: embedded-firmware
-          path: ./artifact
+          path: ./artifact/embedded
 
       - name: Create directories for unzipping
         run: mkdir -p ./artifact/unzipped/helioscli ./artifact/unzipped/embedded
 
       - name: Unzip HeliosCLI Artifact
-        run: unzip ./artifact/helioscli.zip -d ./artifact/unzipped/helioscli
+        run: unzip ./artifact/helioscli/helioscli.zip -d ./artifact/unzipped/helioscli
 
       - name: Unzip HeliosEmbedded Artifact
-        run: unzip ./artifact/embedded-firmware.zip -d ./artifact/unzipped/embedded
+        run: unzip ./artifact/embedded/embedded-firmware.zip -d ./artifact/unzipped/embedded
 
       - name: Create GitHub Release
         if: env.skip_release == 'false'
