@@ -94,13 +94,9 @@ jobs:
           fi
 
       - name: Calculate new version
-        if: env.skip_release == 'false'
         id: calc_version
         run: |
-          if [ "${{ env.new_tag }}" == "1.0.0" ]; then
-            echo "Initial tag 1.0.0"
-            echo "new_version=1.0.0" >> $GITHUB_ENV
-          else
+          if [ "${{ env.new_tag }}" == "" ]; then
             latest_tag=${{ env.tag }}
             commits_since_tag=$(git rev-list $latest_tag..HEAD --count)
             IFS='.' read -ra ADDR <<< "$latest_tag"
@@ -108,6 +104,8 @@ jobs:
             new_version="${ADDR[0]}.${ADDR[1]}.$patch"
             echo "new_version=$new_version" >> $GITHUB_ENV
             echo "new_tag=$new_version" >> $GITHUB_ENV
+          else
+            echo "new_version=${{ env.new_tag }}" >> $GITHUB_ENV
           fi
 
       - name: Check if new tag exists
@@ -149,7 +147,6 @@ jobs:
         run: unzip ./artifact/embedded/embedded-firmware.zip -d ./artifact/unzipped/embedded
 
       - name: Create GitHub Release
-        if: env.skip_release == 'false'
         id: create_release
         uses: ncipollo/release-action@v1
         with:
@@ -163,7 +160,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Assets (helios.bin)
-        if: env.skip_release == 'false'
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -174,7 +170,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Assets (helios.elf)
-        if: env.skip_release == 'false'
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -185,7 +180,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Assets (helios.map)
-        if: env.skip_release == 'false'
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -196,7 +190,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Assets (helios.hex)
-        if: env.skip_release == 'false'
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -207,7 +200,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Assets (Helios CLI)
-        if: env.skip_release == 'false'
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
