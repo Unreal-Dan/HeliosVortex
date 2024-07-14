@@ -97,9 +97,9 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ env.tag }}  # Use the latest tag created manually
-          name: Release ${{ env.new_version }}
+          name: Helios Vortex ${{ env.new_version }}
           body: |
-            Release of version ${{ env.new_version }}.
+            Release of Helios Vortex version ${{ env.new_version }}
           draft: false
           prerelease: false
         env:
