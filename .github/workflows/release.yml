@@ -63,21 +63,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Restore HeliosCLI Artifact
-        uses: actions/cache@v4
+      - name: Download HeliosCLI Artifact
+        uses: actions/download-artifact@v4
         with:
-          path: ./artifact/unzipped/helioscli
-          key: ${{ runner.os }}-helioscli-${{ hashFiles('HeliosCLI/helioscli.zip') }}
-          restore-keys: |
-            ${{ runner.os }}-helioscli-
+          name: helioscli-artifacts
+          path: ./artifact
 
-      - name: Restore HeliosEmbedded Artifact
-        uses: actions/cache@v4
+      - name: Unzip HeliosCLI Artifact
+        run: unzip ./artifact/helioscli.zip -d ./artifact/unzipped/helioscli
+
+      - name: Download HeliosEmbedded Artifact
+        uses: actions/download-artifact@v4
         with:
-          path: ./artifact/unzipped/embedded
-          key: ${{ runner.os }}-embedded-${{ hashFiles('HeliosEmbedded/embedded\ firmware.zip') }}
-          restore-keys: |
-            ${{ runner.os }}-embedded-
+          name: embedded-firmware
+          path: ./artifact
+
+      - name: Unzip HeliosEmbedded Artifact
+        run: unzip ./artifact/embedded-firmware.zip -d ./artifact/unzipped/embedded
 
       - name: Upload Release Assets (helios.bin)
         if: env.skip_release == 'false'

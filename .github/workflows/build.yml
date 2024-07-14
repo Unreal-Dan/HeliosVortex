@@ -65,11 +65,11 @@ jobs:
         working-directory: HeliosEmbedded
       - name: Archive HeliosEmbedded artifacts
         run: |
-          zip -r "embedded firmware.zip" .
+          zip -r "embedded-firmware.zip" .
         working-directory: HeliosEmbedded
       - name: Upload HeliosEmbedded Artifact
         uses: actions/upload-artifact@v4
         with:
           name: embedded-firmware
-          path: HeliosEmbedded/embedded\ firmware.zip
+          path: HeliosEmbedded/embedded-firmware.zip
 
