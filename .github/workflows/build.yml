@@ -45,13 +45,13 @@ jobs:
         working-directory: HeliosEmbedded
       - name: Archive production artifacts
         run: |
-          zip -r helios.zip .
+          zip -r "embedded firmware.zip" .
         working-directory: HeliosEmbedded
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: embedded-firmware
-          path: HeliosEmbedded/helios.zip
+          path: HeliosEmbedded/embedded\ firmware.zip
 
   release:
     if: github.ref == 'refs/heads/master'
@@ -114,7 +114,7 @@ jobs:
 
       - name: Unzip Artifact
         if: env.skip_release == 'false'
-        run: unzip ./artifact/helios.zip -d ./artifact/unzipped
+        run: unzip ./artifact/embedded\ firmware.zip -d ./artifact/unzipped
 
       - name: Upload Release Assets (helios.bin)
         if: env.skip_release == 'false'
@@ -159,3 +159,4 @@ jobs:
           asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
