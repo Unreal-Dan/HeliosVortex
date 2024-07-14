@@ -3,6 +3,7 @@
 ## Introduction
 ![Build](https://github.com/Unreal-Dan/HeliosVortex/actions/workflows/build.yml/badge.svg?branch=master)  
 [![Latest Release](https://img.shields.io/github/v/tag/Unreal-Dan/HeliosVortex?label=Latest%20Release)](https://github.com/Unreal-Dan/HeliosVortex/releases/latest)
+
 Welcome to the Helios Vortex project! This repository contains the firmware for the Helios microlight. Specifically, the firmware is designed for the ATTiny85 chip and is capable of controlling a single LED to produce a variety of patterns and effects.
 
 ## Features
