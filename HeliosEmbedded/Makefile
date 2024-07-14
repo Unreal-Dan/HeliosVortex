@@ -161,7 +161,7 @@ install:
 	@echo "Download and extraction complete. You'll find the toolchain and pack files in $(INSTALL_DIR)"
 endif
 
-set_fuses: # Brown Out Detection turned on - Low Fuse = Clock Speed | High Fuse = Brown Out Detection On | Extended Fuse N/A
+set_fuses: # Brown Out Detection turned off - Low Fuse = Clock Speed | High Fuse = Brown Out Detection Off | Extended Fuse N/A
 ifeq ($(CPU_SPEED),16000000L)
 	@echo "Setting fuses for 16MHz..."
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe1:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
