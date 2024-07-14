@@ -94,8 +94,9 @@ jobs:
         id: check_tag
         run: |
           if [ "${{ env.tag }}" == "none" ]; then
-            echo "No tags found. Skipping release."
-            echo "skip_release=true" >> $GITHUB_ENV
+            echo "No tags found. Creating initial tag 1.0.0."
+            echo "skip_release=false" >> $GITHUB_ENV
+            echo "new_tag=1.0.0" >> $GITHUB_ENV
           else
             echo "skip_release=false" >> $GITHUB_ENV
           fi
@@ -104,12 +105,17 @@ jobs:
         if: env.skip_release == 'false'
         id: calc_version
         run: |
-          latest_tag=${{ env.tag }}
-          commits_since_tag=$(git rev-list $latest_tag..HEAD --count)
-          IFS='.' read -ra ADDR <<< "$latest_tag"
-          new_version="${ADDR[0]}.${ADDR[1]}.$((commits_since_tag))"
-          echo "new_version=$new_version" >> $GITHUB_ENV
-          echo "new_tag=$new_version" >> $GITHUB_ENV
+          if [ "${{ env.new_tag }}" == "1.0.0" ]; then
+            echo "Initial tag 1.0.0"
+            echo "new_version=1.0.0" >> $GITHUB_ENV
+          else
+            latest_tag=${{ env.tag }}
+            commits_since_tag=$(git rev-list $latest_tag..HEAD --count)
+            IFS='.' read -ra ADDR <<< "$latest_tag"
+            new_version="${ADDR[0]}.${ADDR[1]}.$((commits_since_tag))"
+            echo "new_version=$new_version" >> $GITHUB_ENV
+            echo "new_tag=$new_version" >> $GITHUB_ENV
+          fi
 
       - name: Create a new tag
         if: env.skip_release == 'false'
@@ -208,3 +214,4 @@ jobs:
           asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
