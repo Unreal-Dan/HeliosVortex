@@ -65,6 +65,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-embedded-
 
+      - name: Create directories for unzipping
+        run: mkdir -p ./artifact/unzipped/helioscli ./artifact/unzipped/embedded
+
       - name: Unzip HeliosCLI Artifact
         run: unzip HeliosCLI/helioscli.zip -d ./artifact/unzipped/helioscli
 
