@@ -5,7 +5,7 @@ on:
     branches: ["master"]
   pull_request:
     branches: ["master"]
-  workflow_dispatch: # manual trigger
+  workflow_dispatch: # manual trigger for releases
 
 jobs:
   test:
@@ -17,9 +17,18 @@ jobs:
         run: sudo apt-get update
       - name: Install Dependencies
         run: sudo apt-get install valgrind g++ make --fix-missing
-      - name: Build
+      - name: Build HeliosCLI
         run: make -j
         working-directory: HeliosCLI
+      - name: Archive HeliosCLI artifacts
+        run: |
+          zip -r "helioscli.zip" .
+        working-directory: HeliosCLI
+      - name: Upload HeliosCLI Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: helioscli-artifacts
+          path: HeliosCLI/helioscli.zip
       - name: Set execute permissions for test script
         run: chmod +x ./runtests.sh
         working-directory: tests
@@ -43,18 +52,18 @@ jobs:
       - name: Build Binary
         run: make build
         working-directory: HeliosEmbedded
-      - name: Archive production artifacts
+      - name: Archive HeliosEmbedded artifacts
         run: |
           zip -r "embedded firmware.zip" .
         working-directory: HeliosEmbedded
-      - name: Upload Artifact
+      - name: Upload HeliosEmbedded Artifact
         uses: actions/upload-artifact@v4
         with:
           name: embedded-firmware
           path: HeliosEmbedded/embedded\ firmware.zip
 
   release:
-    if: github.ref == 'refs/heads/master'
+    if: github.event_name == 'workflow_dispatch'
     needs: embedded
     runs-on: ubuntu-latest
     permissions:
@@ -90,13 +99,22 @@ jobs:
           IFS='.' read -ra ADDR <<< "$latest_tag"
           new_version="${ADDR[0]}.${ADDR[1]}.$((commits_since_tag))"
           echo "new_version=$new_version" >> $GITHUB_ENV
+          echo "new_tag=$new_version" >> $GITHUB_ENV
+
+      - name: Create a new tag
+        if: env.skip_release == 'false'
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git tag ${{ env.new_tag }}
+          git push origin ${{ env.new_tag }}
 
       - name: Create GitHub Release
         if: env.skip_release == 'false'
         id: create_release
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ env.tag }}  # Use the latest tag created manually
+          tag: ${{ env.new_tag }}
           name: Helios Vortex ${{ env.new_version }}
           body: |
             Release of Helios Vortex version ${{ env.new_version }}
@@ -105,23 +123,34 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Download Artifact
+      - name: Download HeliosCLI Artifact
+        if: env.skip_release == 'false'
+        uses: actions/download-artifact@v4
+        with:
+          name: helioscli-artifacts
+          path: ./artifact
+
+      - name: Unzip HeliosCLI Artifact
+        if: env.skip_release == 'false'
+        run: unzip ./artifact/helioscli.zip -d ./artifact/unzipped/helioscli
+
+      - name: Download HeliosEmbedded Artifact
         if: env.skip_release == 'false'
         uses: actions/download-artifact@v4
         with:
           name: embedded-firmware
           path: ./artifact
 
-      - name: Unzip Artifact
+      - name: Unzip HeliosEmbedded Artifact
         if: env.skip_release == 'false'
-        run: unzip ./artifact/embedded\ firmware.zip -d ./artifact/unzipped
+        run: unzip ./artifact/embedded\ firmware.zip -d ./artifact/unzipped/embedded
 
       - name: Upload Release Assets (helios.bin)
         if: env.skip_release == 'false'
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifact/unzipped/helios.bin
+          asset_path: ./artifact/unzipped/embedded/helios.bin
           asset_name: helios.bin
           asset_content_type: application/octet-stream
         env:
@@ -132,7 +161,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifact/unzipped/helios.elf
+          asset_path: ./artifact/unzipped/embedded/helios.elf
           asset_name: helios.elf
           asset_content_type: application/octet-stream
         env:
@@ -143,7 +172,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifact/unzipped/helios.map
+          asset_path: ./artifact/unzipped/embedded/helios.map
           asset_name: helios.map
           asset_content_type: application/octet-stream
         env:
@@ -154,9 +183,18 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifact/unzipped/helios.hex
+          asset_path: ./artifact/unzipped/embedded/helios.hex
           asset_name: helios.hex
           asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload HeliosCLI Artifacts
+        if: env.skip_release == 'false'
+        run: |
+          for file in ./artifact/unzipped/helioscli/*; do
+            gh release upload ${{ steps.create_release.outputs.upload_url }} "$file" --clobber
+          done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
