@@ -44,11 +44,14 @@ jobs:
         run: make build
         working-directory: HeliosEmbedded
       - name: Archive production artifacts
+        run: |
+          zip -r helios.zip .
+        working-directory: HeliosEmbedded
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: embedded-firmware
-          path: |
-            HeliosEmbedded/helios.zip
+          path: HeliosEmbedded/helios.zip
 
   release:
     if: github.ref == 'refs/heads/master'
@@ -156,4 +159,3 @@ jobs:
           asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
