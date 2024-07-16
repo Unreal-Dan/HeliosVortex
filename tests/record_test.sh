@@ -24,7 +24,7 @@ fi
 INPUT="$(grep "Input=" $FILE | cut -d= --fields=2 | tr -d '\n' | tr -d '\r')"
 BRIEF="$(grep "Brief=" $FILE | cut -d= --fields=2 | tr -d '\n' | tr -d '\r')"
 ARGS="$(grep "Args=" $FILE | cut -d= --fields=2 | tr -d '\n' | tr -d '\r')"
-TESTNUM="$(echo $FILE | cut -d/ -f2 | cut -d_ -f1 | cut -d/ -f2)"
+TESTNUM="$(echo $FILE | cut -d/ -f3 | cut -d_ -f1 | cut -d/ -f2)"
 TESTNUM=$((10#$TESTNUM))
 
 if [ "$QUIET" -eq 0 ]; then
