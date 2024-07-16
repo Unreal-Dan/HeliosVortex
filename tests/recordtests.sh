@@ -70,14 +70,12 @@ function record_tests() {
 
   NUMFILES=${#FILES[@]}
   echo -e "\e[33m== [\e[31mRECORDING \e[97m$NUMFILES INTEGRATION TESTS\e[33m] ==\e[0m"
-  
-  
 
   TESTCOUNT=0
 
   for FILE in "${FILES[@]}"; do
     # Call the record_test.sh using its relative path
-    "$SCRIPT_DIR"/record_test.sh "$FILE" $VALIDATE $TESTCOUNT "$NUMFILES" $QUIET &
+    "$SCRIPT_DIR"/record_test.sh "$FILE" $VALIDATE $TESTCOUNT "$NUMFILES" $QUIET
     TESTCOUNT=$((TESTCOUNT + 1))
   done
 

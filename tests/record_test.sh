@@ -21,9 +21,9 @@ if [ "$NUMFILES" == "" ]; then
   NUMFILES=1
 fi
 
-INPUT="$(grep "Input=" $FILE | cut -d= --fields=2 | tr -d '\n' | tr -d '\r')"
-BRIEF="$(grep "Brief=" $FILE | cut -d= --fields=2 | tr -d '\n' | tr -d '\r')"
-ARGS="$(grep "Args=" $FILE | cut -d= --fields=2 | tr -d '\n' | tr -d '\r')"
+INPUT="$(grep "Input=" $FILE | cut -d= -f2 | tr -d '\n' | tr -d '\r')"
+BRIEF="$(grep "Brief=" $FILE | cut -d= -f2 | tr -d '\n' | tr -d '\r')"
+ARGS="$(grep "Args=" $FILE | cut -d= -f2 | tr -d '\n' | tr -d '\r')"
 TESTNUM="$(echo $FILE | cut -d/ -f3 | cut -d_ -f1 | cut -d/ -f2)"
 TESTNUM=$((10#$TESTNUM))
 
