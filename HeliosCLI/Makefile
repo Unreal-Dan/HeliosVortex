@@ -2,7 +2,7 @@
 .SUFFIXES:
 
 # List all make targets which are not filenames
-.PHONY: all tests clean
+.PHONY: all tests clean clean_storage
 
 # compiler tool definitions
 CC=g++
@@ -104,6 +104,12 @@ FORCE:
 # generic clean target
 clean:
 	@$(RM) $(DFILES) $(OBJS) $(TARGETS) $(TESTS)
+
+clean_storage:
+	@echo "Cleaning Helios storage file..."
+	@$(RM) Helios.storage
+	@$(RM) ../tests/Helios.storage
+	@echo "Helios storage file cleaned."
 
 # Now include our target dependency files
 # the hyphen means ignore non-existent files
