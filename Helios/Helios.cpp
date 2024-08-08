@@ -790,15 +790,6 @@ void Helios::handle_state_set_global_brightness()
   show_selection(RGB_WHITE_BRI_LOW);
 }
 
-inline uint32_t crc32(const uint8_t *data, uint8_t size)
-{
-  uint32_t hash = 5381;
-  for (uint8_t i = 0; i < size; ++i) {
-    hash = ((hash << 5) + hash) + data[i];
-  }
-  return hash;
-}
-
 void Helios::handle_state_shift_mode()
 {
   uint8_t new_mode = (cur_mode > 0) ? (uint8_t)(cur_mode - 1) : (uint8_t)(NUM_MODE_SLOTS - 1);
@@ -814,12 +805,9 @@ void Helios::handle_state_shift_mode()
 void Helios::handle_state_randomize()
 {
   if (Button::onShortClick()) {
-    uint32_t seed = crc32((const uint8_t *)&pat.colorset(), COLORSET_SIZE);
-    Random ctx(seed);
+    Random ctx(pat.colorset().crc32());
     Colorset &cur_set = pat.colorset();
-    uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
-    cur_set.randomizeColors(ctx, num_cols);
-    Patterns::make_pattern((PatternID)(ctx.next8() % PATTERN_COUNT), pat);
+    cur_set.randomizeColors(ctx, cur_set.numColors());
     pat.init();
   }
   if (Button::onLongClick()) {

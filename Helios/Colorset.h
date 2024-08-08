@@ -41,6 +41,9 @@ public:
   // index operator to access color index
   RGBColor operator[](int index) const;
 
+  // crc the colorset
+  uint32_t crc32() const;
+
   enum ValueStyle : uint8_t
   {
     // Random values
