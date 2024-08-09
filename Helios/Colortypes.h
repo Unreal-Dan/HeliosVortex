@@ -50,6 +50,7 @@ public:
   uint8_t val;
 };
 
+#pragma pack(push, 1)
 class RGBColor
 {
 public:
@@ -94,6 +95,7 @@ public:
   uint8_t green;
   uint8_t blue;
 };
+#pragma pack(pop)
 
 // Stolen from FastLED hsv to rgb full rainbox where all colours
 // are given equal weight, this makes for-example yellow larger

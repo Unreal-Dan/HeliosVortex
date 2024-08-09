@@ -6,7 +6,7 @@
 #include "HeliosConfig.h"
 
 class Random;
-
+#pragma pack(push, 1)
 class Colorset
 {
 public:
@@ -128,5 +128,6 @@ private:
   // the very first call to getNext will iterate to 0
   uint8_t m_curIndex;
 };
+#pragma pack(pop)
 
 #endif
