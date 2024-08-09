@@ -271,7 +271,7 @@ void Helios::handle_state()
       handle_state_set_global_brightness();
       break;
     case STATE_SHIFT_MODE:
-      handle_state_shift_mode();
+      // handle_state_shift_mode();
       break;
     case STATE_RANDOMIZE:
       handle_state_randomize();
@@ -814,8 +814,9 @@ void Helios::handle_state_shift_mode()
 void Helios::handle_state_randomize()
 {
   if (Button::onShortClick()) {
-    uint32_t seed = crc32((const uint8_t *)&pat.colorset(), COLORSET_SIZE);
-    Random ctx(seed);
+    // uint32_t seed = crc32((const uint8_t *)&pat.colorset(), COLORSET_SIZE);
+    // Random ctx(seed);
+    Random ctx(pat.colorset().crc32());
     Colorset &cur_set = pat.colorset();
     uint8_t num_cols = (ctx.next8() + 1) % NUM_COLOR_SLOTS;
     cur_set.randomizeColors(ctx, num_cols);
