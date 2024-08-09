@@ -19,7 +19,10 @@ extern hsv_to_rgb_algorithm g_hsv_rgb_alg;
 #endif
 
 class ByteStream;
+
+#pragma pack(push, 1)
 class RGBColor;
+#pragma pack(pop)
 
 class HSVColor
 {

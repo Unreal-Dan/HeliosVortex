@@ -18,6 +18,7 @@ struct PatternArgs {
   uint8_t blend_speed;
 };
 
+#pragma pack(push, 1)
 class Pattern
 {
 public:
@@ -127,5 +128,6 @@ protected:
   void blendBlinkOn();
   void interpolate(uint8_t &current, const uint8_t next);
 };
+#pragma pack(pop)
 
 #endif
