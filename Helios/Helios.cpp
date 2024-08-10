@@ -38,11 +38,6 @@ bool Helios::keepgoing;
 bool Helios::sleeping;
 #endif
 
-#define HELIOS_VERSION 1.1.125
-#define HELIOS_VERSION_STR STR(HELIOS_VERSION)
-#define _STR(x) #x
-#define STR(x) _STR(x)
-
 volatile char helios_version[] = HELIOS_VERSION_STR;
 
 bool Helios::init()
