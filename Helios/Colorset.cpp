@@ -95,6 +95,16 @@ bool Colorset::equals(const Colorset *set) const
   return operator==(*set);
 }
 
+// crc the colorset
+uint32_t Colorset::crc32() const
+{
+  uint32_t hash = 5381;
+  for (uint8_t i = 0; i < m_numColors; ++i) {
+    hash = ((hash << 5) + hash) + m_palette[i].raw();
+  }
+  return hash;
+}
+
 RGBColor Colorset::operator[](int index) const
 {
   return get(index);
