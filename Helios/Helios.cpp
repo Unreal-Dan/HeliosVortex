@@ -432,7 +432,7 @@ void Helios::handle_on_menu(uint8_t mag, bool past)
     case 4:  // shift mode down
       cur_state = STATE_SHIFT_MODE;
       break;
-    case 5:  // ???
+    case 5:  // randomizer
       cur_state = STATE_RANDOMIZE;
       break;
     default:  // hold past
@@ -720,9 +720,9 @@ void Helios::handle_state_set_defaults()
   }
   // show low white for exit or red for select
   if (menu_selection) {
-    Led::strobe(20, 10, RGB_RED_BRI_LOW, RGB_OFF);
+    Led::strobe(80, 20, RGB_RED_BRI_LOW, RGB_OFF);
   } else {
-    Led::strobe(60, 20, RGB_WHITE_BRI_LOWEST, RGB_OFF);
+    Led::strobe(20, 10, RGB_WHITE_BRI_LOWEST, RGB_OFF);
   }
   // when the user long clicks a selection
   if (Button::onLongClick()) {
