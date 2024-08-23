@@ -479,10 +479,10 @@ void Helios::handle_state_col_select()
 
   if (check_longclick && Button::onLongClick()) {
     uint32_t holdDur = Button::holdDuration();
-    if (holdDur <= LONG_CLICK_THRESHOLD + 1000) {
+    if (holdDur <= LONG_CLICK_END_THRESHOLD) {
       if (cur_state == STATE_COLOR_SELECT_VAL ||
          ((cur_state == STATE_COLOR_SELECT_HUE || cur_state == STATE_COLOR_SELECT_SAT) &&
-          holdDur > LONG_CLICK_THRESHOLD)) {
+          holdDur > LONG_CLICK_START_THRESHOLD)) {
         cur_state = STATE_COLOR_SELECT_SLOT;
         pat.updateColor(selected_slot, HSVColor(selected_hue, selected_sat, selected_val));
         save_cur_mode();
@@ -493,7 +493,7 @@ void Helios::handle_state_col_select()
         // reset the menu selection
         menu_selection = 0;
       }
-    } else {
+    } else if (holdDur <= LONG_CLICK_START_THRESHOLD) {
       cur_state = STATE_COLOR_SELECT_SLOT;
       menu_selection = selected_slot;
     }
@@ -505,8 +505,11 @@ void Helios::handle_state_col_select()
   cur.blue /= 2;
   // this is a stupid override for when we're exiting color select
   // show a white selection instead
+  if (slot_option != OPTION_NONE) {
+    cur = RGB_WHITE_BRI_LOW;
+  }
   // show selection in all of these menus
-  show_selection(slot_option != OPTION_NONE ? RGB_WHITE_BRI_LOW : cur);
+  show_selection(cur);
 }
 
 bool Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
@@ -519,7 +522,8 @@ bool Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
   // Reset the color selection variables, these are the hue/sat/val that have been selected
   // in the following menus, this is a weird place to reset these but it ends up being the only
   // place where it can be written once and still handle all the possible cases it needs to run
-  selected_sat = selected_val = 255;
+  selected_sat = 255;
+  selected_val = 255;
 
   if (menu_selection >= num_cols) {
     if (num_cols < NUM_COLOR_SLOTS && menu_selection == num_cols) {
@@ -549,8 +553,8 @@ bool Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
     Led::strobe(col.empty() ? 1 : 3, 30, RGB_OFF, col.empty() ? RGB_WHITE_BRI_LOW : col);
 
     uint32_t holdDur = Button::holdDuration();
-    if (holdDur > LONG_CLICK_THRESHOLD) {
-      if (holdDur <= LONG_CLICK_THRESHOLD + 1000) {
+    if (holdDur > LONG_CLICK_START_THRESHOLD) {
+      if (holdDur <= LONG_CLICK_END_THRESHOLD) {
         // flash red
         if (Button::isPressed()) Led::strobe(150, 150, RGB_RED_BRI_LOW, col);
         if (long_click) {
@@ -809,8 +813,8 @@ void Helios::handle_state_randomize()
 
 void Helios::show_long_selection(RGBColor color)
 {
-  uint16_t holdDur = (uint16_t)Button::holdDuration();
-  if ((holdDur % (LONG_CLICK_THRESHOLD * 2)) > LONG_CLICK_THRESHOLD) {
+  uint32_t holdDur = Button::holdDuration();
+  if (holdDur > LONG_CLICK_START_THRESHOLD && holdDur <= LONG_CLICK_END_THRESHOLD) {
     Led::strobe(150, 150, RGB_CORAL_ORANGE_SAT_LOWEST, color);
   }
 }
@@ -823,7 +827,7 @@ void Helios::show_selection(RGBColor color)
   }
   uint16_t holdDur = (uint16_t)Button::holdDuration();
   // if the hold duration is outside the flashing range do nothing
-  if (holdDur < SHORT_CLICK_THRESHOLD || holdDur > LONG_CLICK_THRESHOLD) {
+  if (holdDur < SHORT_CLICK_THRESHOLD || holdDur > LONG_CLICK_START_THRESHOLD) {
     return;
   }
   Led::set(color);

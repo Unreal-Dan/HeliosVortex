@@ -18,10 +18,15 @@
 // How long the hold the button to unlock chip
 #define UNLOCK_GLOW_LOCK_DURATION 2
 
-// Long Click Threshold
+// Long Click Start Threshold
+//
+// The minimum length a long click can be
+#define LONG_CLICK_START_THRESHOLD (SHORT_CLICK_THRESHOLD + TIME_TILL_LONG_CLICK_FLASH)
+
+// Long Click End Threshold
 //
 // The maximum length a long click can be
-#define LONG_CLICK_THRESHOLD (SHORT_CLICK_THRESHOLD + TIME_TILL_LONG_CLICK_FLASH)
+#define LONG_CLICK_END_THRESHOLD (LONG_CLICK_START_THRESHOLD + TIME_TILL_LONG_CLICK_FLASH)
 
 // Max Color Slots
 //
