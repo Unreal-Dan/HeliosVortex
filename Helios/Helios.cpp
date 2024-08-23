@@ -337,7 +337,7 @@ void Helios::handle_state_modes()
         switch (magnitude) {
           default:
           case 0: Led::clear(); break;
-          case UNLOCK_GLOW_LOCK_DURATION: Led::set(0x3c, 0, 0); break; // Exit Lock
+          case TIME_TILL_GLOW_LOCK_UNLOCK: Led::set(0x3c, 0, 0); break; // Exit Lock
         }
       } else {
         switch (magnitude) {
@@ -368,7 +368,7 @@ void Helios::handle_off_menu(uint8_t mag, bool past)
   // if still locked then handle the unlocking menu which is just if mag == 5
   if (has_flag(FLAG_LOCKED)) {
     switch (mag) {
-      case UNLOCK_GLOW_LOCK_DURATION:  // red lock
+      case TIME_TILL_GLOW_LOCK_UNLOCK:  // red lock
         cur_state = STATE_TOGGLE_LOCK;
         break;
       default:

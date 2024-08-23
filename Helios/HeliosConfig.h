@@ -16,7 +16,7 @@
 // Unlock Glow Lock Duration
 //
 // How long the hold the button to unlock chip
-#define UNLOCK_GLOW_LOCK_DURATION 2
+#define TIME_TILL_GLOW_LOCK_UNLOCK 2
 
 // Long Click Start Threshold
 //
