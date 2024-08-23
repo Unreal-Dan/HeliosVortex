@@ -69,14 +69,6 @@
 // sleep at any location in the menus
 #define FORCE_SLEEP_TIME 7000
 
-// Delete Color Time
-//
-// How long to hold button on a color to start the delete color flash
-// begins and starts flashes. Also how long the cycling flash is for the
-// delete color selection, ie how long the user has to release to delete
-// the color before it cycles back
-#define DELETE_COLOR_TIME 1500
-
 // Alternative HSV to RGB
 //
 // This enabled the alternative HSV to RGB algorithm to be used in the
