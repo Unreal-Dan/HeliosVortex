@@ -368,7 +368,7 @@ void Helios::handle_off_menu(uint8_t mag, bool past)
   // if still locked then handle the unlocking menu which is just if mag == 5
   if (has_flag(FLAG_LOCKED)) {
     switch (mag) {
-      case 5:  // red lock
+      case TIME_TILL_GLOW_LOCK_UNLOCK:  // red lock
         cur_state = STATE_TOGGLE_LOCK;
         break;
       default:
@@ -386,12 +386,12 @@ void Helios::handle_off_menu(uint8_t mag, bool past)
       cur_state = STATE_TOGGLE_LOCK;
       Led::clear();
       return; // RETURN HERE
-    case 2:  // blue reset defaults
-      cur_state = STATE_SET_DEFAULTS;
-      return; // RETURN HERE
-    case 3:  // green global brightness
+    case 2:  // green global brightness
       cur_state = STATE_SET_GLOBAL_BRIGHTNESS;
       return; // RETURN HERE
+    case 3:  // blue reset defaults
+      cur_state = STATE_SET_DEFAULTS;
+      return; //RETURN HERE
     default:
       // just go back to sleep in hold-past off menu
       enter_sleep();
