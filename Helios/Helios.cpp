@@ -344,8 +344,8 @@ void Helios::handle_state_modes()
           default:
           case 0: Led::clear(); break;         // nothing
           case 1: Led::set(0x3c, 0, 0); break; // Enter Glow Lock
-          case 2: Led::set(0, 0, 0x3c); break; // Master Reset
-          case 3: Led::set(0, 0x3c, 0); break; // Global Brightness
+          case 2: Led::set(0, 0x3c, 0); break; // Global Brightness
+          case 3: Led::set(0, 0, 0x3c); break; // Master Reset
         }
       }
     }
@@ -387,10 +387,10 @@ void Helios::handle_off_menu(uint8_t mag, bool past)
       Led::clear();
       return; // RETURN HERE
     case 2:  // blue reset defaults
-      cur_state = STATE_SET_DEFAULTS;
+      cur_state = STATE_SET_GLOBAL_BRIGHTNESS;
       return; // RETURN HERE
     case 3:  // green global brightness
-      cur_state = STATE_SET_GLOBAL_BRIGHTNESS;
+      cur_state = STATE_SET_DEFAULTS;
       return; // RETURN HERE
     default:
       // just go back to sleep in hold-past off menu
@@ -432,7 +432,7 @@ void Helios::handle_on_menu(uint8_t mag, bool past)
     case 4:  // shift mode down
       cur_state = STATE_SHIFT_MODE;
       break;
-    case 5:  // ???
+    case 5:  // randomizer
       cur_state = STATE_RANDOMIZE;
       break;
     default:  // hold past
@@ -720,9 +720,9 @@ void Helios::handle_state_set_defaults()
   }
   // show low white for exit or red for select
   if (menu_selection) {
-    Led::strobe(20, 10, RGB_RED_BRI_LOW, RGB_OFF);
+    Led::strobe(80, 20, RGB_RED_BRI_LOW, RGB_OFF);
   } else {
-    Led::strobe(60, 20, RGB_WHITE_BRI_LOWEST, RGB_OFF);
+    Led::strobe(20, 10, RGB_WHITE_BRI_LOWEST, RGB_OFF);
   }
   // when the user long clicks a selection
   if (Button::onLongClick()) {
