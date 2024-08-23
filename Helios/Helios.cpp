@@ -337,15 +337,15 @@ void Helios::handle_state_modes()
         switch (magnitude) {
           default:
           case 0: Led::clear(); break;
-          case 5: Led::set(0x3c, 0, 0); break; // Exit Lock
+          case TIME_TILL_GLOW_LOCK_UNLOCK: Led::set(0x3c, 0, 0); break; // Exit
         }
       } else {
         switch (magnitude) {
           default:
           case 0: Led::clear(); break;         // nothing
           case 1: Led::set(0x3c, 0, 0); break; // Enter Glow Lock
-          case 2: Led::set(0, 0, 0x3c); break; // Master Reset
-          case 3: Led::set(0, 0x3c, 0); break; // Global Brightness
+          case 2: Led::set(0, 0x3c, 0); break; // Global Brightness
+          case 3: Led::set(0, 0, 0x3c); break; // Master Reset
         }
       }
     }

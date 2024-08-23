@@ -13,6 +13,11 @@
 // How long the led flashes when selecting something
 #define TIME_TILL_LONG_CLICK_FLASH 1000
 
+// Unlock Glow Lock Duration
+//
+// How long the hold the button to unlock chip
+#define TIME_TILL_GLOW_LOCK_UNLOCK 2
+
 // Long Click Threshold
 //
 // The maximum length a long click can be
@@ -94,7 +99,7 @@
 // ============================================================================
 //  Storage Constants
 //
-//  These are various storage sizes of data and some math to help 
+//  These are various storage sizes of data and some math to help
 //  calculate sizes or space requirements, note these will produce
 //  compiler errors unless you include the respective headers
 
