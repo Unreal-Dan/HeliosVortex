@@ -337,7 +337,7 @@ void Helios::handle_state_modes()
         switch (magnitude) {
           default:
           case 0: Led::clear(); break;
-          case TIME_TILL_GLOW_LOCK_UNLOCK: Led::set(0x3c, 0, 0); break; // Exit Lock
+          case TIME_TILL_GLOW_LOCK_UNLOCK: Led::set(0x3c, 0, 0); break; // Exit
         }
       } else {
         switch (magnitude) {
