@@ -135,7 +135,7 @@ void Button::update()
   }
   m_shortClick = (m_newRelease && (m_holdDuration <= SHORT_CLICK_THRESHOLD));
   m_longClick = (m_newRelease && (m_holdDuration > SHORT_CLICK_THRESHOLD));
-  m_holdClick = (m_newRelease && (m_holdDuration >= HOLD_CLICK_THRESHOLD) && (m_holdDuration <= (HOLD_CLICK_THRESHOLD + 1000)));
+  m_holdClick = (m_newRelease && (m_holdDuration >= HOLD_CLICK_START) && (m_holdDuration <= HOLD_CLICK_END));
 
 #ifdef HELIOS_CLI
   // if there was no pre-input event this tick, process a post input event

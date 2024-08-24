@@ -21,7 +21,12 @@
 // Hold Click Start Threshold
 //
 // The minimum length a hold click can be
-#define HOLD_CLICK_THRESHOLD (SHORT_CLICK_THRESHOLD + TIME_TILL_LONG_CLICK_FLASH)
+#define HOLD_CLICK_START (SHORT_CLICK_THRESHOLD + TIME_TILL_LONG_CLICK_FLASH)
+
+// Hold Click End Threshold
+//
+// The maximum length a long click can be
+#define HOLD_CLICK_END (HOLD_CLICK_START + TIME_TILL_LONG_CLICK_FLASH)
 
 // Long Click Start Threshold
 //
