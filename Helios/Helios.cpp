@@ -559,14 +559,12 @@ bool Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
     Led::strobe(col.empty() ? 1 : 3, 30, RGB_OFF, col.empty() ? RGB_WHITE_BRI_LOW : col);
 
     uint32_t holdDur = Button::holdDuration();
-    if (holdDur > HOLD_CLICK_START) {
-      if (holdDur <= HOLD_CLICK_END) {
-        // flash red
-        if (Button::isPressed()) Led::strobe(150, 150, RGB_RED_BRI_LOW, col);
-        if (long_click) {
-          set.removeColor(selected_slot);
-          return false;
-        }
+    if (holdDur > HOLD_CLICK_START && holdDur <= HOLD_CLICK_END) {
+      // flash red
+      if (Button::isPressed()) Led::strobe(150, 150, RGB_RED_BRI_LOW, col);
+      if (long_click) {
+        set.removeColor(selected_slot);
+        return false;
       }
       return false;
     }
