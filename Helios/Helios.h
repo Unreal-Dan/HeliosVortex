@@ -61,10 +61,7 @@ private:
   static void handle_state_col_select();
   static void handle_state_col_select_slot(ColorSelectOption &out_option);
   static void handle_state_col_select_quadrant();
-  static void handle_col_select_show_hue_sat_val();
-  static void handle_state_col_select_hue();
-  static void handle_state_col_select_sat();
-  static void handle_state_col_select_val();
+  static void handle_state_col_select_hue_sat_val();
   static void handle_state_pat_select();
   static void handle_state_toggle_flag(Flags flag);
   static void handle_state_set_defaults();

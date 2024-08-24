@@ -7,7 +7,6 @@
 // be considered either a short or long click
 #define SHORT_CLICK_THRESHOLD 400
 
-
 // Selection Flash Duration
 //
 // How long the led flashes when selecting something
