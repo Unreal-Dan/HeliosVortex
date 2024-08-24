@@ -18,6 +18,11 @@
 // How long the hold the button to unlock chip
 #define TIME_TILL_GLOW_LOCK_UNLOCK 2
 
+// Hold Click Start Threshold
+//
+// The minimum length a hold click can be
+#define HOLD_CLICK_THRESHOLD (SHORT_CLICK_THRESHOLD + TIME_TILL_LONG_CLICK_FLASH)
+
 // Long Click Start Threshold
 //
 // The minimum length a long click can be

@@ -25,6 +25,8 @@ public:
   static bool onShortClick() { return m_shortClick; }
   // whether the button was long clicked this tick
   static bool onLongClick() { return m_longClick; }
+  // whether the button was hold clicked this tick
+  static bool onHoldClick() { return m_holdClick; }
 
   // when the button was last pressed
   static uint32_t pressTime() { return m_pressTime; }
@@ -94,6 +96,8 @@ private:
   static bool m_shortClick;
   // whether a long click occurred
   static bool m_longClick;
+  // whether a long hold occurred
+  static bool m_holdClick;
 
 #ifdef HELIOS_CLI
   // process pre or post input events from the queue
