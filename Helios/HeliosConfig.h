@@ -7,7 +7,6 @@
 // be considered either a short or long click
 #define SHORT_CLICK_THRESHOLD 400
 
-
 // Selection Flash Duration
 //
 // How long the led flashes when selecting something
@@ -18,10 +17,15 @@
 // How long the hold the button to unlock chip
 #define TIME_TILL_GLOW_LOCK_UNLOCK 2
 
-// Long Click Threshold
+// Hold Click Start Threshold
+//
+// The minimum length a hold click can be
+#define HOLD_CLICK_START (SHORT_CLICK_THRESHOLD + TIME_TILL_LONG_CLICK_FLASH)
+
+// Hold Click End Threshold
 //
 // The maximum length a long click can be
-#define LONG_CLICK_THRESHOLD (SHORT_CLICK_THRESHOLD + TIME_TILL_LONG_CLICK_FLASH)
+#define HOLD_CLICK_END (HOLD_CLICK_START + TIME_TILL_LONG_CLICK_FLASH)
 
 // Max Color Slots
 //

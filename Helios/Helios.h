@@ -59,19 +59,15 @@ private:
   static void handle_off_menu(uint8_t mag, bool past);
   static void handle_on_menu(uint8_t mag, bool past);
   static void handle_state_col_select();
-  static bool handle_state_col_select_slot(ColorSelectOption &out_option);
-  static bool handle_state_col_select_quadrant();
-  static void handle_col_select_show_hue_sat_val();
-  static void handle_state_col_select_hue();
-  static void handle_state_col_select_sat();
-  static void handle_state_col_select_val();
+  static void handle_state_col_select_slot(ColorSelectOption &out_option);
+  static void handle_state_col_select_quadrant();
+  static void handle_state_col_select_hue_sat_val();
   static void handle_state_pat_select();
   static void handle_state_toggle_flag(Flags flag);
   static void handle_state_set_defaults();
   static void handle_state_set_global_brightness();
   static void handle_state_shift_mode();
   static void handle_state_randomize();
-  static void show_long_selection(RGBColor color);
   static void show_selection(RGBColor color);
   static void factory_reset();
 
