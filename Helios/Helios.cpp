@@ -460,7 +460,6 @@ void Helios::handle_state_col_select()
     menu_selection = (menu_selection + 1) % num_menus;
   }
   ColorSelectOption slot_option = OPTION_NONE;
-  bool check_longclick = true;
   switch (cur_state) {
     default:
     case STATE_COLOR_SELECT_SLOT:
@@ -688,7 +687,7 @@ void Helios::handle_state_col_select_sat()
   handle_col_select_show_hue_sat_val();
   RGBColor current_color = Led::get();
   show_long_selection(current_color);
-  
+
   if (Button::onLongClick()) {
     bool save = false;
     if ((Button::holdDuration() % (LONG_CLICK_THRESHOLD * 2)) > LONG_CLICK_THRESHOLD) {
@@ -839,20 +838,20 @@ void Helios::handle_state_shift_mode()
 
 void Helios::handle_state_randomize()
 {
-  if (Button::onShortClick()) {
-    Colorset &cur_set = pat.colorset();
-    Random ctx(cur_set.crc32());
-    uint8_t randVal = ctx.next8();
-    cur_set.randomizeColors(ctx, (randVal + 1) % NUM_COLOR_SLOTS);
-    Patterns::make_pattern((PatternID)(randVal % PATTERN_COUNT), pat);
-    pat.init();
-  }
-  if (Button::onLongClick()) {
-    save_cur_mode();
-    cur_state = STATE_MODES;
-  }
-  pat.play();
-  show_selection(RGB_WHITE_BRI_LOW);
+  // if (Button::onShortClick()) {
+  //   Colorset &cur_set = pat.colorset();
+  //   Random ctx(cur_set.crc32());
+  //   uint8_t randVal = ctx.next8();
+  //   cur_set.randomizeColors(ctx, (randVal + 1) % NUM_COLOR_SLOTS);
+  //   Patterns::make_pattern((PatternID)(randVal % PATTERN_COUNT), pat);
+  //   pat.init();
+  // }
+  // if (Button::onLongClick()) {
+  //   save_cur_mode();
+  //   cur_state = STATE_MODES;
+  // }
+  // pat.play();
+  // show_selection(RGB_WHITE_BRI_LOW);
 }
 
 void Helios::show_long_selection(RGBColor color)
