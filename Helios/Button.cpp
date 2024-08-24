@@ -225,12 +225,13 @@ void Button::doLongClick()
   m_holdDuration = SHORT_CLICK_THRESHOLD + 1;
   m_releaseCount++;
 }
+
 void Button::doHoldClick()
 {
   m_newRelease = true;
   m_holdClick = true;
   m_pressTime = Time::getCurtime();
-  m_holdDuration = SHORT_CLICK_THRESHOLD + 1;
+  m_holdDuration = HOLD_CLICK_START + 1;
   m_releaseCount++;
 }
 

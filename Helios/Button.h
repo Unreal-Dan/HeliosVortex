@@ -54,6 +54,7 @@ public:
   // or 'longClick' values accordingly
   static void doShortClick();
   static void doLongClick();
+  static void doHoldClick();
 
   // this will actually press down the button, it's your responsibility to wait
   // for the appropriate number of ticks and then release the button
