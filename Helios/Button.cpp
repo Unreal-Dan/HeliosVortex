@@ -145,7 +145,7 @@ void Button::update()
   }
 
   if (m_enableWake) {
-    if (m_isPressed || m_shortClick || m_longClick || m_holdClick) {
+    if (m_isPressed || m_shortClick || m_longClick) {
       Helios::wakeup();
     }
   }
