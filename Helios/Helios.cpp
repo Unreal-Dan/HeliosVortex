@@ -488,14 +488,14 @@ void Helios::handle_state_col_select()
     uint32_t holdDur = Button::holdDuration();
     bool hue_or_sat = (cur_state == STATE_COLOR_SELECT_HUE || cur_state == STATE_COLOR_SELECT_SAT);
     bool should_save = (cur_state == STATE_COLOR_SELECT_VAL) ||
-                       (hue_or_sat && holdDur > LONG_CLICK_START_THRESHOLD);
+                       (hue_or_sat && holdDur > HOLD_CLICK_START);
 
-    if (holdDur <= LONG_CLICK_END_THRESHOLD && should_save) {
+    if (holdDur <= HOLD_CLICK_END && should_save) {
       cur_state = STATE_COLOR_SELECT_SLOT;
       pat.updateColor(selected_slot, HSVColor(selected_hue, selected_sat, selected_val));
       save_cur_mode();
       menu_selection = selected_slot;
-    } else if (holdDur <= LONG_CLICK_START_THRESHOLD) {
+    } else if (holdDur <= HOLD_CLICK_START) {
       cur_state = (State)(cur_state + 1);
       menu_selection = 0;
     } else {
@@ -559,8 +559,8 @@ bool Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
     Led::strobe(col.empty() ? 1 : 3, 30, RGB_OFF, col.empty() ? RGB_WHITE_BRI_LOW : col);
 
     uint32_t holdDur = Button::holdDuration();
-    if (holdDur > LONG_CLICK_START_THRESHOLD) {
-      if (holdDur <= LONG_CLICK_END_THRESHOLD) {
+    if (holdDur > HOLD_CLICK_START) {
+      if (holdDur <= HOLD_CLICK_END) {
         // flash red
         if (Button::isPressed()) Led::strobe(150, 150, RGB_RED_BRI_LOW, col);
         if (long_click) {
@@ -821,7 +821,7 @@ void Helios::handle_state_randomize()
 void Helios::show_long_selection(RGBColor color)
 {
   uint32_t holdDur = Button::holdDuration();
-  if (holdDur > LONG_CLICK_START_THRESHOLD && holdDur <= LONG_CLICK_END_THRESHOLD) {
+  if (holdDur > HOLD_CLICK_START && holdDur <= HOLD_CLICK_END) {
     Led::strobe(150, 150, RGB_CORAL_ORANGE_SAT_LOWEST, color);
   }
 }
@@ -834,7 +834,7 @@ void Helios::show_selection(RGBColor color)
   }
   uint16_t holdDur = (uint16_t)Button::holdDuration();
   // if the hold duration is outside the flashing range do nothing
-  if (holdDur < SHORT_CLICK_THRESHOLD || holdDur > LONG_CLICK_START_THRESHOLD) {
+  if (holdDur < SHORT_CLICK_THRESHOLD || holdDur > HOLD_CLICK_START) {
     return;
   }
   Led::set(color);
