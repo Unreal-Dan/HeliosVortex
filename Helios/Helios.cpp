@@ -503,7 +503,6 @@ void Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
   uint8_t num_cols = set.numColors();
 
   bool long_click = Button::onLongClick();
-  bool hold_click = Button::onHoldClick();
 
   // Reset the color selection variables, these are the hue/sat/val that have been selected
   // in the following menus, this is a weird place to reset these but it ends up being the only
@@ -541,13 +540,12 @@ void Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
     } else {
       Led::strobe(3, 30, RGB_OFF, col);
     }
-    uint16_t mod_dur = (uint16_t)(Button::holdDuration());
-    bool deleting = (mod_dur > HOLD_CLICK_START && mod_dur < HOLD_CLICK_END && Button::isPressed());
-    if (deleting) {
+    uint16_t holDur = (uint16_t)(Button::holdDuration());
+    if (holDur > HOLD_CLICK_START && holDur < HOLD_CLICK_END && Button::isPressed()) {
       // flash red
       Led::strobe(150, 150, RGB_RED_BRI_LOW, col);
     }
-    if (hold_click){
+    if (Button::onHoldClick()){
       set.removeColor(selected_slot);
       return;
     }
@@ -837,20 +835,20 @@ void Helios::handle_state_shift_mode()
 
 void Helios::handle_state_randomize()
 {
-  // if (Button::onShortClick()) {
-  //   Colorset &cur_set = pat.colorset();
-  //   Random ctx(cur_set.crc32());
-  //   uint8_t randVal = ctx.next8();
-  //   cur_set.randomizeColors(ctx, (randVal + 1) % NUM_COLOR_SLOTS);
-  //   Patterns::make_pattern((PatternID)(randVal % PATTERN_COUNT), pat);
-  //   pat.init();
-  // }
-  // if (Button::onLongClick()) {
-  //   save_cur_mode();
-  //   cur_state = STATE_MODES;
-  // }
-  // pat.play();
-  // show_selection(RGB_WHITE_BRI_LOW);
+  if (Button::onShortClick()) {
+    Colorset &cur_set = pat.colorset();
+    Random ctx(cur_set.crc32());
+    uint8_t randVal = ctx.next8();
+    cur_set.randomizeColors(ctx, (randVal + 1) % NUM_COLOR_SLOTS);
+    Patterns::make_pattern((PatternID)(randVal % PATTERN_COUNT), pat);
+    pat.init();
+  }
+  if (Button::onLongClick()) {
+    save_cur_mode();
+    cur_state = STATE_MODES;
+  }
+  pat.play();
+  show_selection(RGB_WHITE_BRI_LOW);
 }
 
 void Helios::show_long_selection(RGBColor color)
