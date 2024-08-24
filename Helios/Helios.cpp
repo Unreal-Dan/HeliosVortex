@@ -44,6 +44,8 @@ bool Helios::keepgoing;
 bool Helios::sleeping;
 #endif
 
+volatile char helios_version[] = HELIOS_VERSION_STR;
+
 bool Helios::init()
 {
   // first initialize all the components of helios
