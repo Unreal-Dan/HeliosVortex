@@ -541,7 +541,7 @@ void Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
       Led::strobe(3, 30, RGB_OFF, col);
     }
     uint16_t holDur = (uint16_t)(Button::holdDuration());
-    if (holDur > HOLD_CLICK_START && holDur < HOLD_CLICK_END && Button::isPressed()) {
+    if (holDur > HOLD_CLICK_START && holDur <= HOLD_CLICK_END && Button::isPressed()) {
       // flash red
       Led::strobe(150, 150, RGB_RED_BRI_LOW, col);
     }
@@ -659,21 +659,16 @@ void Helios::handle_state_col_select_hue()
   show_long_selection(current_color);
 
   if (Button::onLongClick()) {
-    bool save = false;
-    if ((Button::holdDuration() % (LONG_CLICK_THRESHOLD * 2)) > LONG_CLICK_THRESHOLD) {
-      save = true;
-    }
-    if (save) {
-      cur_state = STATE_COLOR_SELECT_SLOT;
+      cur_state = (State)(cur_state + 1);
+      // reset the menu selection
+      menu_selection = 0;
+  }
+  if (Button::onHoldClick()) {
+    cur_state = STATE_COLOR_SELECT_SLOT;
       pat.updateColor(selected_slot, HSVColor(selected_hue, selected_sat, selected_val));
       save_cur_mode();
       // Return to the slot you were editing
       menu_selection = selected_slot;
-    } else {
-      cur_state = (State)(cur_state + 1);
-      // reset the menu selection
-      menu_selection = 0;
-    }
   }
 }
 
@@ -839,9 +834,9 @@ void Helios::handle_state_randomize()
     Colorset &cur_set = pat.colorset();
     Random ctx(cur_set.crc32());
     uint8_t randVal = ctx.next8();
-    cur_set.randomizeColors(ctx, (randVal + 1) % NUM_COLOR_SLOTS);
-    Patterns::make_pattern((PatternID)(randVal % PATTERN_COUNT), pat);
-    pat.init();
+    // cur_set.randomizeColors(ctx, (randVal + 1) % NUM_COLOR_SLOTS);
+    // Patterns::make_pattern((PatternID)(randVal % PATTERN_COUNT), pat);
+    // pat.init();
   }
   if (Button::onLongClick()) {
     save_cur_mode();
@@ -853,8 +848,8 @@ void Helios::handle_state_randomize()
 
 void Helios::show_long_selection(RGBColor color)
 {
-  uint16_t holdDur = (uint16_t)Button::holdDuration();
-  if ((holdDur % (LONG_CLICK_THRESHOLD * 2)) > LONG_CLICK_THRESHOLD) {
+  uint16_t holDur = (uint16_t)Button::holdDuration();
+  if (holDur > HOLD_CLICK_START && holDur <= HOLD_CLICK_END && Button::isPressed()) {
     Led::strobe(150, 150, RGB_CORAL_ORANGE_SAT_LOWEST, color);
   }
 }
