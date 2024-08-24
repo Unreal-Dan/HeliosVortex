@@ -68,7 +68,6 @@ private:
   static void handle_state_set_global_brightness();
   static void handle_state_shift_mode();
   static void handle_state_randomize();
-  static void show_long_selection(RGBColor color);
   static void show_selection(RGBColor color);
   static void factory_reset();
 

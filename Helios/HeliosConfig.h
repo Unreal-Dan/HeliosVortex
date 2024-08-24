@@ -27,11 +27,6 @@
 // The maximum length a long click can be
 #define HOLD_CLICK_END (HOLD_CLICK_START + TIME_TILL_LONG_CLICK_FLASH)
 
-// Long Click Threshold
-//
-// The maximum length a long click can be
-#define LONG_CLICK_THRESHOLD (SHORT_CLICK_THRESHOLD + TIME_TILL_LONG_CLICK_FLASH)
-
 // Max Color Slots
 //
 // The number of slots in a colorset

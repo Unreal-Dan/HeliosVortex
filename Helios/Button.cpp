@@ -105,6 +105,16 @@ bool Button::check()
 #endif
 }
 
+// detect if the button is being held for a long hold (past long click)
+bool Button::holdPressing()
+{
+  uint16_t holDur = (uint16_t)(Button::holdDuration());
+  if (holDur > HOLD_CLICK_START && holDur <= HOLD_CLICK_END && Button::isPressed()) {
+    return true;
+  }
+  return false;
+}
+
 // poll the button pin and update the state of the button object
 void Button::update()
 {

@@ -534,8 +534,7 @@ void Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
     } else {
       Led::strobe(3, 30, RGB_OFF, col);
     }
-    uint16_t holDur = (uint16_t)(Button::holdDuration());
-    if (holDur > HOLD_CLICK_START && holDur <= HOLD_CLICK_END && Button::isPressed()) {
+    if (Button::holdPressing()) {
       // flash red
       Led::strobe(150, 150, RGB_RED_BRI_LOW, col);
     }
@@ -671,8 +670,7 @@ void Helios::handle_state_col_select_hue_sat_val()
   // render current selection
   Led::set(HSVColor(selected_hue, selected_sat, selected_val));
   // show the long selection flash
-  uint16_t holDur = (uint16_t)Button::holdDuration();
-  if (holDur > HOLD_CLICK_START && holDur <= HOLD_CLICK_END && Button::isPressed()) {
+  if (Button::holdPressing()) {
     Led::strobe(150, 150, RGB_CORAL_ORANGE_SAT_LOWEST, Led::get());
   }
   // check to see if we are holding to save and skip
@@ -823,10 +821,6 @@ void Helios::handle_state_randomize()
   show_selection(RGB_WHITE_BRI_LOW);
 }
 
-void Helios::show_long_selection(RGBColor color)
-{
-}
-
 void Helios::show_selection(RGBColor color)
 {
   // only show selection while pressing the button
@@ -835,7 +829,7 @@ void Helios::show_selection(RGBColor color)
   }
   uint16_t holdDur = (uint16_t)Button::holdDuration();
   // if the hold duration is outside the flashing range do nothing
-  if (holdDur < SHORT_CLICK_THRESHOLD || holdDur > LONG_CLICK_THRESHOLD) {
+  if (holdDur < SHORT_CLICK_THRESHOLD || holdDur >= HOLD_CLICK_START) {
     return;
   }
   Led::set(color);

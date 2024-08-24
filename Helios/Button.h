@@ -28,6 +28,9 @@ public:
   // whether the button was hold clicked this tick
   static bool onHoldClick() { return m_holdClick; }
 
+  // detect if the button is being held past long click
+  static bool holdPressing();
+
   // when the button was last pressed
   static uint32_t pressTime() { return m_pressTime; }
   // when the button was last released
