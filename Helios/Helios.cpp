@@ -503,6 +503,7 @@ void Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
   uint8_t num_cols = set.numColors();
 
   bool long_click = Button::onLongClick();
+  bool hold_click = Button::onHoldClick();
 
   // Reset the color selection variables, these are the hue/sat/val that have been selected
   // in the following menus, this is a weird place to reset these but it ends up being the only
@@ -540,17 +541,15 @@ void Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
     } else {
       Led::strobe(3, 30, RGB_OFF, col);
     }
-    uint16_t mod_dur = (uint16_t)(Button::holdDuration() % (DELETE_COLOR_TIME * 2));
-    bool deleting = (mod_dur > DELETE_COLOR_TIME);
+    uint16_t mod_dur = (uint16_t)(Button::holdDuration());
+    bool deleting = (mod_dur > HOLD_CLICK_START && mod_dur < HOLD_CLICK_END && Button::isPressed());
     if (deleting) {
-      if (Button::isPressed()) {
-        // flash red
-        Led::strobe(150, 150, RGB_RED_BRI_LOW, col);
-      }
-      if (long_click) {
-        set.removeColor(selected_slot);
-        return;
-      }
+      // flash red
+      Led::strobe(150, 150, RGB_RED_BRI_LOW, col);
+    }
+    if (hold_click){
+      set.removeColor(selected_slot);
+      return;
     }
   }
   if (long_click) {
