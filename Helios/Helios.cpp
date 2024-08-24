@@ -680,22 +680,17 @@ void Helios::handle_state_col_select_sat()
   RGBColor current_color = Led::get();
   show_long_selection(current_color);
 
-  if (Button::onLongClick()) {
-    bool save = false;
-    if ((Button::holdDuration() % (LONG_CLICK_THRESHOLD * 2)) > LONG_CLICK_THRESHOLD) {
-      save = true;
-    }
-    if (save) {
-      cur_state = STATE_COLOR_SELECT_SLOT;
+   if (Button::onLongClick()) {
+      cur_state = (State)(cur_state + 1);
+      // reset the menu selection
+      menu_selection = 0;
+  }
+  if (Button::onHoldClick()) {
+    cur_state = STATE_COLOR_SELECT_SLOT;
       pat.updateColor(selected_slot, HSVColor(selected_hue, selected_sat, selected_val));
       save_cur_mode();
       // Return to the slot you were editing
       menu_selection = selected_slot;
-    } else {
-      cur_state = (State)(cur_state + 1);
-      // reset the menu selection
-      menu_selection = 0;
-    }
   }
 }
 
