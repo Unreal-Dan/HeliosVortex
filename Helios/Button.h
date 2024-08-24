@@ -1,7 +1,5 @@
 #include <stdint.h>
 
-#include "HeliosConfig.h"
-
 #ifdef HELIOS_CLI
 #include <queue>
 #endif
@@ -29,11 +27,6 @@ public:
   static bool onLongClick() { return m_longClick; }
   // whether the button was hold clicked this tick
   static bool onHoldClick() { return m_holdClick; }
-
-  //// whether the button is actively pressed down for some duration
-  //static bool shortPressed() { return m_isPressed && (m_holdDuration <= SHORT_CLICK_THRESHOLD); }
-  //static bool longPressed() { return m_isPressed && (m_holdDuration > SHORT_CLICK_THRESHOLD) && (m_holdDuration < HOLD_CLICK_START); }
-  //static bool holdPressed() { return m_isPressed && (m_newRelease && (m_holdDuration >= HOLD_CLICK_START) && (m_holdDuration <= HOLD_CLICK_END)); }
 
   // when the button was last pressed
   static uint32_t pressTime() { return m_pressTime; }
