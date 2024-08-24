@@ -444,15 +444,25 @@ void Helios::handle_state_col_select()
 {
   uint8_t num_cols = pat.colorset().numColors();
   if (Button::onShortClick()) {
-    uint8_t num_menus = (cur_state == STATE_COLOR_SELECT_SLOT) ?
-      num_cols + 1 + (num_cols < NUM_COLOR_SLOTS) :
-      (cur_state == STATE_COLOR_SELECT_QUADRANT) ? 7 : 4;
+    // next hue/sat/val selection
+    uint8_t num_menus = 4;
+    if (cur_state == STATE_COLOR_SELECT_SLOT) {
+      // menus = all colors + exit
+      num_menus = num_cols + 1;
+      // but if the num cols is less than total color slots
+      if (num_cols < NUM_COLOR_SLOTS) {
+        // then we have another menu: add color
+        num_menus++;
+      }
+    } else if (cur_state == STATE_COLOR_SELECT_QUADRANT) {
+      num_menus = 7;
+    }
     menu_selection = (menu_selection + 1) % num_menus;
   }
-
   ColorSelectOption slot_option = OPTION_NONE;
   bool check_longclick = true;
   switch (cur_state) {
+    default:
     case STATE_COLOR_SELECT_SLOT:
       // pick the target colorset slot
       check_longclick = handle_state_col_select_slot(slot_option);
@@ -473,27 +483,23 @@ void Helios::handle_state_col_select()
       // target val for changes
       handle_state_col_select_val();
       break;
-    default:
-      break;
   }
-
   if (check_longclick && Button::onLongClick()) {
     uint32_t holdDur = Button::holdDuration();
-    if (holdDur <= LONG_CLICK_END_THRESHOLD) {
-      if (cur_state == STATE_COLOR_SELECT_VAL ||
-         ((cur_state == STATE_COLOR_SELECT_HUE || cur_state == STATE_COLOR_SELECT_SAT) &&
-          holdDur > LONG_CLICK_START_THRESHOLD)) {
-        cur_state = STATE_COLOR_SELECT_SLOT;
-        pat.updateColor(selected_slot, HSVColor(selected_hue, selected_sat, selected_val));
-        save_cur_mode();
-        // Return to the slot you were editing
-        menu_selection = selected_slot;
-      } else {
-        cur_state = (State)(cur_state + 1);
-        // reset the menu selection
-        menu_selection = 0;
-      }
+    bool hue_or_sat = (cur_state == STATE_COLOR_SELECT_HUE || cur_state == STATE_COLOR_SELECT_SAT);
+    bool should_save = (cur_state == STATE_COLOR_SELECT_VAL) ||
+                       (hue_or_sat && holdDur > LONG_CLICK_START_THRESHOLD);
+
+    if (holdDur <= LONG_CLICK_END_THRESHOLD && should_save) {
+      cur_state = STATE_COLOR_SELECT_SLOT;
+      pat.updateColor(selected_slot, HSVColor(selected_hue, selected_sat, selected_val));
+      save_cur_mode();
+      menu_selection = selected_slot;
     } else if (holdDur <= LONG_CLICK_START_THRESHOLD) {
+      cur_state = (State)(cur_state + 1);
+      menu_selection = 0;
+    } else {
+      // If held too long, return to original state without saving
       cur_state = STATE_COLOR_SELECT_SLOT;
       menu_selection = selected_slot;
     }
@@ -561,7 +567,8 @@ bool Helios::handle_state_col_select_slot(ColorSelectOption &out_option)
           set.removeColor(selected_slot);
           return false;
         }
-      } else return false;
+      }
+      return false;
     }
   }
   return true;
