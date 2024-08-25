@@ -195,7 +195,22 @@ extract_hex:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:r:attiny_firmware.hex:i
 
 extract_eeprom:
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:r:-:h > eeprom_dump.csv
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:r:eeprom_data.eep:i
+
+upload_eeprom: eeprom_data.eep
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:w:eeprom_data.eep:i
+
+extract_eeprom_thumbs:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:r:eeprom_thumbs.eep:i
+
+upload_eeprom_thumbs: eeprom_thumbs.eep
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:w:eeprom_thumbs.eep:i
+
+extract_eeprom_fingers:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:r:eeprom_fingers.eep:i
+
+upload_eeprom_fingers: eeprom_fingers.eep
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:w:eeprom_fingers.eep:i
 
 upload_hex:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:w:apollo_firmware.hex:i
