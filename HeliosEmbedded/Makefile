@@ -194,6 +194,9 @@ get_fuses:
 extract_hex:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:r:attiny_firmware.hex:i
 
+upload_with_default_eeprom: upload eeprom_data.eep
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:w:eeprom_data.eep:i
+
 extract_eeprom:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:r:eeprom_data.eep:i
 
