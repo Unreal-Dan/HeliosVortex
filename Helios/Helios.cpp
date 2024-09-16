@@ -697,7 +697,7 @@ void Helios::handle_state_pat_select()
   }
   if (Button::onShortClick()) {
     menu_selection = (menu_selection + 1) % PATTERN_COUNT;
-    Patterns::make_pattern((PatternID)menu_selection, pat);
+    Patterns::make_pattern((PatternID)(menu_selection - 1), pat);
     pat.init();
   }
   pat.play();
