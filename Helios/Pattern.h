@@ -8,16 +8,14 @@
 
 // for specifying things like default args
 struct PatternArgs {
-  PatternArgs() : on_dur(0), off_dur(0), gap_dur(0), dash_dur(0),
-    group_size(0), blend_speed(0), num_flips(0)
-  {}
+  PatternArgs(uint8_t on = 0, uint8_t off = 0, uint8_t gap = 0, uint8_t dash = 0, uint8_t group = 0, uint8_t blend = 0) :
+    on_dur(on), off_dur(off), gap_dur(gap), dash_dur(dash), group_size(group), blend_speed(blend) {}
   uint8_t on_dur;
   uint8_t off_dur;
   uint8_t gap_dur;
   uint8_t dash_dur;
   uint8_t group_size;
   uint8_t blend_speed;
-  uint8_t num_flips;
 };
 
 class Pattern
@@ -25,25 +23,21 @@ class Pattern
 public:
   // try to not set on duration to 0
   Pattern(uint8_t onDur = 1, uint8_t offDur = 0, uint8_t gap = 0,
-          uint8_t dash = 0, uint8_t group = 0, uint8_t blend = 0,
-          uint8_t flips = 0);
+          uint8_t dash = 0, uint8_t group = 0, uint8_t blend = 0);
   Pattern(const PatternArgs &args);
   ~Pattern();
 
   // init the pattern to initial state
   void init();
 
-  // pure virtual must override the play function
+  // play the pattern
   void play();
 
-  // set args
+  // set/get args
   void setArgs(const PatternArgs &args);
-
-  // comparison to other pattern
-  // NOTE: That may cause problems because the parameter is still a Pattern *
-  //       which means comparison would need to cast the other upwards first
-  // NOTE2: Removing virtual because this probably shouldn't be overridden
-  bool equals(const Pattern *other);
+  const PatternArgs getArgs() const { return m_args; }
+  PatternArgs getArgs() { return m_args; }
+  PatternArgs &args() { return m_args; }
 
   // change the colorset
   const Colorset getColorset() const { return m_colorset; }
@@ -51,6 +45,9 @@ public:
   Colorset &colorset() { return m_colorset; }
   void setColorset(const Colorset &set);
   void clearColorset();
+
+  // comparison to other pattern
+  bool equals(const Pattern *other);
 
   // set a color in the colorset and re-initialize
   void updateColor(uint8_t index, const RGBColor &col);
@@ -60,18 +57,12 @@ public:
   bool hasFlags(uint32_t flags) const { return (m_patternFlags & flags) != 0; }
 
   // whether blend speed is non 0
-  bool isBlend() const { return m_blendSpeed > 0; }
+  bool isBlend() const { return m_args.blend_speed > 0; }
 
 protected:
   // ==================================
   //  Pattern Parameters
-  uint8_t m_onDuration;
-  uint8_t m_offDuration;
-  uint8_t m_gapDuration;
-  uint8_t m_dashDuration;
-  uint8_t m_groupSize;
-  uint8_t m_blendSpeed;
-  uint8_t m_numFlips;
+  PatternArgs m_args;
 
   // ==================================
   //  Pattern Members
@@ -131,9 +122,6 @@ protected:
   // current color and target blend color
   RGBColor m_cur;
   RGBColor m_next;
-
-  // the current flip counter
-  uint8_t m_flip;
 
   // apis for blend
   void blendBlinkOn();

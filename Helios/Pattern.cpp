@@ -38,28 +38,21 @@ static void printState(PatternState state)
 #endif
 
 Pattern::Pattern(uint8_t onDur, uint8_t offDur, uint8_t gap,
-          uint8_t dash, uint8_t group, uint8_t blend, uint8_t flips) :
-  m_onDuration(onDur),
-  m_offDuration(offDur),
-  m_gapDuration(gap),
-  m_dashDuration(dash),
-  m_groupSize(group),
-  m_blendSpeed(blend),
-  m_numFlips(flips),
+          uint8_t dash, uint8_t group, uint8_t blend) :
+  m_args(onDur, offDur, gap, dash, group, blend),
   m_patternFlags(0),
   m_colorset(),
   m_groupCounter(0),
   m_state(STATE_BLINK_ON),
   m_blinkTimer(),
   m_cur(),
-  m_next(),
-  m_flip(0)
+  m_next()
 {
 }
 
 Pattern::Pattern(const PatternArgs &args) :
   Pattern(args.on_dur, args.off_dur, args.gap_dur,
-      args.dash_dur, args.group_size, args.blend_speed, args.num_flips)
+      args.dash_dur, args.group_size, args.blend_speed)
 {
 }
 
@@ -75,22 +68,20 @@ void Pattern::init()
   m_state = STATE_BLINK_ON;
   // if a dash is present then always start with the dash because
   // it consumes the first color in the colorset
-  if (m_dashDuration > 0) {
+  if (m_args.dash_dur > 0) {
     m_state = STATE_BEGIN_DASH;
   }
   // if there's no on duration or dash duration the led is just disabled
-  if ((!m_onDuration && !m_dashDuration) || !m_colorset.numColors()) {
+  if ((!m_args.on_dur && !m_args.dash_dur) || !m_colorset.numColors()) {
     m_state = STATE_DISABLED;
   }
-  m_groupCounter = m_groupSize ? m_groupSize : (m_colorset.numColors() - (m_dashDuration != 0));
+  m_groupCounter = m_args.group_size ? m_args.group_size : (m_colorset.numColors() - (m_args.dash_dur != 0));
 
-  if (m_blendSpeed > 0) {
+  if (m_args.blend_speed > 0) {
     // convert current/next colors to HSV but only if we are doing a blend
     m_cur = m_colorset.getNext();
     m_next = m_colorset.getNext();
   }
-  // reset the flip count
-  m_flip = 0;
 }
 
 void Pattern::play()
@@ -104,47 +95,47 @@ replay:
   case STATE_DISABLED:
     return;
   case STATE_BLINK_ON:
-    if (m_onDuration > 0) {
+    if (m_args.on_dur > 0) {
       onBlinkOn();
       --m_groupCounter;
-      nextState(m_onDuration);
+      nextState(m_args.on_dur);
       return;
     }
     m_state = STATE_BLINK_OFF;
   case STATE_BLINK_OFF:
     // the whole 'should blink off' situation is tricky because we might need
     // to go back to blinking on if our colorset isn't at the end yet
-    if (m_groupCounter > 0 || (!m_gapDuration && !m_dashDuration)) {
-      if (m_offDuration > 0) {
+    if (m_groupCounter > 0 || (!m_args.gap_dur && !m_args.dash_dur)) {
+      if (m_args.off_dur > 0) {
         onBlinkOff();
-        nextState(m_offDuration);
+        nextState(m_args.off_dur);
         return;
       }
-      if (m_groupCounter > 0 && m_onDuration > 0) {
+      if (m_groupCounter > 0 && m_args.on_dur > 0) {
         m_state = STATE_BLINK_ON;
         goto replay;
       }
     }
     m_state = STATE_BEGIN_GAP;
   case STATE_BEGIN_GAP:
-    m_groupCounter = m_groupSize ? m_groupSize : (m_colorset.numColors() - (m_dashDuration != 0));
-    if (m_gapDuration > 0) {
+    m_groupCounter = m_args.group_size ? m_args.group_size : (m_colorset.numColors() - (m_args.dash_dur != 0));
+    if (m_args.gap_dur > 0) {
       beginGap();
-      nextState(m_gapDuration);
+      nextState(m_args.gap_dur);
       return;
     }
     m_state = STATE_BEGIN_DASH;
   case STATE_BEGIN_DASH:
-    if (m_dashDuration > 0) {
+    if (m_args.dash_dur > 0) {
       beginDash();
-      nextState(m_dashDuration);
+      nextState(m_args.dash_dur);
       return;
     }
     m_state = STATE_BEGIN_GAP2;
   case STATE_BEGIN_GAP2:
-    if (m_dashDuration > 0 && m_gapDuration > 0) {
+    if (m_args.dash_dur > 0 && m_args.gap_dur > 0) {
       beginGap();
-      nextState(m_gapDuration);
+      nextState(m_args.gap_dur);
       return;
     }
     m_state = STATE_BLINK_ON;
@@ -165,7 +156,7 @@ replay:
   if (m_state == STATE_IN_GAP2 || (m_state == STATE_OFF && m_groupCounter > 0)) {
     // this is an edge condition for when in the second gap or off in the non-last off blink
     // then the state actually needs to jump backwards rather than iterate
-    m_state = m_onDuration ? STATE_BLINK_ON : (m_dashDuration ? STATE_BEGIN_DASH : STATE_BEGIN_GAP);
+    m_state = m_args.on_dur ? STATE_BLINK_ON : (m_args.dash_dur ? STATE_BEGIN_DASH : STATE_BEGIN_GAP);
   } else if (m_state == STATE_OFF && (!m_groupCounter || m_colorset.numColors() == 1)) {
     // this is an edge condition when the state is off but this is the last off blink in the
     // group or there's literally only one color in the group then if there is more blinks
@@ -182,7 +173,7 @@ replay:
 // set args
 void Pattern::setArgs(const PatternArgs &args)
 {
-  memcpy(&m_onDuration, &(args.on_dur), 7);
+  memcpy(&m_args, &args, sizeof(PatternArgs));
 }
 
 void Pattern::onBlinkOn()
@@ -219,30 +210,6 @@ void Pattern::nextState(uint8_t timing)
   m_state = (PatternState)(m_state + 1);
 }
 
-bool Pattern::equals(const Pattern *other)
-{
-  if (!other) {
-    return false;
-  }
-  // compare the colorset
-  if (!m_colorset.equals(&other->m_colorset)) {
-    return false;
-  }
-  // then compare each arg
-  if (m_onDuration != other->m_onDuration ||
-      m_offDuration != other->m_offDuration ||
-      m_gapDuration != other->m_gapDuration ||
-      m_dashDuration != other->m_dashDuration ||
-      m_groupSize != other->m_groupSize ||
-      m_blendSpeed != other->m_blendSpeed ||
-      m_numFlips != other->m_numFlips) {
-    return false;
-  }
-  // if those match then it's effectively the same
-  // pattern even if anything else is different
-  return true;
-}
-
 // change the colorset
 void Pattern::setColorset(const Colorset &set)
 {
@@ -254,6 +221,24 @@ void Pattern::clearColorset()
   m_colorset.clear();
 }
 
+bool Pattern::equals(const Pattern *other)
+{
+  if (!other) {
+    return false;
+  }
+  // compare the colorset
+  if (!m_colorset.equals(&other->m_colorset)) {
+    return false;
+  }
+  // compare the args of each pattern for equality
+  if (memcmp(&m_args, &other->m_args, sizeof(PatternArgs)) == 0) {
+    return false;
+  }
+  // if those match then it's effectively the same
+  // pattern even if anything else is different
+  return true;
+}
+
 void Pattern::updateColor(uint8_t index, const RGBColor &col)
 {
   m_colorset.set(index, col);
@@ -262,39 +247,26 @@ void Pattern::updateColor(uint8_t index, const RGBColor &col)
 
 void Pattern::blendBlinkOn()
 {
+  // if we reached the next color, then cycle the colorset
+  // like normal and begin playing the next color
   if (m_cur == m_next) {
     m_next = m_colorset.getNext();
   }
+  // interpolate to the next color
   interpolate(m_cur.red, m_next.red);
   interpolate(m_cur.green, m_next.green);
   interpolate(m_cur.blue, m_next.blue);
-  RGBColor col = m_cur;
-  if (m_flip) {
-    // convert to hsv
-    HSVColor hsvCol = m_cur;
-    // shift the hue by a flip size
-    hsvCol.hue += (m_flip * (127 / m_numFlips));
-    // convert the hsv color back to RGB
-    col = hsvCol;
-  }
   // set the color
-  Led::set(col);
-  // increment the flip count
-  m_flip++;
-  // modulate the flip count DO NOT USE MODULO OPERATOR BECAUSE
-  // THE FLIP COUNT COULD BE 0 THAT WILL DIVIDE BY ZERO
-  if (m_flip > m_numFlips) {
-    m_flip = 0;
-  }
+  Led::set(m_cur);
 }
 
 void Pattern::interpolate(uint8_t &current, const uint8_t next)
 {
   if (current < next) {
-    uint8_t step = (next - current) > m_blendSpeed ? m_blendSpeed : (next - current);
+    uint8_t step = (next - current) > m_args.blend_speed ? m_args.blend_speed : (next - current);
     current += step;
   } else if (current > next) {
-    uint8_t step = (current - next) > m_blendSpeed ? m_blendSpeed : (current - next);
+    uint8_t step = (current - next) > m_args.blend_speed ? m_args.blend_speed : (current - next);
     current -= step;
   }
 }

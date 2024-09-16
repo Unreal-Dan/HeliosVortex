@@ -1,6 +1,7 @@
 #include "Storage.h"
 
 #include "Colorset.h"
+#include "Pattern.h"
 
 #ifdef HELIOS_EMBEDDED
 #include <avr/io.h>
@@ -12,13 +13,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
-#define STORAGE_FILENAME "Helios.storage"
 #endif
-
-// the index of the crc of the config bytes
-#define CONFIG_CRC_INDEX 255
-// the index of the last config byte (or first counting down)
-#define CONFIG_START_INDEX 254
 
 #ifdef HELIOS_CLI
 // whether storage is enabled, default enabled
@@ -28,8 +23,24 @@ bool Storage::m_enableStorage = true;
 bool Storage::init()
 {
 #ifdef HELIOS_CLI
-  // may want this for cli tool
-  //unlink(STORAGE_FILENAME);
+  if (!m_enableStorage) {
+    return true;
+  }
+  // if the storage filename doesn't exist then create it
+  if (access(STORAGE_FILENAME, O_RDWR) != 0 && errno == ENOENT) {
+    // The file doesn't exist, so try creating it
+    FILE *f = fopen(STORAGE_FILENAME, "w+b");
+    if (!f) {
+      perror("Error creating storage file for write");
+      return false;
+    }
+    // fill the storage with 0s
+    for (uint32_t i = 0; i < STORAGE_SIZE; ++i){
+      uint8_t b = 0x0;
+      fwrite(&b, 1, sizeof(uint8_t), f);
+    }
+    fclose(f);
+  }
 #endif
   return true;
 }
@@ -52,24 +63,17 @@ void Storage::write_pattern(uint8_t slot, const Pattern &pat)
   for (uint8_t i = 0; i < PATTERN_SIZE; ++i) {
     uint8_t val = ((uint8_t *)&pat)[i];
     uint8_t target = pos + i;
-    // reads out the byte of the eeprom first to see if it's different
-    // before writing out the byte -- this is faster than always writing
-    if (val != read_byte(target)) {
-      write_byte(target, val);
-    }
+    write_byte(target, val);
   }
   write_crc(pos);
 }
 
-void Storage::swap_pattern(uint8_t slot1, uint8_t slot2)
+void Storage::copy_slot(uint8_t srcSlot, uint8_t dstSlot)
 {
-  uint8_t pos1 = slot1 * SLOT_SIZE;
-  uint8_t pos2 = slot2 * SLOT_SIZE;
+  uint8_t src = srcSlot * SLOT_SIZE;
+  uint8_t dst = dstSlot * SLOT_SIZE;
   for (uint8_t i = 0; i < SLOT_SIZE; ++i) {
-    uint8_t b1 = read_byte(pos1 + i);
-    uint8_t b2 = read_byte(pos2 + i);
-    write_byte(pos1 + i, b2);
-    write_byte(pos2 + i, b1);
+    write_byte(dst + i, read_byte(src + i));
   }
 }
 
@@ -119,34 +123,26 @@ void Storage::write_crc(uint8_t pos)
 void Storage::write_byte(uint8_t address, uint8_t data)
 {
 #ifdef HELIOS_EMBEDDED
-  /* Wait for completion of previous write */
-  while(EECR & (1<<EEPE))
-    ;
-  /* Set Programming mode */
-  EECR = (0<<EEPM1)|(0<<EEPM0);
-  /* Set up address and data registers */
-  EEAR = address;
-  EEDR = data;
-  /* Write logical one to EEMPE */
-  EECR |= (1<<EEMPE);
-  /* Start eeprom write by setting EEPE */
-  EECR |= (1<<EEPE);
+  // reads out the byte of the eeprom first to see if it's different
+  // before writing out the byte -- this is faster than always writing
+  if (read_byte(address) == data) {
+    return;
+  }
+  internal_write(address, data);
+  // double check that shit
+  if (read_byte(address) != data) {
+    // do it again because eeprom is stupid
+    internal_write(address, data);
+    // god forbid it doesn't write again
+  }
 #else // HELIOS_CLI
   if (!m_enableStorage) {
     return;
   }
   FILE *f = fopen(STORAGE_FILENAME, "r+b");
   if (!f) {
-    if (errno != ENOENT) {
-      perror("Error opening storage file");
-      return;
-    }
-    // The file doesn't exist, so try creating it
-    f = fopen(STORAGE_FILENAME, "w+b");
-    if (!f) {
-      perror("Error creating storage file for write");
-      return;
-    }
+    perror("Error opening storage file");
+    return;
   }
   // Seek to the specified address
   if (fseek(f, address, SEEK_SET) != 0) {
@@ -154,7 +150,7 @@ void Storage::write_byte(uint8_t address, uint8_t data)
     fclose(f);
     return;
   }
-  if (!fwrite(&data, sizeof(uint8_t), 1, f)) {
+  if (!fwrite((const void *)&data, sizeof(uint8_t), 1, f)) {
     return;
   }
   fclose(f); // Close the file
@@ -164,21 +160,26 @@ void Storage::write_byte(uint8_t address, uint8_t data)
 uint8_t Storage::read_byte(uint8_t address)
 {
 #ifdef HELIOS_EMBEDDED
-  /* Wait for completion of previous write */
-  while(EECR & (1<<EEPE))
-    ;
-  /* Set up address register */
-  EEAR = address;
-  /* Start eeprom read by writing EERE */
-  EECR |= (1<<EERE);
-  /* Return data from data register */
-  return EEDR;
+  // do a three way read because the attiny85 eeprom basically doesn't work
+  uint8_t b1 = internal_read(address);
+  uint8_t b2 = internal_read(address);
+  if (b1 == b2) {
+    return b2;
+  }
+  uint8_t b3 = internal_read(address);
+  if (b3 == b1) {
+    return b1;
+  }
+  if (b3 == b2) {
+    return b2;
+  }
+  return 0;
 #else
   if (!m_enableStorage) {
     return 0;
   }
   uint8_t val = 0;
-  if (!access(STORAGE_FILENAME, O_RDONLY)) {
+  if (access(STORAGE_FILENAME, O_RDONLY) != 0) {
     return val;
   }
   FILE *f = fopen(STORAGE_FILENAME, "rb"); // Open file for reading in binary mode
@@ -202,3 +203,34 @@ uint8_t Storage::read_byte(uint8_t address)
   return val;
 #endif
 }
+
+#ifdef HELIOS_EMBEDDED
+inline void Storage::internal_write(uint8_t address, uint8_t data)
+{
+  while (EECR & (1<<EEPE)) {
+    // Wait for completion of previous write
+  }
+  // Set Programming mode
+  EECR = (0<<EEPM1)|(0<<EEPM0);
+  // Set up address and data registers
+  EEAR = address;
+  EEDR = data;
+  // Write logical one to EEMPE
+  EECR |= (1<<EEMPE);
+  // Start eeprom write by setting EEPE
+  EECR |= (1<<EEPE);
+}
+
+inline uint8_t Storage::internal_read(uint8_t address)
+{
+  while (EECR & (1<<EEPE)) {
+    // Wait for completion of previous write
+  }
+  // Set up address register
+  EEAR = address;
+  // Start eeprom read by writing EERE
+  EECR |= (1<<EERE);
+  // Return data from data register
+  return EEDR;
+}
+#endif

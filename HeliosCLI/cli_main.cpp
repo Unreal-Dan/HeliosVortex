@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
@@ -39,6 +40,8 @@ enum OutputType {
 
 // the default bmp filename
 #define DEFAULT_BMP_FILENAME "pattern.bmp"
+// the size of the whole EEPROM, only half is actually used
+#define EEPROM_SIZE 512
 
 // various globals for the tool
 OutputType output_type = OUTPUT_TYPE_COLOR;
@@ -48,6 +51,7 @@ bool lockstep = false;
 bool storage = false;
 bool timestep = true;
 bool eeprom = false;
+std::string eeprom_file;
 bool generate_bmp = false;
 std::vector<RGBColor> colorBuffer;
 uint32_t num_cycles = 0;
@@ -68,6 +72,10 @@ static void restore_terminal();
 static void set_terminal_nonblocking();
 static bool writeBMP(const std::string& filename, const std::vector<RGBColor>& colors);
 static void print_usage(const char* program_name);
+static bool parse_eep_file(const std::string& filename, std::vector<uint8_t>& memory);
+static bool parse_csv_hex(const std::string& filename, std::vector<uint8_t>& memory);
+static bool parse_bin_storage(const std::string& filename, std::vector<uint8_t>& memory);
+static void dump_eeprom(const std::string& filename);
 
 int main(int argc, char *argv[])
 {
@@ -75,6 +83,12 @@ int main(int argc, char *argv[])
   parse_options(argc, argv);
   // set the terminal to instantly receive key presses
   set_terminal_nonblocking();
+  // if parsing an eeprom then no need to initialize helios
+  if (eeprom_file.length() > 0) {
+    // print out the contents of the eeprom file
+    dump_eeprom(eeprom_file);
+    return 0;
+  }
   // toggle timestep in the engine based on the cli input
   Time::enableTimestep(timestep);
   // toggle storage in the engine based on cli input
@@ -186,7 +200,7 @@ static void parse_options(int argc, char *argv[])
     {"lockstep", no_argument, nullptr, 'l'},
     {"no-timestep", no_argument, nullptr, 't'},
     {"in-place", no_argument, nullptr, 'i'},
-    {"no-storage", no_argument, nullptr, 's'},
+    {"storage", no_argument, nullptr, 's'},
     {"cycle", optional_argument, nullptr, 'y'},
     {"brightness-scale", required_argument, nullptr, 'a'},
     {"min-brightness", required_argument, nullptr, 'm'},
@@ -195,10 +209,11 @@ static void parse_options(int argc, char *argv[])
     {"mode-index", required_argument, nullptr, 'I'},
     {"bmp", optional_argument, nullptr, 'b'},
     {"eeprom", no_argument, nullptr, 'E'},
+    {"parse-save", required_argument, nullptr, 'S'},
     {"help", no_argument, nullptr, 'h'},
     {nullptr, 0, nullptr, 0}
   };
-  while ((opt = getopt_long(argc, argv, "xcqltisyamC:P:I:b::Eh", long_options, &option_index)) != -1) {
+  while ((opt = getopt_long(argc, argv, "xcqltisyamC:P:I:b::ES:h", long_options, &option_index)) != -1) {
     switch (opt) {
     case 'x':
       // if the user wants pretty colors or hex codes
@@ -225,7 +240,7 @@ static void parse_options(int argc, char *argv[])
       break;
     case 's':
       // TODO: implement storage filename
-      storage = false;
+      storage = true;
       break;
     case 'y':
       // set the number of cycles to default 1
@@ -295,6 +310,9 @@ static void parse_options(int argc, char *argv[])
       break;
     case 'E':
       eeprom = true;
+      break;
+    case 'S':
+      eeprom_file = optarg;
       break;
     case 'h':
       // print usage and exit
@@ -508,7 +526,7 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "  -l, --lockstep           Only step once each time an input is received\n");
   fprintf(stderr, "  -t, --no-timestep        Run as fast as possible without managing timestep\n");
   fprintf(stderr, "  -i, --in-place           Print the output in-place (interactive mode)\n");
-  fprintf(stderr, "  -s, --no-storage         Disable persistent storage to file (FlashStorage.flash)\n");
+  fprintf(stderr, "  -s, --storage            Enable persistent storage to file (" STORAGE_FILENAME ")\n");
   fprintf(stderr, "  -y, --cycle [N]          Run N cycles of the first mode, default 1 (to gen pattern images)\n");
   fprintf(stderr, "  -a, --brightness-scale   Set the brightness scale of the output colors (2.0 is 100%% brighter)\n");
   fprintf(stderr, "  -m, --min-brightness     Set the minimum brightness the output colors can be\n");
@@ -521,6 +539,7 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "Other Options:\n");
   fprintf(stderr, "  -b, --bmp [file]         Specify a bitmap file to generate (default: " DEFAULT_BMP_FILENAME ")\n");
   fprintf(stderr, "  -E, --eeprom             Generate an eeprom file for flashing\n");
+  fprintf(stderr, "  -S, --parse-save <file>  Parse an eeprom storage dump from Microchip Studio\n");
   fprintf(stderr, "  -h, --help               Display this help message\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Input Commands (pass to stdin):");
@@ -544,3 +563,158 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "   ./helios -ci\n");
   fprintf(stderr, "   ./helios -cl <<< 300wcw300wcp1500wr300wq\n");
 }
+
+static bool parse_eep_file(const std::string& filename, std::vector<uint8_t>& memory)
+{
+  printf("Dumping EEPROM File: [%s]\n", filename.c_str());
+  std::ifstream infile(filename);
+  if (!infile.is_open()) {
+    printf("Failed to open file\n");
+    return false;
+  }
+
+  uint32_t baseAddress = 0;
+  std::string line;
+  while (std::getline(infile, line)) {
+    if (line[0] != ':') {
+      printf("Invalid start code\n");
+      return false;
+    }
+
+    int byteCount = std::stoi(line.substr(1, 2), nullptr, 16);
+    int address = std::stoi(line.substr(3, 4), nullptr, 16);
+    int recordType = std::stoi(line.substr(7, 2), nullptr, 16);
+
+    switch (recordType) {
+      case 0x00: // Data record
+        for (int i = 0; i < byteCount; ++i) {
+          int byte = std::stoi(line.substr(9 + i * 2, 2), nullptr, 16);
+          if (baseAddress + address + i < memory.size()) {
+            memory[baseAddress + address + i] = static_cast<uint8_t>(byte);
+          }
+        }
+        break;
+      case 0x02: // Extended segment address record
+        baseAddress = std::stoi(line.substr(9, 4), nullptr, 16) << 4;
+        break;
+      case 0x04: // Extended linear address record
+        baseAddress = std::stoi(line.substr(9, 4), nullptr, 16) << 16;
+        break;
+      case 0x01: // End of file record
+        break;
+      default:
+        // Unknown record type
+        break;
+    }
+  }
+
+  infile.close();
+  return true;
+}
+
+static bool parse_csv_hex(const std::string& filename, std::vector<uint8_t>& memory)
+{
+  std::ifstream file(filename);
+  if (!file.is_open()) {
+    printf("Failed to open file\n");
+    return false;
+  }
+
+  std::string line;
+  std::getline(file, line);
+  std::istringstream iss(line);
+  std::string token;
+
+  uint32_t pos = 0;
+  while (std::getline(iss, token, ',') && pos < EEPROM_SIZE) {
+    // Remove leading/trailing whitespace and "0x" prefix if present
+    token.erase(0, token.find_first_not_of(" \t"));
+    token.erase(token.find_last_not_of(" \t") + 1);
+    if (token.substr(0, 2) == "0x") {
+      token = token.substr(2);
+    }
+
+    // Convert hex string to integer
+    uint8_t value = std::stoi(token, nullptr, 16);
+    memory[pos] = value;
+    pos++;
+  }
+
+  return true;
+}
+
+static bool parse_bin_storage(const std::string& filename, std::vector<uint8_t>& memory)
+{
+  FILE *f = fopen(filename.c_str(), "rb"); // Open file for reading in binary mode
+  if (!f) {
+		// this error is ok, just means no storage
+    perror("Error opening file for read");
+    return false;
+  }
+  // Read a byte of data
+  if (!fread(&memory[0], sizeof(uint8_t), memory.size(), f)) {
+    perror("Failed to read data");
+  }
+  fclose(f); // Close the file
+  return true;
+}
+
+static void dump_eeprom(const std::string& filename)
+{
+  if (!filename.length()) {
+    printf("Must provide an eeprom filename\n");
+    return;
+  }
+  std::vector<uint8_t> memory(EEPROM_SIZE, 0xFF); // Initialize memory with 0xFF
+  // Get file extension as lowercase
+  std::string extension = filename.substr(filename.find_last_of(".") + 1);
+  std::transform(extension.begin(), extension.end(), extension.begin(),
+      [](unsigned char c){ return std::tolower(c); });
+  bool parse_success;
+  if (extension == "eep") { // intel hex
+    parse_success = parse_eep_file(filename, memory);
+  } else if (extension == "csv") { // csv of hex bytes
+    parse_success = parse_csv_hex(filename, memory);
+  } else if (extension == "storage") { // raw binary (cli storage)
+    parse_success = parse_bin_storage(filename, memory);
+  } else {
+    printf("File format not supported, only .eep or .csv supported\n");
+    return;
+  }
+  if (!parse_success) {
+    printf("Failed to parse file\n");
+    return;
+  }
+  for (size_t slot = 0; slot < NUM_MODE_SLOTS; ++slot) {
+    size_t pos = slot * SLOT_SIZE;
+
+    Pattern pat;
+    memcpy((void*)&pat, &memory[pos], sizeof(Pattern));
+
+    printf("Slot %zu:\n", slot);
+    printf("  Colorset: ");
+    for (size_t i = 0; i < pat.getColorset().numColors(); ++i) {
+      RGBColor color = pat.getColorset()[i];
+      char hexCode[8];
+      snprintf(hexCode, sizeof(hexCode), "#%02X%02X%02X", color.red, color.green, color.blue);
+      printf("\033[48;2;%d;%d;%dm  \033[0m (%s) ", color.red, color.green, color.blue, hexCode);
+    }
+    printf("\n");
+
+    PatternArgs args = pat.getArgs();
+    printf("  Args: on_dur=%d, off_dur=%d, gap_dur=%d, dash_dur=%d, group_size=%d, blend_speed=%d\n",
+        args.on_dur, args.off_dur, args.gap_dur, args.dash_dur, args.group_size, args.blend_speed);
+    printf("  Flags: %02X\n", pat.getFlags());
+  }
+
+  uint8_t flags = (uint8_t)memory[CONFIG_START_INDEX - STORAGE_GLOBAL_FLAG_INDEX];
+  bool locked = (flags & Helios::FLAG_LOCKED) != 0;
+  bool conjure = (flags & Helios::FLAG_CONJURE) != 0;
+  uint8_t modeIdx = (uint8_t)memory[CONFIG_START_INDEX - STORAGE_CURRENT_MODE_INDEX];
+  uint8_t brightness = (uint8_t)memory[CONFIG_START_INDEX - STORAGE_BRIGHTNESS_INDEX];
+
+  printf("Brightness: %u\n", brightness);
+  printf("Mode Index: %u\n", modeIdx);
+  printf("Flags: 0x%02X (locked=%u conjure=%u)\n", flags, locked, conjure);
+}
+

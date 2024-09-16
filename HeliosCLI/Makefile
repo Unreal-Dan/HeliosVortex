@@ -2,7 +2,7 @@
 .SUFFIXES:
 
 # List all make targets which are not filenames
-.PHONY: all tests clean pngs bmps
+.PHONY: all tests clean pngs bmps clean_storage
 
 # compiler tool definitions
 CC=g++
@@ -112,6 +112,12 @@ pngs: bmps
 # generate pngs
 bmps:
 	./generate_bmps.sh -c
+
+clean_storage:
+	@echo "Cleaning Helios storage file..."
+	@$(RM) Helios.storage
+	@$(RM) ../tests/Helios.storage
+	@echo "Helios storage file cleaned."
 
 # Now include our target dependency files
 # the hyphen means ignore non-existent files

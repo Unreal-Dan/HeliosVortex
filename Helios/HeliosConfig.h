@@ -7,16 +7,26 @@
 // be considered either a short or long click
 #define SHORT_CLICK_THRESHOLD 400
 
-
 // Selection Flash Duration
 //
 // How long the led flashes when selecting something
 #define TIME_TILL_LONG_CLICK_FLASH 1000
 
-// Long Click Threshold
+// Unlock Glow Lock Duration
+//
+// How long the hold the button to unlock chip
+#define TIME_TILL_GLOW_LOCK_UNLOCK 2
+
+// Hold Click Start Threshold
+//
+// The minimum length a hold click can be
+#define HOLD_CLICK_START (SHORT_CLICK_THRESHOLD + TIME_TILL_LONG_CLICK_FLASH)
+
+// Hold Click End Threshold
 //
 // The maximum length a long click can be
-#define LONG_CLICK_THRESHOLD (SHORT_CLICK_THRESHOLD + TIME_TILL_LONG_CLICK_FLASH)
+#define HOLD_CLICK_END (HOLD_CLICK_START + TIME_TILL_LONG_CLICK_FLASH)
+
 // Max Color Slots
 //
 // The number of slots in a colorset
@@ -35,7 +45,7 @@
 // Default Brightness
 //
 // The default brightness of the led
-#define DEFAULT_BRIGHTNESS 170
+#define DEFAULT_BRIGHTNESS 255
 
 // Global Brightness Options
 //
@@ -93,18 +103,38 @@
 // ============================================================================
 //  Storage Constants
 //
-//  These are various storage sizes of data and some math to
-//  help calculate sizes or space requirements
+//  These are various storage sizes of data and some math to help
+//  calculate sizes or space requirements, note these will produce
+//  compiler errors unless you include the respective headers
+
+
+// Storage Name
+//
+// This is mainly used by the CLI tool as a filename for simulated eeprom
+#define STORAGE_FILENAME "Helios.storage"
+
+// Storage Size
+//
+// The total size of storage where modes and global settings are saved.
+// The EEPROM on attiny85 is 512 bytes, but due to limitations on flash
+// only the lower half of the eeprom is being used
+#define STORAGE_SIZE 256
 
 // Colorset Size
 //
 // the colorset is just an array of colors but it also has a num colors val
 #define COLORSET_SIZE ((sizeof(RGBColor) * NUM_COLOR_SLOTS) + 1)
 
+// Pattern Args Size
+//
+// There is currently 6 args for a pattern: on, off, gap, dash, group, blend
+// Each takes up 1 byte currently
+#define PAT_ARGS_SIZE (sizeof(PatternArgs))
+
 // Pattern Size
 //
-// The actual pattern storage size is the size of the colorset + 7 params + 1 pat flags
-#define PATTERN_SIZE (COLORSET_SIZE + 7 + 1)
+// The actual pattern storage size is the size of the colorset + params + 1 pat flags
+#define PATTERN_SIZE (COLORSET_SIZE + PAT_ARGS_SIZE + 1)
 
 // Slot Size
 //

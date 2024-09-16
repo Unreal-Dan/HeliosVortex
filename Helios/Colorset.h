@@ -38,6 +38,9 @@ public:
   bool equals(const Colorset &set) const;
   bool equals(const Colorset *set) const;
 
+  // crc the colorset
+  uint32_t crc32() const;
+
   // index operator to access color index
   RGBColor operator[](int index) const;
 

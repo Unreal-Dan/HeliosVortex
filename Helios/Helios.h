@@ -19,6 +19,7 @@ public:
   static void load_next_mode();
   static void load_cur_mode();
   static void save_cur_mode();
+  static void load_global_flags();
   static void save_global_flags();
   static void set_mode_index(uint8_t mode_index);
 
@@ -27,7 +28,6 @@ public:
   static Pattern &cur_pattern() { return pat; }
 #endif
 
-private:
   enum Flags : uint8_t {
     FLAG_NONE = 0,
     FLAG_LOCKED = (1 << 0),
@@ -39,6 +39,10 @@ private:
   static bool has_flag(Flags flag) { return (global_flags & flag) == flag; }
   static void clear_flag(Flags flag) { global_flags = (Flags)(global_flags & ~flag); }
   static void toggle_flag(Flags flag) { global_flags = (Flags)(global_flags ^ flag); }
+
+private:
+  // initialize the various components of helios
+  static bool init_components();
 
   static void handle_state();
   static void handle_state_modes();
@@ -55,20 +59,17 @@ private:
   static void handle_off_menu(uint8_t mag, bool past);
   static void handle_on_menu(uint8_t mag, bool past);
   static void handle_state_col_select();
-  static bool handle_state_col_select_slot(ColorSelectOption &out_option);
-  static bool handle_state_col_select_quadrant();
-  static void handle_col_select_show_hue_sat_val();
-  static void handle_state_col_select_hue();
-  static void handle_state_col_select_sat();
-  static void handle_state_col_select_val();
+  static void handle_state_col_select_slot(ColorSelectOption &out_option);
+  static void handle_state_col_select_quadrant();
+  static void handle_state_col_select_hue_sat_val();
   static void handle_state_pat_select();
   static void handle_state_toggle_flag(Flags flag);
   static void handle_state_set_defaults();
   static void handle_state_set_global_brightness();
   static void handle_state_shift_mode();
   static void handle_state_randomize();
-  static void show_long_selection(RGBColor color);
   static void show_selection(RGBColor color);
+  static void factory_reset();
 
   enum State : uint8_t {
     STATE_MODES,

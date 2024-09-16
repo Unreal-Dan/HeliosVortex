@@ -1,4 +1,4 @@
-.PHONY: all upload set_fuses set_default_fuses
+.PHONY: all upload set_fuses set_default_fuses set_16mhz_fuses set_8mhz_fuses set_1mhz_fuses get_fuses extract_hex upload_hex
 
 ifneq ($(OS),Windows_NT)
     OS = $(shell uname -s)
@@ -17,6 +17,7 @@ else ifeq ($(OS),Linux)
     INCLUDE_DIR=~/atmel_setup/include/
 else ifeq ($(OS),Darwin)
     BINDIR=/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin/
+    AVRDUDEDIR=/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin/
     INCLUDE_DIR=""
 else
     # ??? unknown OS
@@ -32,14 +33,16 @@ NM = ${BINDIR}avr-nm
 AVRDUDE = ${AVRDUDEDIR}avrdude
 
 AVRDUDE_CONF = avrdude.conf
-AVRDUDE_PROGRAMMER = stk500v1
-AVRDUDE_BAUDRATE = 19200
 AVRDUDE_CHIP = attiny85
 
 ifeq ($(OS),Windows_NT) # Windows
-    AVRDUDE_PORT = COM12
+    AVRDUDE_PROGRAMMER = atmelice_isp
+    AVRDUDE_BAUDRATE = 115200
+    AVRDUDE_PORT = usb
 else ifeq ($(OS),Darwin)
-    AVRDUDE_PORT = /dev/tty.usbmodem1423201
+    AVRDUDE_PROGRAMMER = stk500v1
+    AVRDUDE_BAUDRATE = 19200
+    AVRDUDE_PORT = /dev/cu.usbmodem2101
 endif
 
 AVRDUDE_FLAGS = -C$(AVRDUDE_CONF) \
@@ -49,7 +52,7 @@ AVRDUDE_FLAGS = -C$(AVRDUDE_CONF) \
 		-b$(AVRDUDE_BAUDRATE) \
 		-v
 
-CPU_SPEED = 16000000L
+CPU_SPEED = 8000000L
 
 # the port for serial upload
 SERIAL_PORT = COM11
@@ -158,11 +161,44 @@ install:
 	@echo "Download and extraction complete. You'll find the toolchain and pack files in $(INSTALL_DIR)"
 endif
 
-set_fuses:
+set_fuses: # Low Fuse = Clock Speed | High Fuse = Brown Out Detection Off | Extended Fuse N/A
+ifeq ($(CPU_SPEED),16000000L)
+	@echo "Setting fuses for 16MHz..."
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe1:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+else ifeq ($(CPU_SPEED),8000000L)
+	@echo "Setting fuses for 8MHz..."
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xE2:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+else ifeq ($(CPU_SPEED),1000000L)
+	@echo "Setting fuses for 1MHz..."
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+else
+	@echo "Unsupported CPU_SPEED for fuse settings."
+endif
+
+# Low Fuse = Clock Speed | High Fuse = Brown Out Detection Off | Extended Fuse N/A
+set_16mhz_fuses:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe1:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
 
-set_default_fuses:
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xe2:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+set_8mhz_fuses:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xE2:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+
+set_1mhz_fuses:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0x62:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m
+
+set_8mhz_fuses_bod_on:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:w:0xE2:m -U hfuse:w:0xde:m -U efuse:w:0xff:m
+
+get_fuses:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:r:-:h -U hfuse:r:-:h -U efuse:r:-:h
+
+extract_hex:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:r:attiny_firmware.hex:i
+
+extract_eeprom:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:r:-:h > eeprom_dump.csv
+
+upload_hex:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:w:apollo_firmware.hex:i
 
 clean:
 	rm -f $(OBJS) $(TARGET).elf $(TARGET).hex $(DFILES) $(TARGET).bin $(TARGET).eep $(TARGET).lst $(TARGET).map
