@@ -79,7 +79,7 @@ for ((i = 0; i <= NUM_PATTERNS - 1; i++)); do
             --quiet \
             --no-timestep \
             --brightness-scale "2.0" \
-            --colorset "red,orange,yellow,turquoise,blue,pink" \
+            --colorset "red,green,blue" \
             --pattern "$i" \
             --bmp "$BMP_DIR/$(printf "%03d_Pattern.bmp" $((i + NUM_DEFAULT_PATTERNS + 1)))" \
             --cycle "$CYCLE_COUNT"
@@ -88,7 +88,7 @@ for ((i = 0; i <= NUM_PATTERNS - 1; i++)); do
             --quiet \
             --no-timestep \
             --brightness-scale "2.0" \
-            --colorset "red,orange,yellow,turquoise,blue,pink" \
+            --colorset "red,green,blue" \
             --pattern "$i" \
             --bmp "$BMP_DIR/$(printf "%03d_Pattern.bmp" $((i + NUM_DEFAULT_PATTERNS + 1)))" \
             <<< "$INPUT_COMMANDS"
