@@ -1,4 +1,4 @@
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 import numpy as np
 import argparse
 import os
@@ -51,7 +51,13 @@ def create_circular_pattern(path_to_bmp):
     map_pattern_to_circle(draw, pattern_strip, center, outer_radius, thickness)
 
     print("-- Pattern mapped successfully")
-    return canvas
+
+    # Apply smoothing effect
+    smoothed_canvas = canvas.filter(ImageFilter.GaussianBlur(radius=2))
+    print("-- Smoothing effect applied")
+
+    return smoothed_canvas
+
 def main():
     parser = argparse.ArgumentParser(description="Generate a circular pattern from a BMP file.")
     parser.add_argument("bmp_file", type=str, help="Path to the BMP file")
@@ -60,7 +66,7 @@ def main():
 
     circular_pattern = create_circular_pattern(args.bmp_file)
     circular_pattern.save(args.output_file)
-    print(f"** Saved circular pattern to {args.output_file}")
+    print(f"** Saved smoothed circular pattern to {args.output_file}")
 
 if __name__ == "__main__":
     main()
