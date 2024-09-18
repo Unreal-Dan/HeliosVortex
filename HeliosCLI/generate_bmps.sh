@@ -43,7 +43,18 @@ for pattern_file in "$PATTERN_DIR"/*.pattern; do
     filename="${filename%.*}"
     COLOR_SET=$(grep "COLOR_SET=" "$pattern_file" | cut -d= -f2)
     PATTERN_ID=$(grep "PATTERN_ID=" "$pattern_file" | cut -d= -f2)
+    PATTERN_ARGS=$(grep "PATTERN_ARGS=" "$pattern_file" | cut -d= -f2)
     BRIGHTNESS_SCALE=$(grep "BRIGHTNESS_SCALE=" "$pattern_file" | cut -d= -f2)
+
+    # build the pattern args string based on whether a pattern ID or args was specified
+    PATTERN_ARG_STR=
+    if [ "$PATTERN_ARGS" == "" ]; then
+      # just use pattern id no args specified
+      PATTERN_ARG_STR="--pattern $PATTERN_ID"
+    else
+      # otherwise use the pattern args
+      PATTERN_ARG_STR="--pattern-args $PATTERN_ARGS"
+    fi
 
     # Use extracted parameters to generate the pattern
     if [ -z "$INPUT_COMMANDS" ]; then
@@ -52,7 +63,7 @@ for pattern_file in "$PATTERN_DIR"/*.pattern; do
             --no-timestep \
             --brightness-scale "$BRIGHTNESS_SCALE" \
             --colorset "$COLOR_SET" \
-            --pattern "$PATTERN_ID" \
+            $PATTERN_ARG_STR \
             --bmp "$BMP_DIR/${filename}.bmp" \
             --cycle "$CYCLE_COUNT"
     else
@@ -61,7 +72,7 @@ for pattern_file in "$PATTERN_DIR"/*.pattern; do
             --no-timestep \
             --brightness-scale "$BRIGHTNESS_SCALE" \
             --colorset "$COLOR_SET" \
-            --pattern "$PATTERN_ID" \
+            $PATTERN_ARG_STR \
             --bmp "$BMP_DIR/${filename}.bmp" \
             <<< "$INPUT_COMMANDS"
     fi
