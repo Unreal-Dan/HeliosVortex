@@ -59,6 +59,7 @@ float brightness_scale = 1.0f;
 uint8_t minumum_brightness = 75;
 std::string initial_colorset_str = "";
 std::string initial_pattern_str = "";
+std::string initial_pattern_args_str = "";
 uint32_t initial_mode_index = 0;
 
 // used to switch terminal to non-blocking and back
@@ -105,6 +106,27 @@ int main(int argc, char *argv[])
     Patterns::make_pattern(id, Helios::cur_pattern());
     // re-initialize the current pattern
     Helios::cur_pattern().init();
+  }
+  // set initial pattern args based on user arguments
+  if (initial_pattern_args_str.length() > 0) {
+    // parse the list of args into an array of ints
+    std::vector<uint32_t> vals;
+    std::istringstream ss(initial_pattern_args_str);
+    // push 6 args into the array
+    while (vals.size() < 6) {
+      std::string arg;
+      uint32_t val = 0;
+      // try to parse out a number
+      if (std::getline(ss, arg, ',')) {
+        val = strtoul(arg.c_str(), NULL, 10);
+      }
+      // push the val either 0 or parsed number
+      vals.push_back(val);
+    }
+    // construct pattern args from the array of values
+    PatternArgs args(vals[0], vals[1], vals[2], vals[3], vals[4], vals[5]);
+    // set the args of the current pattern
+    Helios::cur_pattern().setArgs(args);
   }
   // Set the initial colorset based on user arguments
   if (initial_colorset_str.length() > 0) {
@@ -206,6 +228,7 @@ static void parse_options(int argc, char *argv[])
     {"min-brightness", required_argument, nullptr, 'm'},
     {"colorset", required_argument, nullptr, 'C'},
     {"pattern", required_argument, nullptr, 'P'},
+    {"pattern-args", required_argument, nullptr, 'A'},
     {"mode-index", required_argument, nullptr, 'I'},
     {"bmp", optional_argument, nullptr, 'b'},
     {"eeprom", no_argument, nullptr, 'E'},
@@ -213,7 +236,7 @@ static void parse_options(int argc, char *argv[])
     {"help", no_argument, nullptr, 'h'},
     {nullptr, 0, nullptr, 0}
   };
-  while ((opt = getopt_long(argc, argv, "xcqltisyamC:P:I:b::ES:h", long_options, &option_index)) != -1) {
+  while ((opt = getopt_long(argc, argv, "xcqltisyamC:P:A:I:b::ES:h", long_options, &option_index)) != -1) {
     switch (opt) {
     case 'x':
       // if the user wants pretty colors or hex codes
@@ -291,6 +314,10 @@ static void parse_options(int argc, char *argv[])
     case 'P':
       // set the initial pattern from the string
       initial_pattern_str = optarg;
+      break;
+    case 'A':
+      // set the initial pattern args from the string
+      initial_pattern_args_str = optarg;
       break;
     case 'I':
       // set the initial mode index
@@ -534,6 +561,7 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "Initial Pattern and Colorset (optional):\n");
   fprintf(stderr, "  -C, --colorset           Set the colorset of the first mode, ex: red,green,0x0000ff\n");
   fprintf(stderr, "  -P, --pattern            Set the pattern of the first mode, ex: 1 or blend\n");
+  fprintf(stderr, "  -A, --pattern-args       Set the pattern args of the first mode, ex: 1,2,3 or 1,2,3,4,5\n");
   fprintf(stderr, "  -I, --mode-index         Set the initial mode index, ex 4\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Other Options:\n");
