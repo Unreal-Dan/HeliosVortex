@@ -7,6 +7,7 @@ BMP_DIR=./bmp_patterns
 # Default values
 CYCLE_COUNT=1
 INPUT_COMMANDS="410wq"
+INCLUDE_GENERIC_FLASHING_PATTERNS=0
 NUM_PATTERNS=20
 NUM_DEFAULT_PATTERNS=6
 
@@ -82,26 +83,28 @@ for pattern_file in "$PATTERN_DIR"/*.pattern; do
     fi
 done
 
-# Generate patterns 0 to 19
-for ((i = 0; i <= NUM_PATTERNS - 1; i++)); do
-    echo "Generating pattern $i..."
-    if [ -z "$INPUT_COMMANDS" ]; then
-        $HELIOS \
-            --quiet \
-            --no-timestep \
-            --brightness-scale "2.0" \
-            --colorset "red,green,blue" \
-            --pattern "$i" \
-            --bmp "$BMP_DIR/$(printf "%03d_Pattern.bmp" $((i + NUM_DEFAULT_PATTERNS + 1)))" \
-            --cycle "$CYCLE_COUNT"
-    else
-        $HELIOS \
-            --quiet \
-            --no-timestep \
-            --brightness-scale "2.0" \
-            --colorset "red,green,blue" \
-            --pattern "$i" \
-            --bmp "$BMP_DIR/$(printf "%03d_Pattern.bmp" $((i + NUM_DEFAULT_PATTERNS + 1)))" \
-            <<< "$INPUT_COMMANDS"
-    fi
-done
+if [ "$INCLUDE_GENERIC_FLASHING_PATTERNS" -eq 1 ]; then
+  # Generate patterns 0 to 19
+  for ((i = 0; i <= NUM_PATTERNS - 1; i++)); do
+      echo "Generating pattern $i..."
+      if [ -z "$INPUT_COMMANDS" ]; then
+          $HELIOS \
+              --quiet \
+              --no-timestep \
+              --brightness-scale "2.0" \
+              --colorset "red,green,blue" \
+              --pattern "$i" \
+              --bmp "$BMP_DIR/$(printf "%03d_Pattern.bmp" $((i + NUM_DEFAULT_PATTERNS + 1)))" \
+              --cycle "$CYCLE_COUNT"
+      else
+          $HELIOS \
+              --quiet \
+              --no-timestep \
+              --brightness-scale "2.0" \
+              --colorset "red,green,blue" \
+              --pattern "$i" \
+              --bmp "$BMP_DIR/$(printf "%03d_Pattern.bmp" $((i + NUM_DEFAULT_PATTERNS + 1)))" \
+              <<< "$INPUT_COMMANDS"
+      fi
+  done
+fi
