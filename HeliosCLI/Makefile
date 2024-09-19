@@ -105,6 +105,10 @@ FORCE:
 clean:
 	@$(RM) $(DFILES) $(OBJS) $(TARGETS) $(TESTS)
 
+# generate svg
+svgs: bmps
+	./generate_svgs.sh
+
 # generate pngs
 pngs: bmps
 	./generate_pngs.sh
