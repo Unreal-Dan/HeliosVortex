@@ -555,8 +555,8 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "  -i, --in-place           Print the output in-place (interactive mode)\n");
   fprintf(stderr, "  -s, --storage            Enable persistent storage to file (" STORAGE_FILENAME ")\n");
   fprintf(stderr, "  -y, --cycle [N]          Run N cycles of the first mode, default 1 (to gen pattern images)\n");
-  fprintf(stderr, "  -a, --brightness-scale   Set the brightness scale of the output colors (2.0 is 100%% brighter)\n");
-  fprintf(stderr, "  -m, --min-brightness     Set the minimum brightness the output colors can be\n");
+  fprintf(stderr, "  -a, --brightness-scale   Set the brightness scale of the output colors (default: 1.0, 2.0 is 100%% brighter)\n");
+  fprintf(stderr, "  -m, --min-brightness     Set the minimum brightness the output colors can be (default: 75)\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Initial Pattern and Colorset (optional):\n");
   fprintf(stderr, "  -C, --colorset           Set the colorset of the first mode, ex: red,green,0x0000ff\n");
@@ -567,11 +567,10 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "Other Options:\n");
   fprintf(stderr, "  -b, --bmp [file]         Specify a bitmap file to generate (default: " DEFAULT_BMP_FILENAME ")\n");
   fprintf(stderr, "  -E, --eeprom             Generate an eeprom file for flashing\n");
-  fprintf(stderr, "  -S, --parse-save <file>  Parse an eeprom storage dump from Microchip Studio\n");
+  fprintf(stderr, "  -S, --parse-save <file>  Parse an eeprom storage dump (supports .eep, .csv, and .storage formats)\n");
   fprintf(stderr, "  -h, --help               Display this help message\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "Input Commands (pass to stdin):");
-  // the usage for the input strings
   const char *input_usage[] = {
     "\n   c         standard short click",
     "\n   l         standard long click",
@@ -580,6 +579,7 @@ static void print_usage(const char* program_name)
     "\n   t         toggle button press state",
     "\n   w         wait 1 tick",
     "\n   q         quit",
+    "\n   [number]  repeat the following command N times (e.g., 5c for 5 clicks)"
   };
   for (uint32_t i = 0; i < (sizeof(input_usage) / sizeof(input_usage[0])); ++i) {
     fprintf(stderr, "%s", input_usage[i]);
@@ -590,6 +590,7 @@ static void print_usage(const char* program_name)
   fprintf(stderr, "   ./helios\n");
   fprintf(stderr, "   ./helios -ci\n");
   fprintf(stderr, "   ./helios -cl <<< 300wcw300wcp1500wr300wq\n");
+  fprintf(stderr, "   ./helios -S eeprom_dump.eep\n");
 }
 
 static bool parse_eep_file(const std::string& filename, std::vector<uint8_t>& memory)
