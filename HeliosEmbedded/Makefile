@@ -2,7 +2,7 @@
 ### CONFIGURATION ###
 #####################
 
-.PHONY: all upload set_fuses set_default_fuses set_16mhz_fuses set_8mhz_fuses set_1mhz_fuses get_fuses extract_hex upload_hex extract_eeprom upload_eeprom extract_eeprom_thumbs upload_eeprom_thumbs extract_eeprom_fingers upload_eeprom_fingers clean
+.PHONY: all upload set_fuses set_default_fuses set_16mhz_fuses set_8mhz_fuses set_1mhz_fuses get_fuses extract_hex upload_hex extract_eeprom upload_eeprom clean
 
 ifneq ($(OS),Windows_NT)
     OS = $(shell uname -s)
