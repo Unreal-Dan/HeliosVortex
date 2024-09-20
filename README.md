@@ -43,8 +43,6 @@ The project is organized into several key directories:
 
 The project uses GitHub Actions for continuous integration. The workflow defined in `.github/workflows/build.yml` automatically builds the project and runs the test suite on every push and pull request to the main branch.
 
-Thank you for your interest in the Helios Vortex project!
-
 ## Uploading to ATTiny85
 
 To upload the Helios Vortex firmware to an ATTiny85 microcontroller, follow these steps:
