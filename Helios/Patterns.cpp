@@ -82,7 +82,7 @@ void Patterns::make_pattern(PatternID id, Pattern &pat)
   default:
 
   case PATTERN_RIBBON:
-    args.on_dur = 9;
+    args.on_dur = 9; // 10 for flashing pattern circles
     break;
 
   case PATTERN_ULTRA_DOPS:
@@ -97,7 +97,7 @@ void Patterns::make_pattern(PatternID id, Pattern &pat)
 
   case PATTERN_STROBE:
     args.on_dur = 5;
-    args.off_dur = 8;
+    args.off_dur = 8; // 10 for flashing pattern circles
     break;
 
   case PATTERN_HYPNOSTROBE:
@@ -107,61 +107,61 @@ void Patterns::make_pattern(PatternID id, Pattern &pat)
 
   case PATTERN_STROBIE:
     args.on_dur = 3;
-    args.off_dur = 23;
+    args.off_dur = 23; // 21 for flashing pattern circles
     break;
 
   case PATTERN_RAZOR:
     args.on_dur = 3;
     args.off_dur = 1;
-    args.gap_dur = 30;
+    args.gap_dur = 30; // 29 for flashing pattern circles
     break;
 
   case PATTERN_FLARE:
     args.on_dur = 2;
-    args.off_dur = 30;
+    args.off_dur = 30; // 28 for flashing pattern circles
     break;
 
   case PATTERN_BURST:
     args.on_dur = 3;
-    args.off_dur = 40;
+    args.off_dur = 40; // 37 for flashing pattern circles
     break;
 
   case PATTERN_GLOW:
     args.on_dur = 2;
-    args.gap_dur = 40;
+    args.gap_dur = 40; // 39 for flashing pattern circles
     break;
 
   case PATTERN_FLICKER:
     args.on_dur = 1;
-    args.off_dur = 50;
+    args.off_dur = 50; // 44 for flashing pattern circles
     break;
 
   case PATTERN_FLASH:
     args.on_dur = 10;
-    args.off_dur = 250;
+    args.off_dur = 250; // 120 for flashing pattern circles
     break;
 
   case PATTERN_MORPH:
     args.on_dur = 9;
-    args.blend_speed = 5;
+    args.blend_speed = 5; // 14 for flashing pattern circles
     break;
 
   case PATTERN_MORPH_STROBE:
     args.on_dur = 5;
     args.off_dur = 8;
-    args.blend_speed = 10;
+    args.blend_speed = 10; // 19 for flashing pattern circles
     break;
 
   case PATTERN_MORPH_STROBIE:
     args.on_dur = 3;
     args.off_dur = 23;
-    args.blend_speed = 10;
+    args.blend_speed = 10; // 35 for flashing pattern circles
     break;
 
   case PATTERN_MORPH_GLOW:
     args.on_dur = 1;
     args.off_dur = 3;
-    args.gap_dur = 40;
+    args.gap_dur = 40; // 36 for flashing pattern circles
     args.blend_speed = 30;
     break;
 
@@ -169,25 +169,25 @@ void Patterns::make_pattern(PatternID id, Pattern &pat)
     args.on_dur = 1;
     args.off_dur = 9;
     args.gap_dur = 6;
-    args.dash_dur = 15;
+    args.dash_dur = 15; // 17 for flashing pattern circles
     break;
 
   case PATTERN_DASH_DOT:
     args.on_dur = 2;
     args.off_dur = 3;
-    args.dash_dur = 24;
+    args.dash_dur = 24; // 22 for flashing pattern circles
     break;
 
   case PATTERN_WAVE_PARTICLE:
     args.on_dur = 1;
     args.off_dur = 9;
-    args.dash_dur = 5;
+    args.dash_dur = 5; // 10 for flashing pattern circles
     break;
 
   case PATTERN_LIGHTSPEED:
     args.on_dur = 2;
     args.off_dur = 3;
-    args.dash_dur = 24;
+    args.dash_dur = 24; // 23 for flashing pattern circles
     args.blend_speed = 10;
     break;
   }
