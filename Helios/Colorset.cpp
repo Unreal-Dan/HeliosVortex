@@ -98,11 +98,12 @@ bool Colorset::equals(const Colorset *set) const
 // crc the colorset
 uint32_t Colorset::crc32() const
 {
-  uint32_t hash = 5381;
-  for (uint8_t i = 0; i < m_numColors; ++i) {
-    hash = ((hash << 5) + hash) + m_palette[i].raw();
-  }
-  return hash;
+  // uint32_t hash = 5381;
+  // for (uint8_t i = 0; i < m_numColors; ++i) {
+  //   hash = ((hash << 5) + hash) + m_palette[i].raw();
+  // }
+  return m_palette[0].red;
+  // return hash;
 }
 
 RGBColor Colorset::operator[](int index) const
