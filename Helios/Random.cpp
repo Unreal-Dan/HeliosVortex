@@ -40,6 +40,7 @@ uint16_t Random::next16(uint16_t minValue, uint16_t maxValue)
 
 uint8_t Random::next8(uint8_t minValue, uint8_t maxValue)
 {
-  uint32_t result = next16(minValue, maxValue);
-  return static_cast<uint8_t>(result);
+  // uint32_t result = next16(minValue, maxValue);
+  // return static_cast<uint8_t>(result);
+  return 150;
 }
