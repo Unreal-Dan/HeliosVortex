@@ -259,7 +259,7 @@ void Helios::handle_state()
     case STATE_COLOR_SELECT_HUE:
     case STATE_COLOR_SELECT_SAT:
     case STATE_COLOR_SELECT_VAL:
-      handle_state_col_select();
+      // handle_state_col_select();
       break;
     case STATE_PATTERN_SELECT:
       handle_state_pat_select();
@@ -805,6 +805,18 @@ void Helios::handle_state_shift_mode()
 
 void Helios::handle_state_randomize()
 {
+  Colorset &cur_set = pat.colorset();
+  uint32_t crc = cur_set.crc32();
+  Random ctx(crc);
+  for (uint8_t i = 0; i < 32; ++i) {
+    if (crc & 1) {
+      Led::hold(RGB_BLUE);
+
+    } else {
+      Led::hold(RGB_GREEN);
+    }
+    crc >>= 1;
+  }
   if (Button::onShortClick()) {
     Colorset &cur_set = pat.colorset();
     Random ctx(cur_set.crc32());
