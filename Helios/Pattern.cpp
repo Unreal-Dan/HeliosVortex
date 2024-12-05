@@ -245,6 +245,15 @@ void Pattern::updateColor(uint8_t index, const RGBColor &col)
   init();
 }
 
+uint32_t Pattern::crc32() const
+{
+  uint32_t hash = 5381;
+  for (uint8_t i = 0; i < PATTERN_SIZE; ++i) {
+    hash = ((hash << 5) + hash) + ((uint8_t *)this)[i];
+  }
+  return hash;
+}
+
 void Pattern::blendBlinkOn()
 {
   // if we reached the next color, then cycle the colorset
