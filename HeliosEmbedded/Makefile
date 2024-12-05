@@ -40,9 +40,9 @@ ifeq ($(OS),Windows_NT) # Windows
     AVRDUDE_BAUDRATE = 115200
     AVRDUDE_PORT = usb
 else ifeq ($(OS),Darwin)
-    AVRDUDE_PROGRAMMER = stk500v1
+    AVRDUDE_PROGRAMMER = usbtiny
     AVRDUDE_BAUDRATE = 19200
-    AVRDUDE_PORT = /dev/cu.usbmodem2101
+    AVRDUDE_PORT = usb
 endif
 
 AVRDUDE_FLAGS = -C$(AVRDUDE_CONF) \
