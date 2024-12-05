@@ -805,7 +805,7 @@ void Helios::handle_state_shift_mode()
 
 void Helios::handle_state_randomize()
 {
-  static uint8_t current_color_mode = Colorset::THEORY;
+  uint8_t current_color_mode = Colorset::THEORY;
   if (Button::onShortClick()) {
     current_color_mode = Colorset::THEORY; // Reset on each entry
     Colorset &cur_set = pat.colorset();
