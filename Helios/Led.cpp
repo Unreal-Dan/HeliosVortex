@@ -100,9 +100,6 @@ void Led::hold(RGBColor col)
   set(col);
   update();
   Time::delayMilliseconds(500);
-  set(RGB_OFF);
-  update();
-  Time::delayMilliseconds(500);
 }
 
 void Led::setPWM(uint8_t pwmPin, uint8_t pwmValue, volatile uint8_t &controlRegister,

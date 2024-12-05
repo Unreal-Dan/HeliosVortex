@@ -406,7 +406,6 @@ void Helios::handle_off_menu(uint8_t mag, bool past)
   }
 }
 
-
 void Helios::handle_on_menu(uint8_t mag, bool past)
 {
   switch (mag) {
@@ -809,17 +808,18 @@ void Helios::handle_state_randomize()
   if (Button::onShortClick()) {
     Colorset &cur_set = pat.colorset();
     uint32_t crc = cur_set.crc32();
+    for (uint8_t i = 0; i < 32; ++i) {
+      if (crc & 1) {
+        Led::hold(RGB_BLUE_BRI_LOWEST);
+        Led::hold(RGB_OFF);
+      } else {
+        Led::hold(RGB_GREEN_BRI_LOWEST);
+        Led::hold(RGB_OFF);
+      }
+      crc >>= 1;
+    }
     Random ctx(crc);
-    // for (uint8_t i = 0; i < 32; ++i) {
-    //   if (crc & 1) {
-    //     Led::hold(RGB_BLUE_BRI_LOWEST);
-
-    //   } else {
-    //     Led::hold(RGB_GREEN_BRI_LOWEST);
-    //   }
-    //   crc >>= 1;
-    // }
-    uint8_t randVal = crc;
+    uint8_t randVal = ctx.next8();
     cur_set.randomizeColors(ctx, (randVal + 1) % NUM_COLOR_SLOTS);
     Patterns::make_pattern((PatternID)(randVal % PATTERN_COUNT), pat);
     pat.init();
