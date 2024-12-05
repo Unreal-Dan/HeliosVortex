@@ -181,18 +181,23 @@ void Colorset::removeColor(uint8_t index)
   m_palette[--m_numColors].clear();
 }
 
-
-void Colorset::randomizeColors(Random &ctx, uint8_t numColors, uint8_t &current_color_mode)
+void Colorset::randomizeColors(Random &ctx, uint8_t numColors, uint8_t color_mode)
 {
-  current_color_mode = ctx.next8() % COLOR_MODE_COUNT;
-  ColorMode mode = (ColorMode)current_color_mode;
+  ColorMode mode;
+  // if they specify randomly pick the color mode then roll it
+  if (color_mode >= COLOR_MODE_RANDOMLY_PICK) {
+    mode = (ColorMode)(ctx.next8() % COLOR_MODE_COUNT);
+  } else {
+    // otherwise just use the provided color mode
+    mode = (ColorMode)color_mode;
+  }
   clear();
   if (!numColors) {
-    numColors = ctx.next8(mode == MONOCHROMATIC ? 2 : 1, 9);
+    numColors = ctx.next8(mode == COLOR_MODE_MONOCHROMATIC ? 2 : 1, 9);
   }
   uint8_t randomizedHue = ctx.next8();
   uint8_t colorGap = 0;
-  if (mode == THEORY && numColors > 1) {
+  if (mode == COLOR_MODE_COLOR_THEORY && numColors > 1) {
     colorGap = ctx.next8(16, 256 / (numColors - 1));
   }
   ValueStyle valStyle = (ValueStyle)ctx.next8(0, VAL_STYLE_COUNT);
@@ -207,9 +212,9 @@ void Colorset::randomizeColors(Random &ctx, uint8_t numColors, uint8_t &current_
   for (uint8_t i = 0; i < numColors; i++) {
     uint8_t hueToUse;
     uint8_t valueToUse = 255;
-    if (mode == THEORY) {
+    if (mode == COLOR_MODE_COLOR_THEORY) {
       hueToUse = (randomizedHue + (i * colorGap));
-    } else if (mode == MONOCHROMATIC) {
+    } else if (mode == COLOR_MODE_MONOCHROMATIC) {
       hueToUse = randomizedHue;
       valueToUse = 255 - (i * (256 / numColors));
     } else { // EVENLY_SPACED
