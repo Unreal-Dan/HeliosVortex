@@ -805,11 +805,13 @@ void Helios::handle_state_shift_mode()
 
 void Helios::handle_state_randomize()
 {
+  static uint8_t current_color_mode = Colorset::THEORY;
   if (Button::onShortClick()) {
+    current_color_mode = Colorset::THEORY; // Reset on each entry
     Colorset &cur_set = pat.colorset();
     Random ctx(cur_set.crc32());
     uint8_t randVal = ctx.next8();
-    cur_set.randomizeColors(ctx, (randVal + 1) % NUM_COLOR_SLOTS);
+    cur_set.randomizeColors(ctx, (randVal + 1) % NUM_COLOR_SLOTS, current_color_mode);
     Patterns::make_pattern((PatternID)(randVal % PATTERN_COUNT), pat);
     pat.init();
   }

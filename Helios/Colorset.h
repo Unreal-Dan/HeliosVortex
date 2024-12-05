@@ -79,7 +79,7 @@ public:
     EVENLY_SPACED,
     COLOR_MODE_COUNT
   };
-  void randomizeColors(Random &ctx, uint8_t numColors);
+  void randomizeColors(Random &ctx, uint8_t numColors, uint8_t &current_color_mode);
 
   // fade all of the colors in the set
   void adjustBrightness(uint8_t fadeby);

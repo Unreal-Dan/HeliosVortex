@@ -181,11 +181,10 @@ void Colorset::removeColor(uint8_t index)
   m_palette[--m_numColors].clear();
 }
 
-uint8_t current_color_mode = Colorset::THEORY;
 
-void Colorset::randomizeColors(Random &ctx, uint8_t numColors)
+void Colorset::randomizeColors(Random &ctx, uint8_t numColors, uint8_t &current_color_mode)
 {
-  current_color_mode = (current_color_mode + 1) % COLOR_MODE_COUNT;
+  current_color_mode = ctx.next8() % COLOR_MODE_COUNT;
   ColorMode mode = (ColorMode)current_color_mode;
   clear();
   if (!numColors) {
