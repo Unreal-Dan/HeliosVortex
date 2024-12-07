@@ -50,7 +50,11 @@ AVRDUDE_FLAGS = -C$(AVRDUDE_CONF) \
 		-c$(AVRDUDE_PROGRAMMER) \
 		-P$(AVRDUDE_PORT) \
 		-b$(AVRDUDE_BAUDRATE) \
-		-v
+		-v \
+		-B1 \
+		-V \
+		-D
+
 
 CPU_SPEED = 8000000L
 
