@@ -1,8 +1,8 @@
-# Helios Vortex Testing
+# HeliosEngine Testing
 
 ## Testing
 
-The Helios Vortex project includes a comprehensive test suite to ensure firmware reliability and functionality. The tests are designed to cover various aspects of the system, including pattern generation, color management, and user input handling.
+The HeliosEngine project includes a comprehensive test suite to ensure firmware reliability and functionality. The tests are designed to cover various aspects of the system, including pattern generation, color management, and user input handling.
 
 ### Test Structure
 
@@ -54,7 +54,7 @@ To create a new test:
 
 ### Writing Tests
 
-Writing effective tests is crucial for maintaining the reliability of the Helios Vortex firmware. Here's a guide on how to write tests:
+Writing effective tests is crucial for maintaining the reliability of the HeliosEngine firmware. Here's a guide on how to write tests:
 
 #### Test File Structure
 
@@ -132,7 +132,7 @@ MENU
 5. **Update tests with changes**: When you modify the firmware, update or add tests accordingly.
 6. **Comment complex tests**: If a test is particularly complex, add comments to explain its purpose and structure.
 
-By following these guidelines, you can create a robust test suite that helps maintain the quality and reliability of the Helios Vortex firmware.
+By following these guidelines, you can create a robust test suite that helps maintain the quality and reliability of the HeliosEngine firmware.
 
 ### Recording Tests
 
@@ -200,4 +200,4 @@ These scripts facilitate sharing test cases and maintaining a consistent test su
 
 The project uses GitHub Actions for continuous integration. The workflow defined in `.github/workflows/build.yml` automatically builds the project and runs the test suite on every push and pull request to the main branch.
 
-Thank you for your interest in the Helios Vortex project!
+Thank you for your interest in the HeliosEngine project!
