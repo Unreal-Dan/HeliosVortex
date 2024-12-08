@@ -1,13 +1,13 @@
-# HeliosEngine Project
+# Helios Engine Project
 
 ## Introduction
 
 ![Build](https://github.com/OpenSourceLightshows/HeliosEngine/actions/workflows/build.yml/badge.svg?branch=master)
 [![Latest Release](https://img.shields.io/github/v/tag/OpenSourceLightshows/HeliosEngine?label=Latest%20Release)](https://github.com/OpenSourceLightshows/HeliosEngine/releases/latest)
 
-Welcome to the HeliosEngine project! This repository contains the firmware for the Helios microlight, designed specifically for the ATTiny85 chip. The firmware is capable of controlling a single LED to produce a variety of patterns and effects.
+Welcome to the Helios Engine project! This repository contains the firmware for the Helios microlight, designed specifically for the ATTiny85 chip. The firmware is capable of controlling a single LED to produce a variety of patterns and effects.
 
-The HeliosEngine is based on the [VortexEngine](https://github.com/StoneOrbits/VortexEngine), to accommodate for the ATTiny85's limited resources, in other words, Helios is a ***twist*** on Vortex Engine.
+The Helios Engine is based on the [VortexEngine](https://github.com/StoneOrbits/VortexEngine), to accommodate for the ATTiny85's limited resources, in other words, Helios is a ***twist*** on Vortex Engine.
 
 
 ## Features
@@ -48,7 +48,7 @@ The project uses GitHub Actions for continuous integration. The workflow defined
 
 ## Uploading to ATTiny85
 
-To upload the HeliosEngine firmware to an ATTiny85 microcontroller, follow these steps:
+To upload the Helios Engine firmware to an ATTiny85 microcontroller, follow these steps:
 
 ### Prerequisites
 
@@ -96,7 +96,7 @@ This will compile the firmware if necessary and then upload it to the ATTiny85.
 
 ## Clock Speed and Compilation
 
-The HeliosEngine firmware is designed to work with ATTiny85 chips running at either 8 MHz or 16 MHz. The default clock speed is set to 8 MHz, but this can be easily changed in the Makefile.
+The Helios Engine firmware is designed to work with ATTiny85 chips running at either 8 MHz or 16 MHz. The default clock speed is set to 8 MHz, but this can be easily changed in the Makefile.
 
 ### Setting the Clock Speed
 
