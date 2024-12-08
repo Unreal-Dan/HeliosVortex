@@ -5,10 +5,9 @@
 ![Build](https://github.com/OpenSourceLightshows/HeliosEngine/actions/workflows/build.yml/badge.svg?branch=master)
 [![Latest Release](https://img.shields.io/github/v/tag/OpenSourceLightshows/HeliosEngine?label=Latest%20Release)](https://github.com/OpenSourceLightshows/HeliosEngine/releases/latest)
 
-Welcome to the Helios Engine project! This repository contains the firmware for the Helios microlight, designed specifically for the ATTiny85 chip. The firmware is capable of controlling a single LED to produce a variety of patterns and effects.
+Welcome to the Helios Engine project! This repository contains the 'engine' and the 'firmware' for the Helios microlight. Helios Engine is the core infrastructure designed to control a single LED and produce a variety of patterns and effects, and the Helios microlight is the first example of Helios at work.
 
-The Helios Engine is based on the [VortexEngine](https://github.com/StoneOrbits/VortexEngine), to accommodate for the ATTiny85's limited resources, in other words, Helios is a ***twist*** on Vortex Engine.
-
+With it's core derived from [Vortex Engine](https://github.com/StoneOrbits/VortexEngine) but modified to accommodate for the ATTiny85's limited resources, Helios Engine puts a ***twist*** on Vortex Engine to create an envionment tailored for microlight development specifically on the Attiny85.
 
 ## Features
 
