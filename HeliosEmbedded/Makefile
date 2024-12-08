@@ -232,11 +232,26 @@ get_fuses:
 ####### EEPROM #######
 ######################
 
+upload_with_default_eeprom: upload eeprom_data.eep
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:w:eeprom_data.eep:i
+
 extract_eeprom:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:r:eeprom_data.eep:i
 
 upload_eeprom: eeprom_data.eep
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:w:eeprom_data.eep:i
+
+extract_eeprom_thumbs:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:r:eeprom_thumbs.eep:i
+
+upload_eeprom_thumbs: eeprom_thumbs.eep
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:w:eeprom_thumbs.eep:i
+
+extract_eeprom_fingers:
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:r:eeprom_fingers.eep:i
+
+upload_eeprom_fingers: eeprom_fingers.eep
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:w:eeprom_fingers.eep:i
 
 ###################
 ####### HEX #######
