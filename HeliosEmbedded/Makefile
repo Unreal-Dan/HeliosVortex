@@ -81,6 +81,15 @@ CPU_SPEED = 8000000L
 # the port for serial upload
 SERIAL_PORT = COM11
 
+# compiler defines
+DEFINES=\
+	-DHELIOS_VERSION_MAJOR=$(HELIOS_VERSION_MAJOR) \
+	-DHELIOS_VERSION_MINOR=$(HELIOS_VERSION_MINOR) \
+	-DHELIOS_BUILD_NUMBER=$(HELIOS_BUILD_NUMBER) \
+	-DHELIOS_VERSION_NUMBER=$(HELIOS_VERSION_NUMBER) \
+	-D__AVR_ATtiny85__ \
+	-DF_CPU=$(CPU_SPEED) \
+
 CFLAGS = -g \
 	 -Os \
 	 -MMD \
@@ -116,6 +125,9 @@ ifeq ($(OS),Windows_NT) # Windows
     LDFLAGS+=-B $(DEVICE_DIR)
 endif
 
+ifneq ($(DEFINES),)
+    CFLAGS+=$(DEFINES)
+endif
 INCLUDES= \
 	-I $(INCLUDE_DIR) \
 	-I ../Helios
@@ -152,6 +164,7 @@ all: compute_version $(TARGET).hex
 	$(NM) --numeric-sort --line-numbers --demangle --print-size --format=s $(TARGET).elf > $(TARGET).map
 	chmod +x avrsize.sh
 	./avrsize.sh $(TARGET).elf
+	@echo "== Success building Helios v$(HELIOS_VERSION_NUMBER) =="
 
 $(TARGET).hex: $(TARGET).elf
 	$(OBJCOPY) -O binary -R .eeprom $(TARGET).elf $(TARGET).bin
