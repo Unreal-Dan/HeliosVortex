@@ -2,7 +2,7 @@
 ### CONFIGURATION ###
 #####################
 
-.PHONY: all upload set_fuses set_default_fuses set_16mhz_fuses set_8mhz_fuses set_1mhz_fuses get_fuses extract_hex upload_hex extract_eeprom upload_eeprom clean compute_version
+.PHONY: all upload set_fuses set_default_fuses set_16mhz_fuses set_8mhz_fuses set_1mhz_fuses get_fuses extract_hex upload_hex extract_eeprom upload_eeprom clean compute_version extract_version
 
 ifneq ($(OS),Windows_NT)
     OS = $(shell uname -s)
@@ -292,6 +292,11 @@ compute_version:
 	$(eval HELIOS_VERSION_MINOR := $(if $(HELIOS_VERSION_MINOR),$(HELIOS_VERSION_MINOR),1))
 	$(eval HELIOS_BUILD_NUMBER := $(if $(HELIOS_BUILD_NUMBER),$(HELIOS_BUILD_NUMBER),0))
 	$(eval HELIOS_VERSION_NUMBER := $(HELIOS_VERSION_MAJOR).$(HELIOS_VERSION_MINOR).$(HELIOS_BUILD_NUMBER))
+
+extract_version:
+	$(eval HELIOS_VERSION_MAJOR := $(shell echo $(LATEST_TAG) | cut -d. -f1))
+	$(eval HELIOS_VERSION_MINOR := $(shell echo $(LATEST_TAG) | cut -d. -f2))
+	$(eval HELIOS_BUILD_NUMBER := $(shell echo $(LATEST_TAG) | cut -d. -f3))
 
 # include dependency files to ensure partial rebuilds work correctly
 -include $(DFILES)
