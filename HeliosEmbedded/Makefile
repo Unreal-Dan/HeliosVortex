@@ -1,8 +1,16 @@
-.PHONY: all upload set_fuses set_default_fuses set_16mhz_fuses set_8mhz_fuses set_1mhz_fuses get_fuses extract_hex upload_hex
+#####################
+### CONFIGURATION ###
+#####################
+
+.PHONY: all upload set_fuses set_default_fuses set_16mhz_fuses set_8mhz_fuses set_1mhz_fuses get_fuses extract_hex upload_hex extract_eeprom upload_eeprom clean
 
 ifneq ($(OS),Windows_NT)
     OS = $(shell uname -s)
 endif
+
+#######################
+### OS-SPECIFIC VARS ###
+#######################
 
 ifeq ($(OS),Windows_NT) # Windows
     BINDIR="C:/Program Files (x86)/Atmel/Studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/"
@@ -23,6 +31,10 @@ else
     # ??? unknown OS
 endif
 
+#######################
+### TOOLCHAIN SETUP ###
+#######################
+
 CC = ${BINDIR}avr-g++
 LD = ${BINDIR}avr-g++
 OBJCOPY = ${BINDIR}avr-objcopy -v
@@ -31,6 +43,10 @@ SIZE = ${BINDIR}avr-size
 OBJDUMP = ${BINDIR}avr-objdump
 NM = ${BINDIR}avr-nm
 AVRDUDE = ${AVRDUDEDIR}avrdude
+
+########################
+### AVRDUDE SETTINGS ###
+########################
 
 AVRDUDE_CONF = avrdude.conf
 AVRDUDE_CHIP = attiny85
@@ -55,6 +71,10 @@ AVRDUDE_FLAGS = -C$(AVRDUDE_CONF) \
 		-V \
 		-D
 
+
+#######################
+### COMPILER FLAGS ####
+#######################
 
 CPU_SPEED = 8000000L
 
@@ -102,6 +122,10 @@ INCLUDES= \
 
 CFLAGS+=$(INCLUDES)
 
+#######################
+### SOURCE FILES ######
+#######################
+
 # Source files
 ifeq ($(OS),Windows_NT) # Windows
 SRCS = \
@@ -114,6 +138,10 @@ endif
 OBJS = $(SRCS:.cpp=.o)
 
 DFILES = $(SRCS:.cpp=.d)
+
+#######################
+### BUILD TARGETS #####
+#######################
 
 # Target name
 TARGET = helios
@@ -142,8 +170,9 @@ $(TARGET).elf: $(OBJS)
 upload: set_fuses $(TARGET).hex
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -Uflash:w:$(TARGET).hex:i
 
-upload_eeprom: $(TARGET).eep
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -Ueeprom:w:$(TARGET).eep:i
+#######################
+### LINUX SETUP #######
+#######################
 
 ifneq ($(OS),Windows_NT) # Linux
 build: all
@@ -164,6 +193,10 @@ install:
 	unzip $(ATTINY_ZIP)
 	@echo "Download and extraction complete. You'll find the toolchain and pack files in $(INSTALL_DIR)"
 endif
+
+#####################
+####### FUSES #######
+#####################
 
 set_fuses: # Low Fuse = Clock Speed | High Fuse = Brown Out Detection Off | Extended Fuse N/A
 ifeq ($(CPU_SPEED),16000000L)
@@ -195,14 +228,29 @@ set_8mhz_fuses_bod_on:
 get_fuses:
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -U lfuse:r:-:h -U hfuse:r:-:h -U efuse:r:-:h
 
-extract_hex:
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:r:attiny_firmware.hex:i
+######################
+####### EEPROM #######
+######################
 
 extract_eeprom:
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:r:-:h > eeprom_dump.csv
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:r:eeprom_data.eep:i
+
+upload_eeprom: eeprom_data.eep
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U eeprom:w:eeprom_data.eep:i
+
+###################
+####### HEX #######
+###################
 
 upload_hex:
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:w:apollo_firmware.hex:i
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:w:helios_firmware.hex:i
+
+extract_hex: helios_firmware.hex
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:r:helios_firmware.hex:i
+
+#####################
+####### CLEAN #######
+#####################
 
 clean:
 	rm -f $(OBJS) $(TARGET).elf $(TARGET).hex $(DFILES) $(TARGET).bin $(TARGET).eep $(TARGET).lst $(TARGET).map
