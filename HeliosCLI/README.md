@@ -1,8 +1,8 @@
-# Helios Vortex Project
+# Helios Engine CLI
 
 ## CLI Tool
 
-The Helios Vortex project includes a powerful Command Line Interface (CLI) tool that allows users to interact with and test the firmware without the need for physical hardware. This tool is invaluable for development, testing, and pattern creation.
+The Helios Engine project includes a powerful Command Line Interface (CLI) tool that allows users to interact with and test the firmware without the need for physical hardware. This tool is invaluable for development, testing, and pattern creation.
 
 ### Key CLI Features
 
@@ -47,7 +47,7 @@ These commands can be chained together to create complex input sequences for tes
 
 ## Pattern Visualization
 
-The Helios Vortex project includes tools for generating visual representations of patterns in both PNG and SVG formats. These visualizations are useful for documentation, analysis, and sharing pattern designs.
+The Helios Engine project includes tools for generating visual representations of patterns in both PNG and SVG formats. These visualizations are useful for documentation, analysis, and sharing pattern designs.
 
 ### Generating BMPs and PNG
 
@@ -95,7 +95,7 @@ You can customize the pattern visualization process by modifying the following f
 
 These visualizations are particularly useful for:
 
-- Documenting the available patterns in the Helios Vortex project.
+- Documenting the available patterns in the Helios Engine project.
 - Analyzing pattern behavior and timing.
 - Sharing pattern designs with the community.
 - Creating visual aids for user manuals or promotional materials.
