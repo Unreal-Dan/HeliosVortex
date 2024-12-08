@@ -1,4 +1,4 @@
-# Helios Engine Project
+# Helios Engine
 
 ## Introduction
 
