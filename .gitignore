@@ -9,6 +9,7 @@
 !*.pattern
 !*.h
 !*.cpp
+!*.py
 !*.atsln
 !*.componentinfo.xml
 !*.cppproj
@@ -28,4 +29,9 @@
 
 # Ignore bitmap files
 *.bmp
+
+# Ignore png
+*.png
+
+!*.md
 

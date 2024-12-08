@@ -696,8 +696,8 @@ void Helios::handle_state_pat_select()
     cur_state = STATE_MODES;
   }
   if (Button::onShortClick()) {
-    menu_selection = (menu_selection + 1) % PATTERN_COUNT;
     Patterns::make_pattern((PatternID)menu_selection, pat);
+    menu_selection = (menu_selection + 1) % PATTERN_COUNT;
     pat.init();
   }
   pat.play();
@@ -807,9 +807,9 @@ void Helios::handle_state_randomize()
 {
   if (Button::onShortClick()) {
     Colorset &cur_set = pat.colorset();
-    Random ctx(cur_set.crc32());
+    Random ctx(pat.crc32());
     uint8_t randVal = ctx.next8();
-    cur_set.randomizeColors(ctx, (randVal + 1) % NUM_COLOR_SLOTS);
+    cur_set.randomizeColors(ctx, (randVal + 1) % NUM_COLOR_SLOTS, Colorset::COLOR_MODE_RANDOMLY_PICK);
     Patterns::make_pattern((PatternID)(randVal % PATTERN_COUNT), pat);
     pat.init();
   }

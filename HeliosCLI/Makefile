@@ -2,7 +2,7 @@
 .SUFFIXES:
 
 # List all make targets which are not filenames
-.PHONY: all tests clean clean_storage
+.PHONY: all tests clean pngs bmps clean_storage
 
 # compiler tool definitions
 CC=g++
@@ -104,6 +104,18 @@ FORCE:
 # generic clean target
 clean:
 	@$(RM) $(DFILES) $(OBJS) $(TARGETS) $(TESTS)
+
+# generate svg
+svgs: bmps
+	./generate_svgs.sh
+
+# generate pngs
+pngs: bmps
+	./generate_pngs.sh
+
+# generate pngs
+bmps:
+	./generate_bmps.sh -c
 
 clean_storage:
 	@echo "Cleaning Helios storage file..."
