@@ -71,15 +71,23 @@ public:
     ValueStyle valStyle, uint8_t numColors, uint8_t colorPos);
   void removeColor(uint8_t index);
 
-
-  // function to randomize the colors with various different modes of randomization
+  // various modes of randomization types to use with randomizeColors
   enum ColorMode {
-    THEORY,
-    MONOCHROMATIC,
-    EVENLY_SPACED,
-    COLOR_MODE_COUNT
+    // randomize with color theory
+    COLOR_MODE_COLOR_THEORY,
+    // randomize a nonochromatic set
+    COLOR_MODE_MONOCHROMATIC,
+    // randomize an evenly spaced hue set
+    COLOR_MODE_EVENLY_SPACED,
+
+    // total different randomize modes above
+    COLOR_MODE_COUNT,
+
+    // EXTRA OPTION: randomly pick one of the other 3 options
+    COLOR_MODE_RANDOMLY_PICK = COLOR_MODE_COUNT,
   };
-  void randomizeColors(Random &ctx, uint8_t numColors);
+  // function to randomize the colors with various different modes of randomization
+  void randomizeColors(Random &ctx, uint8_t numColors, ColorMode color_mode);
 
   // fade all of the colors in the set
   void adjustBrightness(uint8_t fadeby);
