@@ -297,9 +297,11 @@ compute_version:
 	$(eval HELIOS_VERSION_NUMBER := $(HELIOS_VERSION_MAJOR).$(HELIOS_VERSION_MINOR).$(HELIOS_BUILD_NUMBER))
 
 extract_version:
-	$(eval HELIOS_VERSION_MAJOR := $(shell echo $(LATEST_TAG) | cut -d. -f1))
-	$(eval HELIOS_VERSION_MINOR := $(shell echo $(LATEST_TAG) | cut -d. -f2))
-	$(eval HELIOS_BUILD_NUMBER := $(shell echo $(LATEST_TAG) | cut -d. -f3))
+	@echo "Reading firmware version..."
+	$(eval TEMP_HEX := $(shell mktemp))
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:r:$(TEMP_HEX):i
+	python ./find_version.py $(TEMP_HEX)
+	@rm $(TEMP_HEX)
 
 # include dependency files to ensure partial rebuilds work correctly
 -include $(DFILES)
