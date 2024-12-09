@@ -30,15 +30,13 @@
 #define HELIOS_VERSION_NUMBER HELIOS_VERSION_MAJOR.HELIOS_VERSION_MINOR.HELIOS_BUILD_NUMBER
 #endif
 
-// Produces a string like "1.3.0"
-#define ADD_QUOTES(str) #str
-#define EXPAND_AND_QUOTE(str) ADD_QUOTES(str)
-#define HELIOS_VERSION EXPAND_AND_QUOTE(HELIOS_VERSION_NUMBER)
 
 // Helios Version String
 //
-// This is the string literal equivalent of HELIOS_VERSION above
-#define HELIOS_VERSION_STR    HELIOS_VERSION(HELIOS_VERSION_NUMBER)
+// This is the string literal equivalent of HELIOS_VERSION_NUMBER above
+#define ADD_QUOTES(str) #str
+#define EXPAND_AND_QUOTE(str) ADD_QUOTES(str)
+#define HELIOS_VERSION_STR    EXPAND_AND_QUOTE(HELIOS_VERSION_NUMBER)
 
 // Short Click Threshold
 //
