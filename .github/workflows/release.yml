@@ -151,9 +151,9 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ env.new_tag }}
-          name: Helios Engine ${{ env.new_version }}
+          name: Helios ${{ env.new_version }}
           body: |
-            Release of Helios Engine version ${{ env.new_version }}
+            Release of Helios version ${{ env.new_version }}
           draft: false
           prerelease: false
         env:
