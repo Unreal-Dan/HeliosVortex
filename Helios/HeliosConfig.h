@@ -38,7 +38,7 @@
 // Helios Version String
 //
 // This is the string literal equivalent of HELIOS_VERSION above
-#define HELIOS_VERSION_STR    STR(HELIOS_VERSION_NUMBER)
+#define HELIOS_VERSION_STR    HELIOS_VERSION(HELIOS_VERSION_NUMBER)
 
 // Short Click Threshold
 //
