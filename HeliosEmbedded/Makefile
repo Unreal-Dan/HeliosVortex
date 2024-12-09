@@ -299,7 +299,7 @@ compute_version:
 extract_version:
 	@echo "Reading firmware version..."
 	$(eval TEMP_HEX := $(shell mktemp))
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:r:$(TEMP_HEX):i
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:r:$(TEMP_HEX):i > /dev/null 2>&1
 	python ./find_version.py $(TEMP_HEX)
 	@rm $(TEMP_HEX)
 
