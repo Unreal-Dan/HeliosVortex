@@ -67,9 +67,12 @@ AVRDUDE_FLAGS = -C$(AVRDUDE_CONF) \
 		-P$(AVRDUDE_PORT) \
 		-b$(AVRDUDE_BAUDRATE) \
 		-v \
-		-B1 \
-		-V \
-		-D
+		-B1
+
+# -v -- Verbose output - display detailed progress
+# -B1 -- Bit clock period (in microseconds) - sets programming speed
+# -V -- Disable automatic verify check when uploading
+# -D -- Disable auto erase for flash memory
 
 
 #######################
@@ -89,6 +92,7 @@ DEFINES=\
 	-DHELIOS_VERSION_NUMBER=$(HELIOS_VERSION_NUMBER) \
 	-D__AVR_ATtiny85__ \
 	-DF_CPU=$(CPU_SPEED) \
+	-D HELIOS_EMBEDDED
 
 CFLAGS = -g \
 	 -Os \
@@ -108,7 +112,6 @@ CFLAGS = -g \
 	 -D__AVR_ATtiny85__ \
 	 -mmcu=$(AVRDUDE_CHIP) \
 	 -DF_CPU=$(CPU_SPEED) \
-	 -D HELIOS_EMBEDDED
 
 LDFLAGS = -g \
 	  -Wall \
@@ -171,8 +174,8 @@ $(TARGET).hex: $(TARGET).elf
 	$(OBJCOPY) -O ihex -j .eeprom --set-section-flags=.eeprom=alloc,load --no-change-warnings --change-section-lma .eeprom=0 $(TARGET).elf $(TARGET).eep
 	$(OBJCOPY) -O ihex -R .eeprom $< $@
 
-$(TARGET).elf: $(OBJS)
-	$(LD) $(LDFLAGS) $^ -o $@
+$(TARGET).elf: compute_version $(OBJS)
+	$(LD) $(LDFLAGS) $(OBJS) -o $@
 
 %.o: %.S
 	$(CC) $(ASMFLAGS) -c $< -o $@
