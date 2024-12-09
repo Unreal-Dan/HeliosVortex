@@ -1,6 +1,43 @@
 #ifndef HELIOS_CONFIG_H
 #define HELIOS_CONFIG_H
 
+// Version Configurations
+//
+// The engine major version indicates the state of the save file,
+// if changes to the save format occur then the major version
+// must increment so that the savefiles will not be loaded
+#ifndef HELIOS_VERSION_MAJOR
+#define HELIOS_VERSION_MAJOR 0
+#endif
+
+// A minor version simply indicates a bugfix or minor change that
+// will not affect the save files produced by the engine. This means
+// a savefile produced by 1.1 should be loadable by an engine on 1.2
+// and vice versa, but an engine on 2.0 cannot share savefiles with
+// either of the engines on version 1.1 or 1.2
+#ifndef HELIOS_VERSION_MINOR
+#define HELIOS_VERSION_MINOR 0
+#endif
+
+// The build or patch number based on the major.minor version, this is
+// set by the build system using the number of commits since last version
+#ifndef HELIOS_BUILD_NUMBER
+#define HELIOS_BUILD_NUMBER 0
+#endif
+
+// Produces a number like 1.3.0
+#ifndef HELIOS_VERSION_NUMBER
+#define HELIOS_VERSION_NUMBER HELIOS_VERSION_MAJOR.HELIOS_VERSION_MINOR.HELIOS_BUILD_NUMBER
+#endif
+
+
+// Helios Version String
+//
+// This is the string literal equivalent of HELIOS_VERSION_NUMBER above
+#define ADD_QUOTES(str) #str
+#define EXPAND_AND_QUOTE(str) ADD_QUOTES(str)
+#define HELIOS_VERSION_STR    EXPAND_AND_QUOTE(HELIOS_VERSION_NUMBER)
+
 // Short Click Threshold
 //
 // The length of time in milliseconds for a click to

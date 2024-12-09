@@ -2,7 +2,7 @@
 ### CONFIGURATION ###
 #####################
 
-.PHONY: all upload set_fuses set_default_fuses set_16mhz_fuses set_8mhz_fuses set_1mhz_fuses get_fuses extract_hex upload_hex extract_eeprom upload_eeprom clean
+.PHONY: all upload set_fuses set_default_fuses set_16mhz_fuses set_8mhz_fuses set_1mhz_fuses get_fuses extract_hex upload_hex extract_eeprom upload_eeprom clean compute_version extract_version
 
 ifneq ($(OS),Windows_NT)
     OS = $(shell uname -s)
@@ -67,9 +67,12 @@ AVRDUDE_FLAGS = -C$(AVRDUDE_CONF) \
 		-P$(AVRDUDE_PORT) \
 		-b$(AVRDUDE_BAUDRATE) \
 		-v \
-		-B1 \
-		-V \
-		-D
+		-B1
+
+# -v -- Verbose output - display detailed progress
+# -B1 -- Bit clock period (in microseconds) - sets programming speed
+# -V -- Disable automatic verify check when uploading
+# -D -- Disable auto erase for flash memory
 
 
 #######################
@@ -80,6 +83,16 @@ CPU_SPEED = 8000000L
 
 # the port for serial upload
 SERIAL_PORT = COM11
+
+# compiler defines
+DEFINES=\
+	-DHELIOS_VERSION_MAJOR=$(HELIOS_VERSION_MAJOR) \
+	-DHELIOS_VERSION_MINOR=$(HELIOS_VERSION_MINOR) \
+	-DHELIOS_BUILD_NUMBER=$(HELIOS_BUILD_NUMBER) \
+	-DHELIOS_VERSION_NUMBER=$(HELIOS_VERSION_NUMBER) \
+	-D__AVR_ATtiny85__ \
+	-DF_CPU=$(CPU_SPEED) \
+	-D HELIOS_EMBEDDED
 
 CFLAGS = -g \
 	 -Os \
@@ -99,7 +112,6 @@ CFLAGS = -g \
 	 -D__AVR_ATtiny85__ \
 	 -mmcu=$(AVRDUDE_CHIP) \
 	 -DF_CPU=$(CPU_SPEED) \
-	 -D HELIOS_EMBEDDED
 
 LDFLAGS = -g \
 	  -Wall \
@@ -116,6 +128,9 @@ ifeq ($(OS),Windows_NT) # Windows
     LDFLAGS+=-B $(DEVICE_DIR)
 endif
 
+ifneq ($(DEFINES),)
+    CFLAGS+=$(DEFINES)
+endif
 INCLUDES= \
 	-I $(INCLUDE_DIR) \
 	-I ../Helios
@@ -146,20 +161,21 @@ DFILES = $(SRCS:.cpp=.d)
 # Target name
 TARGET = helios
 
-all: $(TARGET).hex
+all: compute_version $(TARGET).hex
 	@echo Detected Operating System: $(OS)
 	$(OBJDUMP) --disassemble --source --line-numbers --demangle --section=.text $(TARGET).elf > $(TARGET).lst
 	$(NM) --numeric-sort --line-numbers --demangle --print-size --format=s $(TARGET).elf > $(TARGET).map
 	chmod +x avrsize.sh
 	./avrsize.sh $(TARGET).elf
+	@echo "== Success building Helios v$(HELIOS_VERSION_NUMBER) =="
 
 $(TARGET).hex: $(TARGET).elf
 	$(OBJCOPY) -O binary -R .eeprom $(TARGET).elf $(TARGET).bin
 	$(OBJCOPY) -O ihex -j .eeprom --set-section-flags=.eeprom=alloc,load --no-change-warnings --change-section-lma .eeprom=0 $(TARGET).elf $(TARGET).eep
 	$(OBJCOPY) -O ihex -R .eeprom $< $@
 
-$(TARGET).elf: $(OBJS)
-	$(LD) $(LDFLAGS) $^ -o $@
+$(TARGET).elf: compute_version $(OBJS)
+	$(LD) $(LDFLAGS) $(OBJS) -o $@
 
 %.o: %.S
 	$(CC) $(ASMFLAGS) -c $< -o $@
@@ -269,6 +285,23 @@ extract_hex: helios_firmware.hex
 
 clean:
 	rm -f $(OBJS) $(TARGET).elf $(TARGET).hex $(DFILES) $(TARGET).bin $(TARGET).eep $(TARGET).lst $(TARGET).map
+
+compute_version:
+	$(eval LATEST_TAG ?= $(shell git fetch --depth=1 origin +refs/tags/*:refs/tags/* &> /dev/null && git tag --list | sort -V | tail -n1))
+	$(eval HELIOS_VERSION_MAJOR ?= $(shell echo $(LATEST_TAG) | cut -d. -f1))
+	$(eval HELIOS_VERSION_MINOR ?= $(shell echo $(LATEST_TAG) | sed 's/$(BRANCH_SUFFIX)$$//' | cut -d. -f2))
+	$(eval HELIOS_BUILD_NUMBER ?= $(shell git rev-list --count $(LATEST_TAG)..HEAD))
+	$(eval HELIOS_VERSION_MAJOR := $(if $(HELIOS_VERSION_MAJOR),$(HELIOS_VERSION_MAJOR),0))
+	$(eval HELIOS_VERSION_MINOR := $(if $(HELIOS_VERSION_MINOR),$(HELIOS_VERSION_MINOR),1))
+	$(eval HELIOS_BUILD_NUMBER := $(if $(HELIOS_BUILD_NUMBER),$(HELIOS_BUILD_NUMBER),0))
+	$(eval HELIOS_VERSION_NUMBER := $(HELIOS_VERSION_MAJOR).$(HELIOS_VERSION_MINOR).$(HELIOS_BUILD_NUMBER))
+
+extract_version:
+	@echo "Reading firmware version..."
+	$(eval TEMP_HEX := $(shell mktemp))
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -U flash:r:$(TEMP_HEX):i > /dev/null 2>&1
+	python ./find_version.py $(TEMP_HEX)
+	@rm $(TEMP_HEX)
 
 # include dependency files to ensure partial rebuilds work correctly
 -include $(DFILES)
