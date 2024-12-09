@@ -38,10 +38,12 @@ if __name__ == "__main__":
         # Otherwise read from stdin if input is piped
         elif not sys.stdin.isatty():
             content = sys.stdin.buffer.read()  # Read binary from stdin
-        # Finally, try to read default filename
+        # If no input provided, show usage
         else:
-            with open('helios_firmware.hex', 'rb') as f:  # Open in binary mode
-                content = f.read()
+            print("Error: No input provided")
+            print("Usage: python find_version.py [filename]")
+            print("   or: cat file.hex | python find_version.py")
+            sys.exit(1)
 
         version = find_version(content)
         if version:
