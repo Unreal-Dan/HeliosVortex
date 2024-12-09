@@ -1,9 +1,6 @@
 #ifndef HELIOS_CONFIG_H
 #define HELIOS_CONFIG_H
 
-// Helper macros to expand out the version into a string
-#define _STR(x) #x
-
 // Version Configurations
 //
 // The engine major version indicates the state of the save file,
