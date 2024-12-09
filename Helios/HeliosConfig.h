@@ -7,7 +7,7 @@
 // if changes to the save format occur then the major version
 // must increment so that the savefiles will not be loaded
 #ifndef HELIOS_VERSION_MAJOR
-#define HELIOS_VERSION_MAJOR 1
+#define HELIOS_VERSION_MAJOR 0
 #endif
 
 // A minor version simply indicates a bugfix or minor change that
@@ -16,7 +16,7 @@
 // and vice versa, but an engine on 2.0 cannot share savefiles with
 // either of the engines on version 1.1 or 1.2
 #ifndef HELIOS_VERSION_MINOR
-#define HELIOS_VERSION_MINOR 3
+#define HELIOS_VERSION_MINOR 0
 #endif
 
 // The build or patch number based on the major.minor version, this is
