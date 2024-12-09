@@ -3,7 +3,6 @@
 
 // Helper macros to expand out the version into a string
 #define _STR(x) #x
-#define STR(x) _STR(x)
 
 // Version Configurations
 //
