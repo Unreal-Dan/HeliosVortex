@@ -7,16 +7,16 @@
 
 // Helios Version Number
 //
-// It is expected that HELIOS_VERSION will be provided on the command line to the
-// compiler as a -DHELIOS_VERSION=a.b.c but if it's not it will default here
-#ifndef HELIOS_VERSION
-#define HELIOS_VERSION 0.0.1
+// It is expected that HELIOS_VERSION_NUMBER will be provided on the command line to the
+// compiler as a -HELIOS_VERSION_NUMBER=a.b.c but if it's not it will default here
+#ifndef HELIOS_VERSION_NUMBER
+#define HELIOS_VERSION_NUMBER 0.0.1
 #endif
 
 // Helios Version String
 //
 // This is the string literal equivalent of HELIOS_VERSION above
-#define HELIOS_VERSION_STR    STR(HELIOS_VERSION)
+#define HELIOS_VERSION_STR    STR(HELIOS_VERSION_NUMBER)
 
 // Short Click Threshold
 //
