@@ -36,7 +36,7 @@ jobs:
             VERSION_MINOR=$(echo $LATEST_TAG | cut -d. -f2)
             LAST_HELIOS_BUILD_NUMBER=$(echo $LATEST_TAG | cut -d. -f3)
             COMMITS_SINCE_TAG=$(git rev-list --count $LATEST_TAG..HEAD)
-            BUILD_NUMBER=$(echo $$(( $LAST_HELIOS_BUILD_NUMBER + $COMMITS_SINCE_TAG )))
+            BUILD_NUMBER=$(( $LAST_HELIOS_BUILD_NUMBER + $COMMITS_SINCE_TAG ))
           fi
           FULL_VERSION="$VERSION_MAJOR.$VERSION_MINOR.$BUILD_NUMBER"
           echo "helios_version_major=$VERSION_MAJOR" >> $GITHUB_OUTPUT
