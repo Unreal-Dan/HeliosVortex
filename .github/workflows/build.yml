@@ -86,9 +86,9 @@ jobs:
           cd emsdk
           ./emsdk install latest
           ./emsdk activate latest
-        working-directory: HeliosEngine/HeliosLib
+        working-directory: HeliosLib
       - name: Build Webassembly
         run: |
           source ./emsdk/emsdk_env.sh
           make -j wasm
-        working-directory: HeliosEngine/HeliosLib
+        working-directory: HeliosLib
