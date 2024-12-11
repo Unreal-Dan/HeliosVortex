@@ -116,7 +116,7 @@ jobs:
           path: HeliosEmbedded/embedded-firmware.zip
 
   wasm:
-    needs: [setup, build, test, embedded]
+    needs: [setup, build, tests, embedded]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout current repository
