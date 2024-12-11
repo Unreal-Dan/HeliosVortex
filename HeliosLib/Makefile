@@ -121,13 +121,6 @@ HeliosLib.js: compute_version $(DEPS)
 %.o: %.cpp
 	$(CC) $(CFLAGS) -MMD -c $< -o $@
 
-# catch-all for static libraries in the form of:
-# <directory>/<library.a>
-# this expects that the makefile in <directory> has a
-# make target named <library>
-%.a: FORCE
-	$(MAKE) -C $(dir $@) $(notdir $@)
-
 # Empty rule that forces %.a to run all the time
 FORCE:
 
