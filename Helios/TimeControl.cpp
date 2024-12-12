@@ -92,7 +92,7 @@ uint32_t Time::microseconds()
 {
 #ifdef HELIOS_CLI
   struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+  clock_gettime(CLOCK_MONOTONIC, &ts);
   uint64_t us = SEC_TO_US((uint64_t)ts.tv_sec) + NS_TO_US((uint64_t)ts.tv_nsec);
   return (unsigned long)us;
 #else
